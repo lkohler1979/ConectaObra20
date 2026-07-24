@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ConectaObra 2.0 — Wireframes & Guia Visual</title>
+<style>
+  /* ============ DESIGN TOKENS — ConectaObra 2.0 ============ */
+  :root{
+    --laranja:#F26A21;        /* Laranja Obra — ação primária (capacete/sinalização) */
+    --laranja-escuro:#C94F0E;
+    --grafite:#1E2A38;        /* Grafite Estrutura — texto e navegação */
+    --azul-planta:#1F5FA8;    /* Azul Planta Baixa — links, escrow, confiança */
+    --azul-claro:#E8F1FA;
+    --concreto:#EDEAE4;       /* Cinza Concreto — fundos */
+    --areia:#FAF7F1;          /* Areia — fundo geral */
+    --verde-ok:#2E8B57;       /* Verde Aprovação — etapas pagas/aprovadas */
+    --amarelo-alerta:#F2B705; /* Amarelo Sinalização — pendências */
+    --vermelho:#C0392B;       /* Disputa/erro */
+    --branco:#FFFFFF;
+    --raio:10px;
+    --sombra:0 2px 10px rgba(30,42,56,.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--areia);color:var(--grafite);line-height:1.5}
+  h1,h2,h3,h4{font-weight:800;letter-spacing:-.01em}
+
+  /* faixa zebrada de obra — assinatura visual */
+  .hazard{height:8px;background:repeating-linear-gradient(-45deg,var(--laranja) 0 14px,var(--grafite) 14px 28px)}
+
+  .page{max-width:1180px;margin:0 auto;padding:32px 20px}
+  .doc-header{background:var(--grafite);color:#fff;padding:36px 20px 28px}
+  .doc-header .page{padding:0 20px}
+  .doc-header h1{font-size:30px}
+  .doc-header p{opacity:.85;margin-top:6px;max-width:720px}
+  .badge{display:inline-block;background:var(--laranja);color:#fff;font-size:12px;font-weight:700;border-radius:99px;padding:4px 12px;margin-bottom:10px;letter-spacing:.05em}
+
+  /* Navegação entre wireframes */
+  .toc{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 6px}
+  .toc a{background:#fff;border:1.5px solid var(--concreto);color:var(--grafite);text-decoration:none;font-size:13px;font-weight:600;padding:7px 12px;border-radius:99px}
+  .toc a:hover{border-color:var(--laranja);color:var(--laranja)}
+
+  section.wf{margin:48px 0}
+  .wf-title{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+  .wf-title .num{font-size:13px;font-weight:800;color:var(--laranja)}
+  .wf-title h2{font-size:22px}
+  .wf-desc{color:#5b6875;font-size:14px;margin-bottom:16px;max-width:760px}
+
+  /* moldura de tela */
+  .screen{background:#fff;border:1.5px solid #dcd7ce;border-radius:14px;box-shadow:var(--sombra);overflow:hidden}
+  .screen.mobile{max-width:390px;margin:0 auto}
+  .browserbar{display:flex;align-items:center;gap:8px;background:var(--concreto);padding:8px 14px;border-bottom:1px solid #dcd7ce;font-size:12px;color:#7a7f86}
+  .dot{width:10px;height:10px;border-radius:50%;background:#c9c4bb}
+  .urlpill{background:#fff;border-radius:6px;padding:3px 12px;flex:1;text-align:center}
+
+  /* componentes de wireframe */
+  .navbar{display:flex;align-items:center;gap:18px;padding:14px 22px;border-bottom:1px solid #eee}
+  .logo{font-weight:900;font-size:18px}
+  .logo b{color:var(--laranja)}
+  .navbar .links{display:flex;gap:16px;font-size:13px;color:#5b6875;flex:1}
+  .btn{display:inline-block;border:none;border-radius:8px;font-weight:700;font-size:14px;padding:11px 18px;cursor:pointer;text-align:center}
+  .btn-p{background:var(--laranja);color:#fff}
+  .btn-s{background:#fff;color:var(--azul-planta);border:1.5px solid var(--azul-planta)}
+  .btn-g{background:var(--verde-ok);color:#fff}
+  .btn-sm{padding:7px 12px;font-size:12px;border-radius:7px}
+
+  .hero{display:grid;grid-template-columns:1.1fr .9fr;gap:26px;padding:34px 26px;background:linear-gradient(135deg,var(--grafite) 55%,#2c3e50);color:#fff;align-items:center}
+  .hero h3{font-size:26px;line-height:1.2;margin-bottom:10px}
+  .hero p{opacity:.85;font-size:14px;margin-bottom:16px}
+  .searchbox{display:flex;background:#fff;border-radius:10px;overflow:hidden}
+  .searchbox input{flex:1;border:none;padding:13px 14px;font-size:14px}
+  .searchbox .btn{border-radius:0}
+
+  /* imagem-placeholder ilustrativa */
+  .img{border-radius:var(--raio);display:flex;align-items:center;justify-content:center;color:#fff;font-size:40px;position:relative;overflow:hidden}
+  .img::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent 0 18px,rgba(255,255,255,.06) 18px 36px)}
+  .img-obra{background:linear-gradient(160deg,#E67E22,#C94F0E)}
+  .img-planta{background:linear-gradient(160deg,#1F5FA8,#153e6e)}
+  .img-concreto{background:linear-gradient(160deg,#8d9aa5,#5b6875)}
+  .img-madeira{background:linear-gradient(160deg,#B5651D,#8a4a12)}
+
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:22px}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:22px}
+  .card{background:#fff;border:1.5px solid var(--concreto);border-radius:var(--raio);overflow:hidden}
+  .card .body{padding:12px 14px}
+  .card h4{font-size:15px;margin-bottom:2px}
+  .muted{color:#7a828c;font-size:12px}
+  .stars{color:var(--amarelo-alerta);font-size:13px}
+  .selo{display:inline-block;font-size:10px;font-weight:800;border-radius:5px;padding:2px 7px;letter-spacing:.04em}
+  .selo-ouro{background:#F7E7B4;color:#8a6d1a}
+  .selo-prata{background:#E6E9EC;color:#5b6875}
+  .selo-plat{background:#DCEBFA;color:var(--azul-planta)}
+  .selo-verif{background:#DFF2E7;color:var(--verde-ok)}
+
+  .sidebar-layout{display:grid;grid-template-columns:250px 1fr;min-height:420px}
+  .sidebar{background:var(--concreto);padding:18px;border-right:1px solid #dcd7ce}
+  .sidebar h5{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#7a7f86;margin:14px 0 8px}
+  .sidebar label{display:block;font-size:13px;margin:6px 0}
+  .side-nav a{display:block;padding:10px 12px;border-radius:8px;font-size:14px;color:var(--grafite);text-decoration:none;margin-bottom:4px}
+  .side-nav a.on{background:var(--laranja);color:#fff;font-weight:700}
+  .content{padding:20px}
+
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{background:var(--grafite);color:#fff;text-align:left;padding:10px 12px;font-size:12px}
+  td{border-bottom:1px solid var(--concreto);padding:10px 12px;vertical-align:top}
+  tr.win td{background:#F2FBF5}
+
+  .step-flow{display:flex;align-items:center;gap:0;padding:18px 22px;flex-wrap:wrap}
+  .step{background:var(--azul-claro);color:var(--azul-planta);font-size:12px;font-weight:700;border-radius:8px;padding:10px 12px;text-align:center;min-width:118px}
+  .step.on{background:var(--azul-planta);color:#fff}
+  .step.done{background:var(--verde-ok);color:#fff}
+  .arrow{padding:0 8px;color:#9aa4ad;font-weight:800}
+
+  .milestone{display:grid;grid-template-columns:44px 1fr auto;gap:12px;padding:14px;border:1.5px solid var(--concreto);border-radius:var(--raio);margin-bottom:10px;align-items:center;background:#fff}
+  .mnum{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff}
+  .st{font-size:11px;font-weight:800;border-radius:5px;padding:3px 8px}
+  .st-pago{background:#DFF2E7;color:var(--verde-ok)}
+  .st-exec{background:#FDEBD0;color:var(--laranja-escuro)}
+  .st-pend{background:#EFEFEF;color:#7a828c}
+  .st-disp{background:#FADBD8;color:var(--vermelho)}
+
+  .chat{display:flex;flex-direction:column;gap:10px;padding:18px;background:var(--areia);min-height:300px}
+  .bubble{max-width:78%;padding:11px 14px;border-radius:14px;font-size:13.5px}
+  .b-user{align-self:flex-end;background:var(--laranja);color:#fff;border-bottom-right-radius:4px}
+  .b-ia{align-self:flex-start;background:#fff;border:1.5px solid var(--concreto);border-bottom-left-radius:4px}
+  .b-ia .fonte{display:block;margin-top:6px;font-size:11px;color:var(--azul-planta);font-weight:700}
+  .disclaimer{align-self:flex-start;background:#FFF6DE;border:1.5px solid var(--amarelo-alerta);font-size:11.5px;padding:8px 12px;border-radius:8px;max-width:78%}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+  .kpi{background:#fff;border:1.5px solid var(--concreto);border-radius:var(--raio);padding:12px 14px}
+  .kpi .v{font-size:20px;font-weight:900}
+  .kpi.warn .v{color:var(--laranja-escuro)}
+  .kpi.ok .v{color:var(--verde-ok)}
+  .bar{height:10px;background:var(--concreto);border-radius:99px;overflow:hidden;margin-top:6px}
+  .bar i{display:block;height:100%;background:var(--laranja)}
+
+  /* guia de estilo */
+  .palette{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:14px 0}
+  .sw{border-radius:var(--raio);overflow:hidden;border:1.5px solid var(--concreto);background:#fff}
+  .sw .chip{height:64px}
+  .sw .info{padding:9px 12px;font-size:12px}
+  .sw .info b{display:block;font-size:13px}
+  .type-sample{background:#fff;border:1.5px solid var(--concreto);border-radius:var(--raio);padding:18px 20px;margin-top:14px}
+
+  .mob-tabs{display:grid;grid-template-columns:repeat(5,1fr);border-top:1.5px solid var(--concreto);background:#fff}
+  .mob-tabs div{text-align:center;font-size:10.5px;padding:9px 2px;color:#7a828c}
+  .mob-tabs div.on{color:var(--laranja);font-weight:800}
+  .mob-tabs span{display:block;font-size:18px}
+
+  footer{background:var(--grafite);color:#fff;text-align:center;padding:22px;font-size:13px;margin-top:56px}
+  @media(max-width:820px){
+    .hero,.sidebar-layout{grid-template-columns:1fr}
+    .grid3,.grid4,.kpis,.palette{grid-template-columns:repeat(2,1fr)}
+  }
+</style>
+</head>
+<body>
+
+<div class="hazard"></div>
+<header class="doc-header">
+  <div class="page">
+    <span class="badge">WIREFRAMES v1.0 · MID-FI</span>
+    <h1>Conecta<span style="color:var(--laranja)">Obra</span> 2.0</h1>
+    <p>Guia visual e wireframes das telas do MVP. Blocos coloridos com textura representam fotografias reais (obras, materiais, profissionais) a serem produzidas/licenciadas na fase de UI final.</p>
+  </div>
+</header>
+<div class="hazard"></div>
+
+<div class="page">
+  <nav class="toc">
+    <a href="#guia">🎨 Guia de estilo</a>
+    <a href="#wf1">1. Home</a>
+    <a href="#wf2">2. Busca marketplace</a>
+    <a href="#wf3">3. Perfil do prestador</a>
+    <a href="#wf4">4. Publicar orçamento</a>
+    <a href="#wf5">5. Comparador</a>
+    <a href="#wf6">6. Hub Financeiro (escrow)</a>
+    <a href="#wf7">7. IA — Engenheiro Virtual</a>
+    <a href="#wf8">8. Dashboard da obra</a>
+    <a href="#wf9">9. Painel do fornecedor</a>
+    <a href="#wf10">10. Mobile (canteiro)</a>
+  </nav>
+
+  <!-- ================= GUIA DE ESTILO ================= -->
+  <section class="wf" id="guia">
+    <div class="wf-title"><span class="num">GUIA</span><h2>Identidade visual — Construção Civil</h2></div>
+    <p class="wf-desc">Paleta inspirada no canteiro de obras: laranja de sinalização/capacete para ação, grafite de estrutura metálica para solidez, azul de planta baixa para confiança e dinheiro protegido, e neutros de concreto e areia. Assinatura visual: a faixa zebrada de obra usada como separador de seções.</p>
+    <div class="palette">
+      <div class="sw"><div class="chip" style="background:var(--laranja)"></div><div class="info"><b>Laranja Obra</b>#F26A21 · Ações primárias, marca</div></div>
+      <div class="sw"><div class="chip" style="background:var(--grafite)"></div><div class="info"><b>Grafite Estrutura</b>#1E2A38 · Texto, navegação</div></div>
+      <div class="sw"><div class="chip" style="background:var(--azul-planta)"></div><div class="info"><b>Azul Planta Baixa</b>#1F5FA8 · Escrow, links, confiança</div></div>
+      <div class="sw"><div class="chip" style="background:var(--verde-ok)"></div><div class="info"><b>Verde Aprovação</b>#2E8B57 · Etapa aprovada/paga</div></div>
+      <div class="sw"><div class="chip" style="background:var(--amarelo-alerta)"></div><div class="info"><b>Amarelo Sinalização</b>#F2B705 · Pendências, avisos</div></div>
+      <div class="sw"><div class="chip" style="background:var(--vermelho)"></div><div class="info"><b>Vermelho Disputa</b>#C0392B · Erros, disputas</div></div>
+      <div class="sw"><div class="chip" style="background:var(--concreto)"></div><div class="info"><b>Cinza Concreto</b>#EDEAE4 · Fundos de painel</div></div>
+      <div class="sw"><div class="chip" style="background:var(--areia);border-bottom:1px solid #eee"></div><div class="info"><b>Areia</b>#FAF7F1 · Fundo geral</div></div>
+    </div>
+    <div class="type-sample">
+      <div style="font-size:26px;font-weight:900">Tipografia display — peso 800/900 (sugestão: Archivo ou Barlow Condensed)</div>
+      <div style="font-size:15px;margin-top:6px">Texto corrido — peso 400/600 (sugestão: Inter). Botões e rótulos sempre em peso 700.</div>
+      <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-p">Publicar orçamento</button>
+        <button class="btn btn-s">Ver propostas</button>
+        <button class="btn btn-g">Aprovar etapa</button>
+        <span class="selo selo-ouro">SELO OURO</span>
+        <span class="selo selo-verif">✔ PERFIL VERIFICADO</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 1. HOME ================= -->
+  <section class="wf" id="wf1">
+    <div class="wf-title"><span class="num">WF-01</span><h2>Home / Landing (público)</h2></div>
+    <p class="wf-desc">Job da página: fazer o cliente publicar sua necessidade em menos de 60 segundos e comunicar o pagamento protegido como diferencial.</p>
+    <div class="screen">
+      <div class="browserbar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="urlpill">conectaobra.com.br</span></div>
+      <div class="navbar">
+        <div class="logo">Conecta<b>Obra</b></div>
+        <div class="links"><span>Profissionais</span><span>Fornecedores</span><span>Projetos</span><span>Notícias</span><span>Indicadores</span></div>
+        <button class="btn btn-s btn-sm">Entrar</button>
+        <button class="btn btn-p btn-sm">Criar minha obra</button>
+      </div>
+      <div class="hero">
+        <div>
+          <h3>Construa ou reforme com pagamento protegido</h3>
+          <p>Compare orçamentos de profissionais verificados da sua região. O dinheiro só é liberado quando você aprova cada etapa da obra.</p>
+          <div class="searchbox">
+            <input placeholder="O que você precisa? Ex.: construir muro, pintar apartamento…">
+            <button class="btn btn-p">Pedir orçamentos</button>
+          </div>
+          <p class="muted" style="color:#cfd6dd;margin-top:10px">🛡️ Conta garantida (escrow) · ⭐ Avaliações reais · 🤖 IA especializada em obra</p>
+        </div>
+        <div class="img img-obra" style="height:220px">🏗️<span style="position:absolute;bottom:8px;right:12px;font-size:11px;opacity:.85">FOTO: obra residencial real</span></div>
+      </div>
+      <div class="hazard"></div>
+      <div class="grid4">
+        <div class="card"><div class="img img-planta" style="height:76px">📐</div><div class="body"><h4>Peça orçamentos</h4><p class="muted">Receba propostas em até 24h</p></div></div>
+        <div class="card"><div class="img img-concreto" style="height:76px">🛡️</div><div class="body"><h4>Pague com garantia</h4><p class="muted">Escrow libera por etapa aprovada</p></div></div>
+        <div class="card"><div class="img img-madeira" style="height:76px">🤖</div><div class="body"><h4>Pergunte à IA</h4><p class="muted">Engenheiro virtual 24h (NBR, SINAPI)</p></div></div>
+        <div class="card"><div class="img img-obra" style="height:76px">🧱</div><div class="body"><h4>Compre materiais</h4><p class="muted">Cotação automática com lojas locais</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 2. BUSCA ================= -->
+  <section class="wf" id="wf2">
+    <div class="wf-title"><span class="num">WF-02</span><h2>Busca no marketplace (mão de obra + fornecedores)</h2></div>
+    <p class="wf-desc">Filtros à esquerda (categoria, raio, nota, selo). Cards com foto, selo, nota e CTA duplo: pedir orçamento ou ver perfil.</p>
+    <div class="screen">
+      <div class="browserbar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="urlpill">conectaobra.com.br/busca?q=pedreiro&cidade=vitoria-es</span></div>
+      <div class="sidebar-layout">
+        <aside class="sidebar">
+          <h5>Categoria</h5>
+          <label>☑ Pedreiro</label><label>☐ Eletricista</label><label>☐ Pintor</label><label>☐ Encanador</label><label>☐ Gesseiro</label>
+          <h5>Distância</h5>
+          <label>◉ Até 20 km &nbsp; ○ 50 km</label>
+          <h5>Avaliação</h5>
+          <label>◉ ★ 4,0 ou mais</label>
+          <h5>Selo</h5>
+          <label>☑ Perfil verificado</label><label>☐ Ouro ou superior</label>
+        </aside>
+        <div class="content">
+          <p class="muted" style="margin-bottom:12px"><b style="color:var(--grafite)">128 pedreiros</b> perto de Vitória · ES — ordenado por relevância</p>
+          <div class="grid3" style="padding:0">
+            <div class="card">
+              <div class="img img-obra" style="height:110px">👷</div>
+              <div class="body"><span class="selo selo-ouro">OURO</span> <span class="selo selo-verif">✔</span>
+                <h4>José Almeida</h4><p class="muted">Pedreiro · 18 anos · 3,2 km</p>
+                <p class="stars">★★★★★ 4,9 <span class="muted">(87)</span></p>
+                <button class="btn btn-p btn-sm" style="width:100%;margin-top:8px">Pedir orçamento</button></div>
+            </div>
+            <div class="card">
+              <div class="img img-concreto" style="height:110px">👷</div>
+              <div class="body"><span class="selo selo-prata">PRATA</span> <span class="selo selo-verif">✔</span>
+                <h4>Carlos Nunes</h4><p class="muted">Pedreiro/azulejista · 9 anos · 6 km</p>
+                <p class="stars">★★★★☆ 4,6 <span class="muted">(41)</span></p>
+                <button class="btn btn-p btn-sm" style="width:100%;margin-top:8px">Pedir orçamento</button></div>
+            </div>
+            <div class="card">
+              <div class="img img-madeira" style="height:110px">🏢</div>
+              <div class="body"><span class="selo selo-plat">PLATINUM</span>
+                <h4>Construtora Alicerce</h4><p class="muted">Empreitada completa · 12 km</p>
+                <p class="stars">★★★★★ 4,8 <span class="muted">(203)</span></p>
+                <button class="btn btn-p btn-sm" style="width:100%;margin-top:8px">Pedir orçamento</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 3. PERFIL ================= -->
+  <section class="wf" id="wf3">
+    <div class="wf-title"><span class="num">WF-03</span><h2>Perfil do prestador</h2></div>
+    <p class="wf-desc">Portfólio com fotos de obras, certificados, avaliações detalhadas e o argumento de segurança do escrow sempre visível.</p>
+    <div class="screen">
+      <div class="browserbar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="urlpill">conectaobra.com.br/profissionais/jose-almeida</span></div>
+      <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;padding:22px">
+        <div>
+          <div style="display:flex;gap:16px;align-items:center;margin-bottom:16px">
+            <div class="img img-obra" style="width:84px;height:84px;border-radius:50%;font-size:30px">👷</div>
+            <div>
+              <h3 style="font-size:21px">José Almeida <span class="selo selo-ouro">OURO</span> <span class="selo selo-verif">✔ VERIFICADO</span></h3>
+              <p class="muted">Pedreiro · Alvenaria estrutural e acabamento · Vitória-ES e região (20 km)</p>
+              <p class="stars">★★★★★ 4,9 · 87 avaliações · 112 obras na plataforma · 18 anos de experiência</p>
+            </div>
+          </div>
+          <h4 style="margin:14px 0 8px">Obras realizadas</h4>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+            <div class="img img-obra" style="height:80px">🧱</div>
+            <div class="img img-concreto" style="height:80px">🏠</div>
+            <div class="img img-madeira" style="height:80px">🚿</div>
+            <div class="img img-planta" style="height:80px">🏗️</div>
+          </div>
+          <h4 style="margin:16px 0 8px">Certificados e cursos</h4>
+          <p class="muted">▸ NR-18 Segurança no trabalho (2024) · ▸ SENAI Alvenaria estrutural · ▸ Curso assentamento porcelanato</p>
+          <h4 style="margin:16px 0 8px">Avaliações</h4>
+          <div class="card"><div class="body"><p class="stars">★★★★★</p><p style="font-size:13px">"Entregou a etapa antes do prazo, obra limpa e organizada."</p><p class="muted">Mariana P. · Reforma de cozinha · mai/2026</p></div></div>
+        </div>
+        <aside>
+          <div class="card"><div class="body">
+            <h4>Peça um orçamento</h4>
+            <p class="muted" style="margin:6px 0 10px">Responde em média em <b>3 horas</b></p>
+            <button class="btn btn-p" style="width:100%">Pedir orçamento</button>
+            <button class="btn btn-s btn-sm" style="width:100%;margin-top:8px">💬 Enviar mensagem</button>
+            <hr style="border:none;border-top:1.5px solid var(--concreto);margin:12px 0">
+            <p style="font-size:12.5px">🛡️ <b>Pagamento protegido:</b> seu dinheiro fica em conta garantida e só é liberado quando você aprova cada etapa.</p>
+          </div></div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 4. RFQ ================= -->
+  <section class="wf" id="wf4">
+    <div class="wf-title"><span class="num">WF-04</span><h2>Publicar pedido de orçamento (RFQ)</h2></div>
+    <p class="wf-desc">Wizard de 4 passos. A IA sugere descrição e alerta sobre informações faltantes antes de publicar.</p>
+    <div class="screen">
+      <div class="browserbar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="urlpill">app.conectaobra.com.br/orcamentos/novo</span></div>
+      <div class="step-flow">
+        <div class="step done">1. Tipo de serviço</div><span class="arrow">→</span>
+        <div class="step on">2. Detalhes</div><span class="arrow">→</span>
+        <div class="step">3. Fotos e local</div><span class="arrow">→</span>
+        <div class="step">4. Revisar e publicar</div>
+      </div>
+      <div style="padding:6px 26px 26px;max-width:660px">
+        <h4 style="margin-bottom:10px">Descreva o que você precisa</h4>
+        <div style="border:1.5px solid var(--concreto);border-radius:10px;padding:12px;font-size:14px;color:#444;min-height:90px">
+          Construção de casa de 180 m² em Vitória-ES. Terreno plano, 300 m², já com projeto aprovado. Preciso de empreitada de alvenaria estrutural com fundação.
+        </div>
+        <div class="disclaimer" style="margin-top:10px;max-width:100%">🤖 <b>Dica da IA:</b> informe se o material será fornecido por você ou pelo profissional — isso muda o preço em até 40% e evita propostas incomparáveis.</div>
+        <div style="display:flex;gap:14px;margin-top:14px;font-size:14px">
+          <label>◉ Só mão de obra</label><label>○ Material + mão de obra</label>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:18px">
+          <button class="btn btn-s">Voltar</button>
+          <button class="btn btn-p">Continuar</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 5. COMPARADOR ================= -->
+  <section class="wf" id="wf5">
+    <div class="wf-title"><span class="num">WF-05</span><h2>Comparador de propostas</h2></div>
+    <p class="wf-desc">Tabela lado a lado com análise da IA contra o custo médio regional. Melhor combinação destacada em verde.</p>
+    <div class="screen">
+      <div class="browserbar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="urlpill">app.conectaobra.com.br/orcamentos/4821/propostas</span></div>
+      <div style="padding:20px">
+        <h4 style="margin-bottom:4px">Construção de casa 180 m² — 5 propostas recebidas</h4>
+        <p class="muted" style="margin-bottom:12px">🤖 Análise da IA: custo médio regional para este escopo ≈ <b>R$ 138 mil</b> (base SINAPI + histórico da plataforma)</p>
+        <table>
+          <tr><th>Profissional</th><th>Preço</th><th>Prazo</th><th>Nota</th><th>Análise IA</th><th></th></tr>
+          <tr class="win">
+            <td><b>Construtora Alicerce</b> <span class="selo selo-plat">PLAT</span></td><td><b>R$ 141.500</b></td><td>7 meses</td><td>★ 4,8</td>
+            <td style="color:var(--verde-ok)">✔ Dentro da média · melhor custo × reputação</td>
+            <td><button class="btn btn-g btn-sm">Aceitar</button></td>
+          </tr>
+          <tr>
+            <td>José Almeida <span class="selo selo-ouro">OURO</span></td><td>R$ 129.000</td><td>9 meses</td><td>★ 4,9</td>
+            <td>✔ 7% abaixo da média</td>
+            <td><button class="btn btn-s btn-sm">Detalhes</button></td>
+          </tr>
+          <tr>
+            <td>Equipe Rocha</td><td>R$ 118.000</td><td>6 meses</td><td>★ 4,1</td>
+            <td style="color:var(--laranja-escuro)">⚠ 15% abaixo da média — confirme escopo e materiais</td>
+            <td><button class="btn btn-s btn-sm">Detalhes</button></td>
+          </tr>
+          <tr>
+            <td>MC Construções <span class="selo selo-prata">PRATA</span></td><td>R$ 162.900</td><td>6 meses</td><td>★ 4,7</td>
+            <td style="color:var(--laranja-escuro)">⚠ 18% acima da média</td>
+            <td><button class="btn btn-s btn-sm">Detalhes</button></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 6. ESCROW ================= -->
+  <section class="wf" id="wf6">
+    <div class="wf-title"><span class="num">WF-06</span><h2>Hub Financeiro — pagamento por etapas (escrow)</h2></div>
+    <p class="wf-desc">O coração do produto. Fluxo do dinheiro sempre visível no topo; cada etapa mostra estado, evidências e ação seguinte.</p>
+    <div class="screen">
+      <div class="browserbar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="urlpill">app.conectaobra.com.br/obras/312/pagamentos</span></div>
+      <div class="step-flow" style="background:var(--azul-claro)">
+        <div class="step done">💰 Depósito<br>na conta garantida</div><span class="arrow">→</span>
+        <div class="step done">🔨 Execução<br>da etapa</div><span class="arrow">→</span>
+        <div class="step on">📸 Entrega<br>com evidências</div><span class="arrow">→</span>
+        <div class="step">✅ Sua<br>aprovação</div><span class="arrow">→</span>
+        <div class="step">💸 Pagamento<br>liberado</div>
+      </div>
+      <div style="padding:18px 22px">
+        <div class="kpis">
+          <div class="kpi"><div class="muted">Valor do contrato</div><div class="v">R$ 141.500</div></div>
+          <div class="kpi ok"><div class="muted">Já liberado</div><div class="v">R$ 42.450</div></div>
+          <div class="kpi"><div class="muted">Em custódia 🛡️</div><div class="v" style="color:var(--azul-planta)">R$ 28.300</div></div>
+          <div class="kpi warn"><div class="muted">A depositar</div><div class="v">R$ 70.750</div></div>
+        </div>
+
+        <div class="milestone">
+          <div class="mnum" style="background:var(--verde-ok)">1</div>
+          <div><b>Fundação e sapatas</b><p class="muted">Contrato · 34 fotos · checklist 12/12 · aprovado em 02/06</p></div>
+          <span class="st st-pago">✔ PAGO · R$ 21.225</span>
+        </div>
+        <div class="milestone">
+          <div class="mnum" style="background:var(--verde-ok)">2</div>
+          <div><b>Alvenaria térreo</b><p class="muted">28 fotos · checklist 10/10 · aprovado em 30/06</p></div>
+          <span class="st st-pago">✔ PAGO · R$ 21.225</span>
+        </div>
+        <div class="milestone" style="border-color:var(--laranja)">
+          <div class="mnum" style="background:var(--laranja)">3</div>
+          <div><b>Laje e cobertura</b><p class="muted">Entregue hoje · 19 fotos · checklist 8/9 · aguardando sua aprovação (auto-aprova em 7 dias)</p>
+            <div style="margin-top:8px;display:flex;gap:8px">
+              <button class="btn btn-g btn-sm">✅ Aprovar e liberar R$ 28.300</button>
+              <button class="btn btn-s btn-sm">Ver evidências</button>
+              <button class="btn btn-sm" style="background:#FADBD8;color:var(--vermelho)">⚠ Abrir disputa</button>
+            </div></div>
+          <span class="st st-exec">EM ANÁLISE</span>
+        </div>
+        <div class="milestone">
+          <div class="mnum" style="background:#9aa4ad">4</div>
+          <div><b>Instalações elétricas e hidráulicas</b><p class="muted">Início previsto: 15/08 · depósito necessário até 10/08</p></div>
+          <span class="st st-pend">PENDENTE</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 7. IA ================= -->
+  <section class="wf" id="wf7">
+    <div class="wf-title"><span class="num">WF-07</span><h2>IA Especializada — "Engenheiro Virtual"</h2></div>
+    <p class="wf-desc">Chat com contexto da obra do usuário, citação de fontes (NBR/SINAPI/CUB) e disclaimer obrigatório em temas de risco.</p>
+    <div class="screen" style="max-width:760px;margin:0 auto">
+      <div class="browserbar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="urlpill">app.conectaobra.com.br/ia · contexto: Obra #312 — Casa 180 m², Vitória-ES</span></div>
+      <div class="chat">
+        <div class="bubble b-user">O muro de divisa de 2,2 m precisa de sapata? E quantos sacos de cimento vou gastar em 25 metros?</div>
+        <div class="bubble b-ia">Para muro de <b>2,2 m de altura</b>, sim: recomenda-se fundação corrida (sapata/baldrame) com profundidade mínima de 40–50 cm em solo firme, com pilaretes a cada 3 m.<br><br>📊 <b>Estimativa para 25 m lineares</b> (bloco cerâmico 9×19×29, revestido dos dois lados):<br>• Blocos: ~1.030 un · Cimento: <b>~38 sacos (50 kg)</b> · Areia: ~4,5 m³ · Aço: ~85 kg<br><br>💰 Custo médio na sua região: <b>R$ 9.800 – R$ 12.400</b> (material + mão de obra).<span class="fonte">Fontes: resumo NBR 6122 (fundações) · SINAPI ES jun/2026 · calculadora ConectaObra</span></div>
+        <div class="disclaimer">⚠️ Tema estrutural: esta é uma estimativa educativa. Para execução, consulte um engenheiro habilitado com ART. <u>Peça orçamentos de engenheiros aqui</u>.</div>
+        <div class="bubble b-user">Recebi uma proposta de R$ 18.000 pra esse muro. Tá caro?</div>
+        <div class="bubble b-ia">Está <b>~52% acima da média regional</b> para esse escopo. Sugestões: confirme se inclui material + fundação + revestimento dos dois lados; se sim, ainda está alto — vale abrir um pedido de orçamento para comparar. <u>Criar RFQ com 1 clique</u>.</div>
+      </div>
+      <div style="display:flex;gap:8px;padding:12px;border-top:1.5px solid var(--concreto)">
+        <input style="flex:1;border:1.5px solid var(--concreto);border-radius:8px;padding:11px 13px;font-size:14px" placeholder="Pergunte sobre sua obra…">
+        <button class="btn btn-p">Enviar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 8. DASHBOARD OBRA ================= -->
+  <section class="wf" id="wf8">
+    <div class="wf-title"><span class="num">WF-08</span><h2>Dashboard da obra (cliente)</h2></div>
+    <p class="wf-desc">Visão única: progresso físico, financeiro previsto × realizado, próximas ações e diário de obra.</p>
+    <div class="screen">
+      <div class="browserbar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="urlpill">app.conectaobra.com.br/obras/312</span></div>
+      <div class="sidebar-layout">
+        <aside class="sidebar">
+          <div class="logo" style="margin-bottom:14px">Conecta<b>Obra</b></div>
+          <nav class="side-nav">
+            <a class="on">📊 Visão geral</a>
+            <a>📅 Cronograma</a>
+            <a>💰 Pagamentos</a>
+            <a>🧱 Compras</a>
+            <a>📋 Orçamentos</a>
+            <a>🤖 IA da obra</a>
+            <a>📔 Diário de obra</a>
+            <a>📁 Documentos</a>
+          </nav>
+        </aside>
+        <div class="content">
+          <h4 style="margin-bottom:12px">Casa 180 m² — Vitória/ES <span class="st st-exec">EM EXECUÇÃO · ETAPA 3/6</span></h4>
+          <div class="kpis">
+            <div class="kpi"><div class="muted">Progresso físico</div><div class="v">42%</div><div class="bar"><i style="width:42%"></i></div></div>
+            <div class="kpi"><div class="muted">Orçado</div><div class="v">R$ 141,5k</div></div>
+            <div class="kpi ok"><div class="muted">Realizado</div><div class="v">R$ 42,4k</div></div>
+            <div class="kpi warn"><div class="muted">Desvio de prazo</div><div class="v">+4 dias</div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div class="card"><div class="body">
+              <h4>Próximas ações</h4>
+              <p style="font-size:13px;margin-top:8px">🟠 Aprovar etapa "Laje e cobertura" (7 dias restantes)</p>
+              <p style="font-size:13px;margin-top:6px">🟡 Depositar etapa 4 até 10/08</p>
+              <p style="font-size:13px;margin-top:6px">🔵 3 cotações de material elétrico recebidas</p>
+            </div></div>
+            <div class="card"><div class="body">
+              <h4>Diário de obra</h4>
+              <p style="font-size:13px;margin-top:8px"><b>Hoje 14:32</b> · 19 fotos enviadas por José 📸</p>
+              <p style="font-size:13px;margin-top:6px"><b>Ontem</b> · Checklist "concretagem da laje" concluído ✔</p>
+              <p style="font-size:13px;margin-top:6px"><b>21/07</b> · Entrega de 6 m³ de concreto registrada 🚛</p>
+            </div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 9. PAINEL FORNECEDOR ================= -->
+  <section class="wf" id="wf9">
+    <div class="wf-title"><span class="num">WF-09</span><h2>Painel do fornecedor / prestador</h2></div>
+    <p class="wf-desc">Leads de RFQ da região, funil de propostas, financeiro (recebíveis em custódia) e status do plano.</p>
+    <div class="screen">
+      <div class="browserbar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="urlpill">app.conectaobra.com.br/parceiro</span></div>
+      <div class="sidebar-layout">
+        <aside class="sidebar">
+          <div class="logo" style="margin-bottom:14px">Conecta<b>Obra</b></div>
+          <nav class="side-nav">
+            <a class="on">📥 Oportunidades</a>
+            <a>📤 Minhas propostas</a>
+            <a>🏪 Minha vitrine</a>
+            <a>📅 Agenda</a>
+            <a>💰 Financeiro</a>
+            <a>📈 Desempenho</a>
+          </nav>
+          <div class="card" style="margin-top:16px"><div class="body">
+            <span class="selo selo-ouro">PLANO OURO</span>
+            <p class="muted" style="margin-top:6px">Propostas ilimitadas · destaque na busca</p>
+            <button class="btn btn-s btn-sm" style="width:100%;margin-top:8px">Mudar plano</button>
+          </div></div>
+        </aside>
+        <div class="content">
+          <div class="kpis">
+            <div class="kpi"><div class="muted">Novos RFQs hoje</div><div class="v">7</div></div>
+            <div class="kpi"><div class="muted">Taxa de conversão</div><div class="v">31%</div></div>
+            <div class="kpi" ><div class="muted">Em custódia p/ você 🛡️</div><div class="v" style="color:var(--azul-planta)">R$ 28,3k</div></div>
+            <div class="kpi ok"><div class="muted">Recebido no mês</div><div class="v">R$ 64,1k</div></div>
+          </div>
+          <h4 style="margin-bottom:8px">Oportunidades na sua região</h4>
+          <div class="milestone">
+            <div class="mnum" style="background:var(--laranja)">🧱</div>
+            <div><b>Muro de divisa 25 m — Serra/ES (8 km)</b><p class="muted">Publicado há 2 h · material por conta do cliente · 3 propostas enviadas</p></div>
+            <button class="btn btn-p btn-sm">Enviar proposta</button>
+          </div>
+          <div class="milestone">
+            <div class="mnum" style="background:var(--azul-planta)">🏠</div>
+            <div><b>Reforma de banheiro completo — Vitória/ES (4 km)</b><p class="muted">Publicado há 5 h · material + mão de obra · 1 proposta enviada</p></div>
+            <button class="btn btn-p btn-sm">Enviar proposta</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 10. MOBILE ================= -->
+  <section class="wf" id="wf10">
+    <div class="wf-title"><span class="num">WF-10</span><h2>Mobile — prestador no canteiro (entrega de etapa)</h2></div>
+    <p class="wf-desc">Fluxo de 1 mão: fotografar, marcar checklist, solicitar aceite. Botões grandes, contraste alto (uso sob sol).</p>
+    <div class="screen mobile">
+      <div class="browserbar"><span class="urlpill">ConectaObra · Obra #312</span></div>
+      <div style="padding:16px">
+        <h4>Entregar etapa 3 — Laje e cobertura</h4>
+        <p class="muted" style="margin:4px 0 12px">Valor em custódia: <b style="color:var(--azul-planta)">R$ 28.300 🛡️</b></p>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px">
+          <div class="img img-obra" style="height:70px">📸</div>
+          <div class="img img-concreto" style="height:70px">📸</div>
+          <div class="img img-planta" style="height:70px;font-size:24px">＋<span style="position:absolute;bottom:4px;font-size:9px">adicionar</span></div>
+        </div>
+        <div class="card"><div class="body" style="font-size:14px">
+          <b>Checklist da etapa</b>
+          <p style="margin-top:8px">✅ Armação conferida</p>
+          <p>✅ Concretagem executada</p>
+          <p>✅ Cura úmida 7 dias</p>
+          <p style="color:#7a828c">☐ Limpeza do pavimento</p>
+        </div></div>
+        <button class="btn btn-p" style="width:100%;margin-top:14px;padding:15px">📤 Enviar para aprovação do cliente</button>
+        <p class="muted" style="text-align:center;margin-top:8px">O cliente tem 7 dias para aprovar ou contestar</p>
+      </div>
+      <div class="mob-tabs">
+        <div><span>🏠</span>Início</div>
+        <div><span>📥</span>Leads</div>
+        <div class="on"><span>🏗️</span>Obras</div>
+        <div><span>💰</span>Carteira</div>
+        <div><span>👤</span>Perfil</div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="hazard"></div>
+<footer>ConectaObra 2.0 — Wireframes v1.0 · Julho 2026 · Documento interno de produto</footer>
+</body>
+</html>

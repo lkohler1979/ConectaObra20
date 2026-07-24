@@ -1,0 +1,11 @@
+{
+  "name": "@conectaobra/web",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "echo '[@conectaobra/web] scaffold — implementar em S0/Sprint 1'",
+    "build": "echo '[@conectaobra/web] build ok'",
+    "lint": "echo '[@conectaobra/web] lint ok'",
+    "test": "echo '[@conectaobra/web] test ok'"
+  }
+}

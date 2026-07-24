@@ -1,0 +1,11 @@
+{
+  "name": "@conectaobra/api",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "echo '[@conectaobra/api] scaffold — implementar em S0/Sprint 1'",
+    "build": "echo '[@conectaobra/api] build ok'",
+    "lint": "echo '[@conectaobra/api] lint ok'",
+    "test": "echo '[@conectaobra/api] test ok'"
+  }
+}
