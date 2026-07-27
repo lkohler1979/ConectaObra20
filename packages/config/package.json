@@ -1,11 +1,26 @@
 {
   "name": "@conectaobra/config",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
+  "exports": {
+    "./env": {
+      "types": "./dist/env.d.ts",
+      "require": "./dist/env.js",
+      "import": "./dist/env.mjs"
+    }
+  },
   "scripts": {
-    "dev": "echo '[@conectaobra/config] scaffold — implementar em S0/Sprint 1'",
-    "build": "echo '[@conectaobra/config] build ok'",
-    "lint": "echo '[@conectaobra/config] lint ok'",
+    "dev": "tsup --watch",
+    "build": "tsup",
+    "lint": "tsc --noEmit",
     "test": "echo '[@conectaobra/config] test ok'"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.6.0"
   }
 }
