@@ -1,0 +1,44 @@
+/**
+ * Estilos base do Design System ConectaObra 2.0.
+ * Importar uma vez na raiz de cada app (apps/web, apps/admin).
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --laranja: #f26a21;
+  --laranja-escuro: #c94f0e;
+  --grafite: #1e2a38;
+  --azul-planta: #1f5fa8;
+  --azul-claro: #e8f1fa;
+  --concreto: #edeae4;
+  --areia: #faf7f1;
+  --verde-ok: #2e8b57;
+  --amarelo-alerta: #f2b705;
+  --vermelho: #c0392b;
+  --branco: #ffffff;
+  --raio: 10px;
+  --sombra: 0 2px 10px rgba(30, 42, 56, 0.1);
+}
+
+body {
+  font-family:
+    "Segoe UI",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  background: var(--areia);
+  color: var(--grafite);
+  line-height: 1.5;
+}
+
+/* Faixa zebrada laranja/grafite — assinatura visual da marca (headers, separadores de destaque). */
+.hazard {
+  height: 8px;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--laranja) 0 14px,
+    var(--grafite) 14px 28px
+  );
+}

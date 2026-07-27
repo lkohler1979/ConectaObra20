@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-24 · Branch: `sprint-0`
+> Última atualização: 2026-07-27 · Branch: `feat/S0-04-design-system-v0`
 
 ---
 
@@ -22,7 +22,7 @@
 | P-006 | Escolher provedor de assinatura eletrônica (Clicksign/ZapSign/D4Sign) e de KYC (idwall/CAF) | S0-08 | Aberto | Pode rodar em paralelo ao P-002 |
 | P-007 | Rodar `pnpm install` e validar `docker compose up` no ambiente local do time | S0-02 | Aguardando | Scaffold criado sem acesso à rede — lockfile ainda não gerado |
 | P-008 | Configurar secrets do GitHub Actions (deploy staging) | S0-03 | Aberto | Workflow de CI criado; job de deploy comentado até definir infra |
-| P-009 | Design System v0: implementar tokens dos wireframes em `packages/ui` | S0-04 | Aberto | Tokens definidos no CLAUDE.md §6 |
+| P-009 | Design System v0: 15 componentes base implementados em `packages/ui` (branch `feat/S0-04-design-system-v0`); faltam `Table`, `Tooltip`, `RadioGroup`, `Switch`, `Spinner`/`Skeleton`, Storybook e revisão do Product Designer | S0-04 | Em revisão | Não foi possível rodar `pnpm install`/build (P-007) para validar tipos — revisar antes do merge |
 | P-010 | Schema Prisma inicial + seed | S0-05 | Aberto | Modelo de dados no doc 02 §3 |
 | P-011 | Sentry DSN + logger estruturado + tabela `audit_log` | S0-06 | Aberto | — |
 | P-012 | Contratar engenheiro civil consultor (pré-requisito do épico E5 — base da IA) | E5-02 | Aberto | Também apoia mediação de disputas |
@@ -39,6 +39,7 @@
 
 | Data | Item |
 |---|---|
+| 2026-07-27 | Design System v0 (S0-04, parcial): tokens (cores/tipografia/radius/shadow) + preset Tailwind + 15 componentes base (`Button`, `Badge`, `Card`, `Input`, `Textarea`, `Select`, `Checkbox`, `Tabs`, `Dialog`, `Alert`, `Progress`, `Avatar`, `StatusPill`, `ChatBubble`, `StepIndicator`) em `packages/ui`, branch `feat/S0-04-design-system-v0` — ver P-009 |
 | 2026-07-24 | Pacote de kickoff (PRD, spec, estrutura, backlog, checklists, wireframes) criado em `docs/prd/` |
 | 2026-07-24 | Branch `sprint-0` criada com scaffold do monorepo (S0-01 parcial) |
 | 2026-07-24 | Docker Compose local: Postgres 16 + PostGIS + pgvector, Redis, Meilisearch (S0-02 parcial) |
