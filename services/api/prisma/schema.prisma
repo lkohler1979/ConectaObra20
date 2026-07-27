@@ -43,20 +43,25 @@ enum KycStatus {
 }
 
 model User {
-  id         String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  tipo       UserType
-  nome       String
-  email      String    @unique
-  telefone   String?   @unique
+  id                 String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tipo               UserType
+  nome               String
+  email              String    @unique
+  telefone           String?   @unique
   /// LGPD: dado sensível — nunca logar em texto claro (CLAUDE.md §5 regra 4).
-  cpfCnpj    String    @unique @map("cpf_cnpj")
-  kycStatus  KycStatus @default(PENDENTE) @map("kyc_status")
-  mfaEnabled Boolean   @default(false) @map("mfa_enabled")
-  createdAt  DateTime  @default(now()) @map("created_at")
-  updatedAt  DateTime  @updatedAt @map("updated_at")
+  cpfCnpj            String    @unique @map("cpf_cnpj")
+  /// Hash bcrypt — nunca a senha em texto claro. Ausente do doc 02 §3 (E1-01).
+  senhaHash          String    @map("senha_hash")
+  telefoneVerificado Boolean   @default(false) @map("telefone_verificado")
+  kycStatus          KycStatus @default(PENDENTE) @map("kyc_status")
+  mfaEnabled         Boolean   @default(false) @map("mfa_enabled")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
 
   profilePrestador  ProfilePrestador?
   profileFornecedor ProfileFornecedor?
+  refreshTokens     RefreshToken[]
+  otpCodes          OtpCode[]
 
   obras               Work[]
   rfqs                Rfq[]
@@ -125,6 +130,43 @@ model Product {
   fornecedor ProfileFornecedor @relation(fields: [fornecedorId], references: [userId], onDelete: Cascade)
 
   @@map("products")
+}
+
+/// Refresh token opaco — nunca o valor em claro, só o hash (sha256). Suporta
+/// rotação: ao usar, o token vira `revokedAt` e aponta pro substituto via
+/// `replacedByTokenHash`, permitindo detectar reuso de token roubado (E1-01).
+model RefreshToken {
+  id                  String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId              String    @map("user_id") @db.Uuid
+  tokenHash           String    @unique @map("token_hash") @db.VarChar(64)
+  expiresAt           DateTime  @map("expires_at")
+  revokedAt           DateTime? @map("revoked_at")
+  replacedByTokenHash String?   @map("replaced_by_token_hash") @db.VarChar(64)
+  userAgent           String?   @map("user_agent")
+  ip                  String?
+  createdAt           DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+/// Código OTP (verificação de telefone, E1-01) — só o hash é armazenado,
+/// nunca o código em claro. `tentativas` limita brute-force do código.
+model OtpCode {
+  id         String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  codeHash   String    @map("code_hash") @db.VarChar(64)
+  expiresAt  DateTime  @map("expires_at")
+  consumedAt DateTime? @map("consumed_at")
+  tentativas Int       @default(0)
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("otp_codes")
 }
 
 // ─── Obras e RFQ (E3) ───────────────────────────────────────────────────────

@@ -4,8 +4,12 @@
  * Rodar com: pnpm --filter @conectaobra/api seed
  */
 import { PrismaClient } from "@prisma/client";
+import { hashSync } from "bcryptjs";
 
 const prisma = new PrismaClient();
+
+// Senha de todos os usuários do seed: "senha12345" — só para dev local.
+const SEED_SENHA_HASH = hashSync("senha12345", 10);
 
 async function main() {
   const cliente = await prisma.user.upsert({
@@ -17,6 +21,8 @@ async function main() {
       email: "ana.cliente@example.com",
       telefone: "+5527999990001",
       cpfCnpj: "00000000191",
+      senhaHash: SEED_SENHA_HASH,
+      telefoneVerificado: true,
       kycStatus: "APROVADO",
     },
   });
@@ -30,6 +36,8 @@ async function main() {
       email: "carlos.prestador@example.com",
       telefone: "+5527999990002",
       cpfCnpj: "00000000272",
+      senhaHash: SEED_SENHA_HASH,
+      telefoneVerificado: true,
       kycStatus: "APROVADO",
       profilePrestador: {
         create: {
@@ -51,6 +59,8 @@ async function main() {
       nome: "Materiais Vitória Ltda",
       email: "contato@materiaisvitoria.example.com",
       cpfCnpj: "00000000000191",
+      senhaHash: SEED_SENHA_HASH,
+      telefoneVerificado: true,
       kycStatus: "APROVADO",
       profileFornecedor: {
         create: {

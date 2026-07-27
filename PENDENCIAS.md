@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-27 · Branch: `feat/S0-06-observabilidade`
+> Última atualização: 2026-07-27 · Branch: `feat/E1-01-cadastro-login-work`
 
 ---
 
@@ -27,6 +27,7 @@
 | P-011 | Sentry DSN + logger estruturado + tabela `audit_log`, branch `feat/S0-06-observabilidade` (empilhada sobre S0-05, ainda não mesclada) | S0-06 | Em revisão | Bootstrap NestJS mínimo criado (`main.ts`/`app.module.ts`) só para ter algo real a observar; logger (`nestjs-pino`, redact LGPD) + `SentryExceptionFilter` + `AuditLogService` (sanitiza payload) implementados. **Falta o DSN real do Sentry** (`Sentry.init()` é no-op sem ele) e validar contra Postgres real — sem Docker nesta sessão |
 | P-012 | Contratar engenheiro civil consultor (pré-requisito do épico E5 — base da IA) | E5-02 | Aberto | Também apoia mediação de disputas |
 | P-013 | Imagem `pgvector/pgvector:pg16` do `docker-compose.local.yml` provavelmente não tem a extensão PostGIS — `init-extensions.sql` roda `CREATE EXTENSION postgis` e pode falhar no primeiro `docker compose up`. Não verificado nesta sessão (sem Docker disponível) | S0-02 | Aberto | Se confirmado, trocar a imagem por uma com Postgres+PostGIS+pgvector (ex: Dockerfile próprio a partir de `postgis/postgis` + `CREATE EXTENSION vector` via pacote `pgvector` compilado) |
+| P-014 | Cadastro/login (e-mail+senha, OTP telefone) + refresh token, branch `feat/E1-01-cadastro-login-work` (empilhada sobre S0-06, ainda não mesclada) | E1-01 | Em revisão | `POST /auth/{register,login,refresh,logout,otp/request,otp/verify}` implementados com refresh token rotativo (hash em DB, detecta reuso) e OTP com limite de tentativas. **Envio real de SMS não implementado** (stub que só loga o código — depende de P-006). MFA (E1-04), KYC via provedor (E1-03) e rate-limit distribuído (hoje é por instância, não Redis) ficam para tasks seguintes. Toda a árvore de DI foi validada rodando o app de verdade (achou e corrigiu 1 bug real: `AuditLogModule` não importado em `AuthModule`) — mas nunca contra um Postgres real |
 
 ## 🟢 DÍVIDAS TÉCNICAS / MELHORIAS (não bloqueiam)
 
@@ -50,6 +51,8 @@
 | 2026-07-27 | Schema Prisma inicial (S0-05, parcial): 24 modelos/enums traduzidos do doc 02 §3, migração inicial + trigger append-only (`escrow_transactions`, `audit_log`) e seed de desenvolvimento, branch `feat/S0-05-prisma-schema` — ver P-010 |
 | 2026-07-27 | Validação de env com zod em `packages/config` (`baseEnvSchema`/`parseEnv`), consumida por `services/api` |
 | 2026-07-27 | Observabilidade v0 (S0-06, parcial): bootstrap NestJS mínimo (`main.ts`, `app.module.ts`, `GET /health`), logger estruturado (`nestjs-pino` com redact LGPD), `SentryExceptionFilter` global e `AuditLogService` (sanitiza CPF/token antes do insert), branch `feat/S0-06-observabilidade` — ver P-011. Bootstrap completo (env → Nest → logger → Prisma) testado de ponta a ponta com `tsc --noEmit`, `nest build` e execução real; única falha foi a esperada por não haver Postgres no ambiente |
+| 2026-07-27 | DTOs zod compartilhados em `packages/types` (`@conectaobra/types/auth`, `/documents`), incluindo validação de CPF/CNPJ por dígito verificador (testada com casos conhecidos) |
+| 2026-07-27 | Cadastro/login + refresh token + OTP telefone (E1-01, parcial): `AuthModule` completo em `services/api/src/modules/identity/auth/`, branch `feat/E1-01-cadastro-login-work` — ver P-014 |
 
 ---
 
