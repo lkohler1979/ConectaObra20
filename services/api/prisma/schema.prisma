@@ -1,0 +1,545 @@
+// Schema Prisma inicial — ConectaObra 2.0 (S0-05)
+// Fonte: docs/prd/02_Especificacao_Tecnica.md §3 (Modelo de Dados)
+// Regras obrigatórias: ver CLAUDE.md §5
+//   1. Dinheiro sempre em centavos (Int). escrow_transactions é append-only —
+//      ver migração inicial para o trigger que bloqueia UPDATE/DELETE.
+//   4. LGPD: audit_log é imutável; nunca gravar CPF/token em texto claro no payload.
+//
+// Enums só foram criados para campos cujos valores o doc 02 §3 lista entre
+// colchetes. Para status ainda não especificados (contratos, disputas,
+// assinaturas, transações PSP etc.) o campo é String — formalizar em enum
+// quando o épico correspondente (E4/E8/E9) definir os estados.
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis, vector, uuidOssp(map: "uuid-ossp")]
+}
+
+// ─── Identidade (E1) ────────────────────────────────────────────────────────
+
+enum UserType {
+  CLIENTE_PF
+  CLIENTE_PJ
+  PRESTADOR
+  FORNECEDOR
+  TECNICO
+  ADMIN
+
+  @@map("user_type")
+}
+
+enum KycStatus {
+  PENDENTE
+  APROVADO
+  REPROVADO
+
+  @@map("kyc_status")
+}
+
+model User {
+  id         String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tipo       UserType
+  nome       String
+  email      String    @unique
+  telefone   String?   @unique
+  /// LGPD: dado sensível — nunca logar em texto claro (CLAUDE.md §5 regra 4).
+  cpfCnpj    String    @unique @map("cpf_cnpj")
+  kycStatus  KycStatus @default(PENDENTE) @map("kyc_status")
+  mfaEnabled Boolean   @default(false) @map("mfa_enabled")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  profilePrestador  ProfilePrestador?
+  profileFornecedor ProfileFornecedor?
+
+  obras               Work[]
+  rfqs                Rfq[]
+  rfqProposals        RfqProposal[]
+  contractParties     ContractParty[]
+  milestonesAprovados Milestone[]      @relation("milestone_aprovado_por")
+  disputesAbertas     Dispute[]        @relation("dispute_aberto_por")
+  disputesMediadas    Dispute[]        @relation("dispute_mediador")
+  reviewsFeitas       Review[]         @relation("review_avaliador")
+  reviewsRecebidas    Review[]         @relation("review_avaliado")
+  projetosCatalogo    ProjectCatalog[]
+  subscriptions       Subscription[]
+  aiConversations     AiConversation[]
+  ads                 Ad[]
+  auditLogs           AuditLog[]
+
+  @@map("users")
+}
+
+model ProfilePrestador {
+  userId            String                                 @id @map("user_id") @db.Uuid
+  categorias        String[]
+  experienciaAnos   Int?                                   @map("experiencia_anos")
+  certificados      String[]
+  raioAtendimentoKm Int?                                   @map("raio_atendimento_km")
+  /// PostGIS — usado no matching regional (E3-03).
+  geo               Unsupported("geography(Point, 4326)")?
+  selo              String?
+  notaMedia         Decimal?                               @map("nota_media") @db.Decimal(3, 2)
+  agendaConfig      Json?                                  @map("agenda_config")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles_prestador")
+}
+
+model ProfileFornecedor {
+  userId           String   @id @map("user_id") @db.Uuid
+  razaoSocial      String   @map("razao_social")
+  categorias       String[]
+  regioes          String[]
+  tempoMercadoAnos Int?     @map("tempo_mercado_anos")
+  certificacoes    String[]
+  plano            String?
+  selo             String?
+  notaMedia        Decimal? @map("nota_media") @db.Decimal(3, 2)
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products       Product[]
+  purchaseQuotes PurchaseQuote[]
+
+  @@map("profiles_fornecedor")
+}
+
+model Product {
+  id            String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  fornecedorId  String   @map("fornecedor_id") @db.Uuid
+  nome          String
+  categoria     String
+  precoCentavos Int      @map("preco_centavos")
+  unidade       String
+  estoque       Int?
+  fotos         String[]
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  fornecedor ProfileFornecedor @relation(fields: [fornecedorId], references: [userId], onDelete: Cascade)
+
+  @@map("products")
+}
+
+// ─── Obras e RFQ (E3) ───────────────────────────────────────────────────────
+
+enum WorkType {
+  REFORMA
+  CONSTRUCAO
+  AMPLIACAO
+
+  @@map("work_type")
+}
+
+model Work {
+  id                        String                                 @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  clienteId                 String                                 @map("cliente_id") @db.Uuid
+  titulo                    String
+  tipo                      WorkType
+  endereco                  String
+  /// PostGIS — usado no matching regional (E3-03).
+  geo                       Unsupported("geography(Point, 4326)")?
+  areaM2                    Decimal?                               @map("area_m2") @db.Decimal(10, 2)
+  orcamentoPrevistoCentavos Int?                                   @map("orcamento_previsto_centavos")
+  /// Estado ainda não enumerado pelo doc 02 §3 — formalizar em E6 (gestão de obra).
+  status                    String
+  createdAt                 DateTime                               @default(now()) @map("created_at")
+
+  cliente         User             @relation(fields: [clienteId], references: [id])
+  rfqs            Rfq[]
+  contracts       Contract[]
+  materialLists   MaterialList[]
+  aiConversations AiConversation[]
+
+  @@map("works")
+}
+
+enum RfqStatus {
+  ABERTO
+  EM_ANALISE
+  CONTRATADO
+  CANCELADO
+
+  @@map("rfq_status")
+}
+
+model Rfq {
+  id            String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  obraId        String    @map("obra_id") @db.Uuid
+  clienteId     String    @map("cliente_id") @db.Uuid
+  categoria     String
+  descricao     String    @db.Text
+  prazoResposta DateTime? @map("prazo_resposta")
+  regiao        String?
+  status        RfqStatus @default(ABERTO)
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  obra      Work          @relation(fields: [obraId], references: [id], onDelete: Cascade)
+  cliente   User          @relation(fields: [clienteId], references: [id])
+  proposals RfqProposal[]
+
+  @@map("rfq")
+}
+
+enum RfqProposalStatus {
+  ENVIADA
+  ACEITA
+  RECUSADA
+
+  @@map("rfq_proposal_status")
+}
+
+model RfqProposal {
+  id            String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  rfqId         String            @map("rfq_id") @db.Uuid
+  proponenteId  String            @map("proponente_id") @db.Uuid
+  precoCentavos Int               @map("preco_centavos")
+  prazoDias     Int               @map("prazo_dias")
+  observacoes   String?           @db.Text
+  status        RfqProposalStatus @default(ENVIADA)
+  createdAt     DateTime          @default(now()) @map("created_at")
+
+  rfq        Rfq       @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+  proponente User      @relation(fields: [proponenteId], references: [id])
+  contract   Contract?
+
+  @@map("rfq_proposals")
+}
+
+// ─── Contratos e Hub Financeiro / Escrow (E4) ──────────────────────────────
+
+enum ContractPartyRole {
+  CONTRATANTE
+  CONTRATADO
+
+  @@map("contract_party_role")
+}
+
+model Contract {
+  id                   String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  rfqProposalId        String   @unique @map("rfq_proposal_id") @db.Uuid
+  obraId               String   @map("obra_id") @db.Uuid
+  valorTotalCentavos   Int      @map("valor_total_centavos")
+  /// ID do envelope/documento no provedor de assinatura eletrônica (P-006 em aberto).
+  assinaturaExternalId String?  @map("assinatura_external_id")
+  /// Estado ainda não enumerado pelo doc 02 §3 — formalizar em E4.
+  status               String
+  pdfUrl               String?  @map("pdf_url")
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  rfqProposal RfqProposal     @relation(fields: [rfqProposalId], references: [id])
+  obra        Work            @relation(fields: [obraId], references: [id])
+  partes      ContractParty[]
+  milestones  Milestone[]
+  reviews     Review[]
+
+  @@map("contracts")
+}
+
+/// Normaliza o `partes[]` do doc 02 §3 em uma tabela de junção com papel definido.
+model ContractParty {
+  id         String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  contractId String            @map("contract_id") @db.Uuid
+  userId     String            @map("user_id") @db.Uuid
+  papel      ContractPartyRole
+
+  contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id])
+
+  @@unique([contractId, userId])
+  @@map("contract_parties")
+}
+
+enum MilestoneStatus {
+  PENDENTE
+  EM_EXECUCAO
+  ENTREGUE
+  APROVADO
+  EM_DISPUTA
+  PAGO
+
+  @@map("milestone_status")
+}
+
+model Milestone {
+  id            String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  contractId    String          @map("contract_id") @db.Uuid
+  ordem         Int
+  descricao     String
+  valorCentavos Int             @map("valor_centavos")
+  checklist     Json
+  fotos         String[]
+  status        MilestoneStatus @default(PENDENTE)
+  aprovadoEm    DateTime?       @map("aprovado_em")
+  aprovadoPorId String?         @map("aprovado_por") @db.Uuid
+  createdAt     DateTime        @default(now()) @map("created_at")
+
+  contract           Contract            @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  aprovadoPor        User?               @relation("milestone_aprovado_por", fields: [aprovadoPorId], references: [id])
+  escrowTransactions EscrowTransaction[]
+  disputes           Dispute[]
+
+  @@unique([contractId, ordem])
+  @@map("milestones")
+}
+
+enum EscrowTransactionType {
+  DEPOSITO
+  LIBERACAO
+  ESTORNO
+  COMISSAO
+
+  @@map("escrow_transaction_type")
+}
+
+/// Append-only por design (CLAUDE.md §5 regra 1) — ver trigger na migração
+/// inicial que bloqueia UPDATE/DELETE nesta tabela. `previousHash` fecha a
+/// cadeia de hashes exigida pela task E4-05 ("ledger com hash encadeado").
+model EscrowTransaction {
+  id                     String                @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  milestoneId            String                @map("milestone_id") @db.Uuid
+  pspRef                 String                @map("psp_ref")
+  tipo                   EscrowTransactionType
+  valorCentavos          Int                   @map("valor_centavos")
+  taxaPlataformaCentavos Int?                  @map("taxa_plataforma_centavos")
+  /// Espelha o status do webhook do PSP — fonte de verdade é o PSP (CLAUDE.md §5 regra 2).
+  status                 String
+  ledgerHash             String                @map("ledger_hash") @db.VarChar(64)
+  previousHash           String?               @map("previous_hash") @db.VarChar(64)
+  createdAt              DateTime              @default(now()) @map("created_at")
+
+  milestone Milestone @relation(fields: [milestoneId], references: [id])
+
+  @@map("escrow_transactions")
+}
+
+model Dispute {
+  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  milestoneId String   @map("milestone_id") @db.Uuid
+  abertoPorId String   @map("aberto_por") @db.Uuid
+  motivo      String   @db.Text
+  evidencias  String[]
+  mediadorId  String?  @map("mediador_id") @db.Uuid
+  resolucao   String?  @db.Text
+  /// Estado ainda não enumerado pelo doc 02 §3 — formalizar em E4-09.
+  status      String
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  milestone Milestone @relation(fields: [milestoneId], references: [id])
+  abertoPor User      @relation("dispute_aberto_por", fields: [abertoPorId], references: [id])
+  mediador  User?     @relation("dispute_mediador", fields: [mediadorId], references: [id])
+
+  @@map("disputes")
+}
+
+model Review {
+  id            String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  contratoId    String   @map("contrato_id") @db.Uuid
+  avaliadorId   String   @map("avaliador_id") @db.Uuid
+  avaliadoId    String   @map("avaliado_id") @db.Uuid
+  notaPrazo     Int      @map("nota_prazo") @db.SmallInt
+  notaQualidade Int      @map("nota_qualidade") @db.SmallInt
+  notaPreco     Int      @map("nota_preco") @db.SmallInt
+  comentario    String?  @db.Text
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  contrato  Contract @relation(fields: [contratoId], references: [id])
+  avaliador User     @relation("review_avaliador", fields: [avaliadorId], references: [id])
+  avaliado  User     @relation("review_avaliado", fields: [avaliadoId], references: [id])
+
+  @@map("reviews")
+}
+
+// ─── Compras Inteligentes (E7) ──────────────────────────────────────────────
+
+enum MaterialListOrigin {
+  MANUAL
+  IA
+
+  @@map("material_list_origin")
+}
+
+model MaterialList {
+  id        String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  obraId    String             @map("obra_id") @db.Uuid
+  itens     Json
+  origem    MaterialListOrigin
+  createdAt DateTime           @default(now()) @map("created_at")
+
+  obra   Work            @relation(fields: [obraId], references: [id], onDelete: Cascade)
+  quotes PurchaseQuote[]
+
+  @@map("material_lists")
+}
+
+model PurchaseQuote {
+  id             String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  materialListId String   @map("material_list_id") @db.Uuid
+  fornecedorId   String   @map("fornecedor_id") @db.Uuid
+  itensPrecos    Json     @map("itens_precos")
+  freteCentavos  Int?     @map("frete_centavos")
+  prazoDias      Int?     @map("prazo_dias")
+  /// Estado ainda não enumerado pelo doc 02 §3 — formalizar em E7.
+  status         String
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  materialList MaterialList      @relation(fields: [materialListId], references: [id], onDelete: Cascade)
+  fornecedor   ProfileFornecedor @relation(fields: [fornecedorId], references: [userId])
+
+  @@map("purchase_quotes")
+}
+
+// ─── Catálogo, Monetização e Conteúdo (E8/E9) ──────────────────────────────
+
+enum ProjectCategory {
+  CASA
+  SOBRADO
+  GALPAO
+  CHACARA
+  CONDOMINIO
+
+  @@map("project_category")
+}
+
+model ProjectCatalog {
+  id            String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  arquitetoId   String          @map("arquiteto_id") @db.Uuid
+  titulo        String
+  categoria     ProjectCategory
+  precoCentavos Int             @map("preco_centavos")
+  arquivos      String[]
+  licenca       String?
+  vendasCount   Int             @default(0) @map("vendas_count")
+  createdAt     DateTime        @default(now()) @map("created_at")
+
+  arquiteto User @relation(fields: [arquitetoId], references: [id])
+
+  @@map("projects_catalog")
+}
+
+model Subscription {
+  id            String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId        String    @map("user_id") @db.Uuid
+  plano         String
+  valorCentavos Int       @map("valor_centavos")
+  pspSubId      String?   @map("psp_sub_id")
+  /// Estado ainda não enumerado pelo doc 02 §3 — formalizar em E8-02.
+  status        String
+  renovaEm      DateTime? @map("renova_em")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("subscriptions")
+}
+
+model AiConversation {
+  id           String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  obraId       String?  @map("obra_id") @db.Uuid
+  mensagens    Json
+  tokensUsados Int      @default(0) @map("tokens_usados")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User  @relation(fields: [userId], references: [id])
+  obra Work? @relation(fields: [obraId], references: [id])
+
+  @@map("ai_conversations")
+}
+
+enum IndicatorType {
+  CUB
+  INCC
+  SINAPI
+  ACO
+  CIMENTO
+  MADEIRA
+
+  @@map("indicator_type")
+}
+
+model Indicator {
+  id            String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tipo          IndicatorType
+  regiao        String
+  valorCentavos Int           @map("valor_centavos")
+  referenciaMes DateTime      @map("referencia_mes") @db.Date
+  fonte         String
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  @@unique([tipo, regiao, referenciaMes])
+  @@map("indicators")
+}
+
+model AvgCost {
+  id               String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  servico          String
+  unidade          String
+  cidade           String
+  valorMinCentavos Int      @map("valor_min_centavos")
+  valorMedCentavos Int      @map("valor_med_centavos")
+  valorMaxCentavos Int      @map("valor_max_centavos")
+  mes              DateTime @db.Date
+
+  @@unique([servico, cidade, mes])
+  @@map("avg_costs")
+}
+
+model Article {
+  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  titulo      String
+  slug        String    @unique
+  categoria   String
+  corpo       String    @db.Text
+  autor       String
+  publicadoEm DateTime? @map("publicado_em")
+
+  @@map("articles")
+}
+
+enum AdType {
+  CPC
+  CPM
+  DESTAQUE
+
+  @@map("ad_type")
+}
+
+model Ad {
+  id             String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  anuncianteId   String   @map("anunciante_id") @db.Uuid
+  tipo           AdType
+  criativo       Json
+  budgetCentavos Int      @map("budget_centavos")
+  metricas       Json?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  anunciante User @relation(fields: [anuncianteId], references: [id])
+
+  @@map("ads")
+}
+
+// ─── Observabilidade / LGPD (S0-06, E1-08) ─────────────────────────────────
+
+/// Imutável (CLAUDE.md §5 regra 4) — ver trigger na migração inicial.
+/// `payload` deve ser sanitizado pela aplicação antes do insert: nunca CPF,
+/// tokens ou senhas em texto claro.
+model AuditLog {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid
+  acao      String
+  entidade  String
+  payload   Json
+  ip        String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("audit_log")
+}
