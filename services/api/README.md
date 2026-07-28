@@ -3,7 +3,7 @@
 NestJS monólito modular. Ver `docs/prd/03_Estrutura_Projeto.md` para a
 estrutura-alvo completa (módulos de domínio em `src/modules/*`).
 
-## Conteúdo desta sessão (S0-05 + S0-06 + E1-01 + E1-02 + E1-04)
+## Conteúdo desta sessão (S0-05 + S0-06 + E1-01 + E1-02 + E1-04 + E1-07)
 
 - `prisma/schema.prisma` — schema inicial (S0-05) + `senha_hash`,
   `telefone_verificado`, `refresh_tokens`, `otp_codes` (E1-01, ver
@@ -47,6 +47,17 @@ estrutura-alvo completa (módulos de domínio em `src/modules/*`).
   alicerce de "MFA obrigatório para operações financeiras" (CLAUDE.md §5)
   — a obrigatoriedade por operação específica vem quando os endpoints do
   épico E4 (escrow) existirem.
+- `src/modules/media/` (**E1-07**) — `POST /media/presigned-upload`
+  (autenticado) gera uma URL presigned de `PUT` direto pro S3 via
+  `@aws-sdk/client-s3` + `s3-request-presigner` — o Nest nunca recebe os
+  bytes do arquivo. Restrito a `image/{jpeg,png,webp}`, até 10MB. Sem
+  `S3_BUCKET`/credenciais configuradas (nenhum bucket real existe ainda),
+  responde `503` em vez de derrubar o boot — mesmo padrão do `OtpNotifier`
+  e do `Sentry.init()`. **Compressão de fotos não está implementada**: como
+  o upload é direto client→S3, comprimir de forma síncrona no Nest não é
+  possível; isso fica para um worker assíncrono (BullMQ, já provisionado
+  no `docker-compose.local.yml`, mas nenhum consumer foi criado ainda) —
+  ver `PENDENCIAS.md` P-018.
 - `src/health/health.controller.ts` — `GET /health`.
 
 ## Rodando localmente
@@ -74,18 +85,19 @@ curl -X PUT localhost:3333/profile/prestador \
 
 ## Status
 
-Todo o bootstrap e a árvore de injeção de dependências de `AuthModule` e
-`ProfileModule` (controller → service → guards → strategies → throttler →
-audit log → prisma) foram validados nesta sessão com `tsc --noEmit`,
-`nest build` e execução real do `dist/src/main.js` — a única falha
-observada foi a esperada, "Can't reach database server", porque não havia
-Postgres disponível no ambiente (sem Docker). Esse mesmo tipo de teste já
-pegou e corrigiu um bug real de DI (`AuditLogModule` não importado em
-`AuthModule`, no S0-06/E1-01) que `tsc`/`nest build` sozinhos não detectam.
-As funções do `otplib` (`generateSecret`/`keyuri`/`check`) também foram
-testadas isoladamente (gerar secret → gerar código → validar código certo
-e errado) e se comportam como esperado.
+Todo o bootstrap e a árvore de injeção de dependências de `AuthModule`,
+`ProfileModule` e `MediaModule` (controller → service → guards →
+strategies → throttler → audit log → prisma) foram validados nesta sessão
+com `tsc --noEmit`, `nest build` e execução real do `dist/src/main.js` —
+inclusive **sem nenhuma credencial S3 configurada**, confirmando que
+`MediaService` degrada normalmente em vez de derrubar o boot. A única
+falha observada foi a esperada, "Can't reach database server", porque não
+havia Postgres disponível no ambiente (sem Docker). Esse mesmo tipo de
+teste já pegou e corrigiu um bug real de DI (`AuditLogModule` não
+importado em `AuthModule`, no S0-06/E1-01) que `tsc`/`nest build` sozinhos
+não detectam. As funções do `otplib` (`generateSecret`/`keyuri`/`check`)
+também foram testadas isoladamente e se comportam como esperado.
 
-**Ninguém rodou isso contra um banco real ainda** — validar com
-`docker compose up` + os `curl` acima antes do merge (ver `PENDENCIAS.md`
-P-010/P-011/P-013/P-014/P-015/P-017).
+**Ninguém rodou isso contra um banco (ou bucket S3) real ainda** — validar
+com `docker compose up` + os `curl` acima antes do merge (ver
+`PENDENCIAS.md` P-010/P-011/P-013/P-014/P-015/P-017/P-018).

@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-27 · Branch: `feat/E1-04-mfa`
+> Última atualização: 2026-07-28 · Branch: `feat/E1-07-upload-midia`
 
 ---
 
@@ -30,6 +30,7 @@
 | P-014 | Cadastro/login (e-mail+senha, OTP telefone) + refresh token, branch `feat/E1-01-cadastro-login-work` (empilhada sobre S0-06, ainda não mesclada) | E1-01 | Em revisão | `POST /auth/{register,login,refresh,logout,otp/request,otp/verify}` implementados com refresh token rotativo (hash em DB, detecta reuso) e OTP com limite de tentativas. **Envio real de SMS não implementado** (stub que só loga o código — depende de P-006). MFA (E1-04), KYC via provedor (E1-03) e rate-limit distribuído (hoje é por instância, não Redis) ficam para tasks seguintes. Toda a árvore de DI foi validada rodando o app de verdade (achou e corrigiu 1 bug real: `AuditLogModule` não importado em `AuthModule`) — mas nunca contra um Postgres real |
 | P-015 | Onboarding por perfil (cliente PF/PJ, prestador, fornecedor, técnico), branch `feat/E1-02-onboarding-perfil` (empilhada sobre E1-01, ainda não mesclada) | E1-02 | Em revisão | `GET /profile/me`, `PUT /profile/prestador` (TECNICO reaproveita o mesmo endpoint/model — doc 02 §3 não define profile próprio pra técnico), `PUT /profile/fornecedor`, com `UserTypeGuard` restringindo cada rota. `geo` gravado via `$executeRaw` (PostGIS). Cliente PF/PJ não tem perfil extra — o cadastro já é o onboarding dele. Validado com `tsc`/`nest build`/execução real; nunca contra um Postgres real |
 | P-017 | MFA (TOTP) — setup/enable/disable + desafio no login, branch `feat/E1-04-mfa` (empilhada sobre E1-02, ainda não mesclada) | E1-04 | Em revisão | `POST /auth/mfa/{setup,enable,disable,verify-login}` com `otplib`. Login com MFA ligado devolve `{mfaRequired:true, mfaToken}` em vez dos tokens; `JwtStrategy` passou a rejeitar tokens com `scope` != `access` (correção de segurança feita junto — sem isso o `mfaToken` serviria pra acessar rotas protegidas comuns). Isso é só o alicerce: **nenhum endpoint financeiro existe ainda pra de fato "exigir" MFA** (isso vem no épico E4). `otplib` testado isoladamente (generateSecret/keyuri/check); app testado de ponta a ponta (DI limpo); nunca contra um Postgres real |
+| P-018 | Upload de mídia (S3 presigned), branch `feat/E1-07-upload-midia` (empilhada sobre E1-04, ainda não mesclada) | E1-07 | Em revisão | `POST /media/presigned-upload` gera URL de PUT direto pro S3 (`@aws-sdk/client-s3`). **Nenhum bucket/credencial real existe ainda** — sem isso, o endpoint responde 503 (testado: app sobe normalmente mesmo sem S3 configurado). **Compressão de fotos não implementada**: como o upload é direto client→S3, precisa de um worker assíncrono (BullMQ, já no `docker-compose.local.yml`, mas sem consumer criado) rodando depois do upload — ficou de fora do escopo desta task |
 
 ## 🟢 DÍVIDAS TÉCNICAS / MELHORIAS (não bloqueiam)
 
@@ -58,6 +59,7 @@
 | 2026-07-27 | Onboarding por perfil (E1-02, parcial): `ProfileModule` (`GET /profile/me`, `PUT /profile/{prestador,fornecedor}`) + `UserTypeGuard`, branch `feat/E1-02-onboarding-perfil` — ver P-015 |
 | 2026-07-27 | ~~P-016~~ Push ao GitHub resolvido: usuário configurou credencial (PAT) via `osxkeychain` com um `git push` manual; a partir daí, pushes desta sessão (S0-04, S0-05, S0-06, E1-01, E1-02) funcionaram normalmente, inclusive os PRs sugeridos pelo GitHub no retorno do push |
 | 2026-07-27 | MFA/TOTP (E1-04, parcial): `POST /auth/mfa/{setup,enable,disable,verify-login}`, branch `feat/E1-04-mfa` — ver P-017 |
+| 2026-07-28 | Upload de mídia (E1-07, parcial): `POST /media/presigned-upload` (S3), branch `feat/E1-07-upload-midia` — ver P-018 |
 
 ---
 

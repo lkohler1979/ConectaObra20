@@ -9,6 +9,7 @@ import { AuditLogModule } from "./common/audit/audit-log.module";
 import { HealthController } from "./health/health.controller";
 import { AuthModule } from "./modules/identity/auth/auth.module";
 import { ProfileModule } from "./modules/identity/profile/profile.module";
+import { MediaModule } from "./modules/media/media.module";
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ProfileModule } from "./modules/identity/profile/profile.module";
     AuditLogModule,
     AuthModule,
     ProfileModule,
+    MediaModule,
   ],
   controllers: [HealthController],
   providers: [

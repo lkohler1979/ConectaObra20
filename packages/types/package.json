@@ -18,6 +18,11 @@
       "require": "./dist/documents.js",
       "import": "./dist/documents.mjs"
     },
+    "./media": {
+      "types": "./dist/media.d.ts",
+      "require": "./dist/media.js",
+      "import": "./dist/media.mjs"
+    },
     "./profile": {
       "types": "./dist/profile.d.ts",
       "require": "./dist/profile.js",

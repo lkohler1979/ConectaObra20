@@ -9,6 +9,13 @@ export const envSchema = baseEnvSchema.extend({
   OTP_TTL_MINUTES: z.coerce.number().int().positive().default(10),
   OTP_MAX_ATTEMPTS: z.coerce.number().int().positive().default(5),
   MFA_CHALLENGE_TTL_SECONDS: z.coerce.number().int().positive().default(300), // 5min
+  // Opcionais em dev — sem eles, MediaService responde 503 em vez de derrubar o boot (E1-07).
+  S3_BUCKET: z.string().optional(),
+  S3_REGION: z.string().optional(),
+  S3_ACCESS_KEY_ID: z.string().optional(),
+  S3_SECRET_ACCESS_KEY: z.string().optional(),
+  /// Só necessário para S3-compatível fora da AWS (MinIO, R2 etc.).
+  S3_ENDPOINT: z.string().url().optional(),
 });
 
 export const env = parseEnv(envSchema);
