@@ -5,6 +5,7 @@ import { AuditLogModule } from "../../../common/audit/audit-log.module";
 import { env } from "../../../config/env";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
+import { MfaService } from "./mfa.service";
 import { OtpNotifier } from "./otp-notifier";
 import { OtpService } from "./otp.service";
 import { PasswordService } from "./password.service";
@@ -25,6 +26,7 @@ import { JwtStrategy } from "./strategies/jwt.strategy";
     AuthService,
     PasswordService,
     TokenService,
+    MfaService,
     OtpService,
     OtpNotifier,
     JwtStrategy,

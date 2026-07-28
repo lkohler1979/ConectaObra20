@@ -56,6 +56,42 @@ export const authTokensSchema = z.object({
 });
 export type AuthTokens = z.infer<typeof authTokensSchema>;
 
+/**
+ * Login com MFA habilitado não devolve tokens direto — devolve um desafio
+ * curto (mfaToken) que o client troca em POST /auth/mfa/verify-login junto
+ * com o código TOTP (E1-04, CLAUDE.md §5: "MFA obrigatório para operações
+ * financeiras" — aqui é o alicerce; a obrigatoriedade por operação vem
+ * quando os endpoints financeiros existirem, no épico E4).
+ */
+export const loginResultSchema = z.discriminatedUnion("mfaRequired", [
+  authTokensSchema.extend({ mfaRequired: z.literal(false) }),
+  z.object({ mfaRequired: z.literal(true), mfaToken: z.string() }),
+]);
+export type LoginResult = z.infer<typeof loginResultSchema>;
+
+const mfaCodeSchema = z
+  .string()
+  .length(6)
+  .regex(/^\d{6}$/, "Código deve ter 6 dígitos");
+
+export const mfaEnableInputSchema = z.object({ codigo: mfaCodeSchema });
+export type MfaEnableInput = z.infer<typeof mfaEnableInputSchema>;
+
+export const mfaDisableInputSchema = z.object({ codigo: mfaCodeSchema });
+export type MfaDisableInput = z.infer<typeof mfaDisableInputSchema>;
+
+export const mfaVerifyLoginInputSchema = z.object({
+  mfaToken: z.string().min(1),
+  codigo: mfaCodeSchema,
+});
+export type MfaVerifyLoginInput = z.infer<typeof mfaVerifyLoginInputSchema>;
+
+export const mfaSetupOutputSchema = z.object({
+  secret: z.string(),
+  otpauthUrl: z.string(),
+});
+export type MfaSetupOutput = z.infer<typeof mfaSetupOutputSchema>;
+
 export const userPublicSchema = z.object({
   id: z.string().uuid(),
   tipo: publicUserTypeSchema.or(z.enum(["TECNICO", "ADMIN"])),

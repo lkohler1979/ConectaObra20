@@ -3,7 +3,7 @@
 NestJS monólito modular. Ver `docs/prd/03_Estrutura_Projeto.md` para a
 estrutura-alvo completa (módulos de domínio em `src/modules/*`).
 
-## Conteúdo desta sessão (S0-05 + S0-06 + E1-01 + E1-02)
+## Conteúdo desta sessão (S0-05 + S0-06 + E1-01 + E1-02 + E1-04)
 
 - `prisma/schema.prisma` — schema inicial (S0-05) + `senha_hash`,
   `telefone_verificado`, `refresh_tokens`, `otp_codes` (E1-01, ver
@@ -34,6 +34,19 @@ estrutura-alvo completa (módulos de domínio em `src/modules/*`).
   gravado via `$executeRaw` em PostGIS — o Prisma Client não escreve campos
   `Unsupported`. Cliente PF/PJ não tem perfil extra: o cadastro (E1-01) já é
   o onboarding dele.
+- `src/modules/identity/auth/mfa.service.ts` (**E1-04**) — TOTP (`otplib`,
+  RFC 6238). `POST /auth/mfa/setup` gera secret + `otpauthUrl` (autenticado);
+  `/mfa/enable` confirma com um código e liga `mfaEnabled`; `/mfa/disable`
+  exige o código atual. Com MFA ligado, `POST /auth/login` não devolve mais
+  os tokens direto — devolve `{ mfaRequired: true, mfaToken }` (JWT de
+  escopo `mfa_challenge`, 5 min); o client troca isso + o código TOTP em
+  `POST /auth/mfa/verify-login` pelos tokens finais. `JwtStrategy` agora
+  rejeita qualquer token cujo `scope` não seja `access` nas rotas
+  protegidas normais — sem essa checagem, o próprio `mfaToken` serviria
+  pra acessar rotas comuns, o que seria um furo de segurança. Isso é o
+  alicerce de "MFA obrigatório para operações financeiras" (CLAUDE.md §5)
+  — a obrigatoriedade por operação específica vem quando os endpoints do
+  épico E4 (escrow) existirem.
 - `src/health/health.controller.ts` — `GET /health`.
 
 ## Rodando localmente
@@ -69,7 +82,10 @@ observada foi a esperada, "Can't reach database server", porque não havia
 Postgres disponível no ambiente (sem Docker). Esse mesmo tipo de teste já
 pegou e corrigiu um bug real de DI (`AuditLogModule` não importado em
 `AuthModule`, no S0-06/E1-01) que `tsc`/`nest build` sozinhos não detectam.
+As funções do `otplib` (`generateSecret`/`keyuri`/`check`) também foram
+testadas isoladamente (gerar secret → gerar código → validar código certo
+e errado) e se comportam como esperado.
 
 **Ninguém rodou isso contra um banco real ainda** — validar com
 `docker compose up` + os `curl` acima antes do merge (ver `PENDENCIAS.md`
-P-010/P-011/P-013/P-014/P-015).
+P-010/P-011/P-013/P-014/P-015/P-017).

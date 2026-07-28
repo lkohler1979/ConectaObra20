@@ -28,9 +28,32 @@ export class TokenService {
 
   issueAccessToken(user: { id: string; tipo: string }): Promise<string> {
     return this.jwt.signAsync(
-      { sub: user.id, tipo: user.tipo },
+      { sub: user.id, tipo: user.tipo, scope: "access" },
       { secret: env.JWT_SECRET, expiresIn: env.JWT_ACCESS_TTL_SECONDS },
     );
+  }
+
+  /** Curto e de escopo restrito — só serve pra /auth/mfa/verify-login (E1-04). */
+  issueMfaChallengeToken(user: { id: string; tipo: string }): Promise<string> {
+    return this.jwt.signAsync(
+      { sub: user.id, tipo: user.tipo, scope: "mfa_challenge" },
+      { secret: env.JWT_SECRET, expiresIn: env.MFA_CHALLENGE_TTL_SECONDS },
+    );
+  }
+
+  async verifyMfaChallengeToken(token: string): Promise<{ userId: string }> {
+    try {
+      const payload = await this.jwt.verifyAsync<{
+        sub: string;
+        scope: string;
+      }>(token, { secret: env.JWT_SECRET });
+      if (payload.scope !== "mfa_challenge") {
+        throw new UnauthorizedException("Token de desafio MFA inválido");
+      }
+      return { userId: payload.sub };
+    } catch {
+      throw new UnauthorizedException("Token de desafio MFA inválido ou expirado");
+    }
   }
 
   async issueRefreshToken(userId: string, meta: RequestMeta): Promise<string> {

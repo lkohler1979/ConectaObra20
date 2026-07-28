@@ -8,6 +8,7 @@ export const envSchema = baseEnvSchema.extend({
   JWT_REFRESH_TTL_DAYS: z.coerce.number().int().positive().default(30),
   OTP_TTL_MINUTES: z.coerce.number().int().positive().default(10),
   OTP_MAX_ATTEMPTS: z.coerce.number().int().positive().default(5),
+  MFA_CHALLENGE_TTL_SECONDS: z.coerce.number().int().positive().default(300), // 5min
 });
 
 export const env = parseEnv(envSchema);

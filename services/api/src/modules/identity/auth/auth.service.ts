@@ -2,6 +2,8 @@ import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/co
 import type {
   AuthTokens,
   LoginInput,
+  LoginResult,
+  MfaVerifyLoginInput,
   RefreshInput,
   RegisterInput,
   UserPublic,
@@ -9,13 +11,14 @@ import type {
 import { PrismaService } from "../../../common/prisma/prisma.service";
 import { AuditLogService } from "../../../common/audit/audit-log.service";
 import { env } from "../../../config/env";
+import { MfaService } from "./mfa.service";
 import { PasswordService } from "./password.service";
 import { TokenService, type RequestMeta } from "./token.service";
 import { toPublicUser } from "./user-public.mapper";
 
 export interface AuthResult {
   user: UserPublic;
-  tokens: AuthTokens;
+  tokens: LoginResult;
 }
 
 @Injectable()
@@ -24,6 +27,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly password: PasswordService,
     private readonly tokens: TokenService,
+    private readonly mfa: MfaService,
     private readonly auditLog: AuditLogService,
   ) {}
 
@@ -61,7 +65,8 @@ export class AuthService {
       ip: meta.ip,
     });
 
-    return { user: toPublicUser(user), tokens: await this.issueTokens(user, meta) };
+    const tokens = await this.issueTokens(user, meta);
+    return { user: toPublicUser(user), tokens: { mfaRequired: false, ...tokens } };
   }
 
   async login(input: LoginInput, meta: RequestMeta): Promise<AuthResult> {
@@ -80,6 +85,18 @@ export class AuthService {
       throw new UnauthorizedException("E-mail ou senha inválidos");
     }
 
+    if (user.mfaEnabled) {
+      const mfaToken = await this.tokens.issueMfaChallengeToken(user);
+      await this.auditLog.record({
+        userId: user.id,
+        acao: "auth.login_mfa_challenge",
+        entidade: "user",
+        payload: {},
+        ip: meta.ip,
+      });
+      return { user: toPublicUser(user), tokens: { mfaRequired: true, mfaToken } };
+    }
+
     await this.auditLog.record({
       userId: user.id,
       acao: "auth.login",
@@ -88,7 +105,26 @@ export class AuthService {
       ip: meta.ip,
     });
 
-    return { user: toPublicUser(user), tokens: await this.issueTokens(user, meta) };
+    const tokens = await this.issueTokens(user, meta);
+    return { user: toPublicUser(user), tokens: { mfaRequired: false, ...tokens } };
+  }
+
+  /** Segunda etapa do login quando mfaEnabled — troca mfaToken + código TOTP pelos tokens finais. */
+  async completeMfaLogin(input: MfaVerifyLoginInput, meta: RequestMeta): Promise<AuthTokens> {
+    const { userId } = await this.tokens.verifyMfaChallengeToken(input.mfaToken);
+    await this.mfa.verifyCode(userId, input.codigo);
+
+    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
+
+    await this.auditLog.record({
+      userId,
+      acao: "auth.login_mfa_completed",
+      entidade: "user",
+      payload: {},
+      ip: meta.ip,
+    });
+
+    return this.issueTokens(user, meta);
   }
 
   async refresh(input: RefreshInput, meta: RequestMeta): Promise<AuthTokens> {

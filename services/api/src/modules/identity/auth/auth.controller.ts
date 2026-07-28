@@ -12,11 +12,17 @@ import { Throttle } from "@nestjs/throttler";
 import type { Request } from "express";
 import {
   loginInputSchema,
+  mfaDisableInputSchema,
+  mfaEnableInputSchema,
+  mfaVerifyLoginInputSchema,
   otpRequestInputSchema,
   otpVerifyInputSchema,
   refreshInputSchema,
   registerInputSchema,
   type LoginInput,
+  type MfaDisableInput,
+  type MfaEnableInput,
+  type MfaVerifyLoginInput,
   type OtpRequestInput,
   type OtpVerifyInput,
   type RefreshInput,
@@ -25,6 +31,7 @@ import {
 import { ZodValidationPipe } from "../../../common/pipes/zod-validation.pipe";
 import { PrismaService } from "../../../common/prisma/prisma.service";
 import { AuthService } from "./auth.service";
+import { MfaService } from "./mfa.service";
 import { OtpService } from "./otp.service";
 import { CurrentUser } from "./current-user.decorator";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
@@ -40,6 +47,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly otpService: OtpService,
+    private readonly mfaService: MfaService,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -104,6 +112,44 @@ export class AuthController {
   ) {
     await this.assertOwnPhone(user.sub, body.telefone);
     await this.otpService.verify(user.sub, body.codigo);
+  }
+
+  @Post("mfa/setup")
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  async setupMfa(@CurrentUser() user: JwtPayload) {
+    const dbUser = await this.prisma.user.findUniqueOrThrow({ where: { id: user.sub } });
+    return this.mfaService.setup(user.sub, dbUser.email);
+  }
+
+  @Post("mfa/enable")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(JwtAuthGuard)
+  async enableMfa(
+    @Body(new ZodValidationPipe(mfaEnableInputSchema)) body: MfaEnableInput,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    await this.mfaService.enable(user.sub, body.codigo);
+  }
+
+  @Post("mfa/disable")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(JwtAuthGuard)
+  async disableMfa(
+    @Body(new ZodValidationPipe(mfaDisableInputSchema)) body: MfaDisableInput,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    await this.mfaService.disable(user.sub, body.codigo);
+  }
+
+  @Post("mfa/verify-login")
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  verifyMfaLogin(
+    @Body(new ZodValidationPipe(mfaVerifyLoginInputSchema)) body: MfaVerifyLoginInput,
+    @Req() req: Request,
+  ) {
+    return this.authService.completeMfaLogin(body, requestMeta(req));
   }
 
   private async assertOwnPhone(userId: string, telefone: string): Promise<void> {
