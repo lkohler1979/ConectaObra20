@@ -11,4 +11,9 @@ docker compose -f infra/docker/docker-compose.local.yml up -d
 pnpm dev
 ```
 
+## Deploy em produção
+
+Ver [`DEPLOY.md`](./DEPLOY.md) (primeira instalação numa VPS) e
+`./deploy.sh` (atualizações seguintes).
+
 Branch de trabalho atual: `sprint-0`.
