@@ -17,11 +17,16 @@ export class ContractsService {
   /**
    * Aceitar proposta → rascunho de contrato (E3-07). Tudo numa única
    * transação: marcar a proposta aceita, recusar as demais do mesmo RFQ,
-   * fechar o RFQ e criar o Contract + as duas partes. Uma falha parcial
-   * aqui (ex: RFQ virar CONTRATADO sem contrato criado) é um bug de
-   * negócio real, não cosmético — ver o code review de register()/
-   * deleteAccount() nesta mesma sessão que motivou tratar isso como
-   * atômico desde o início.
+   * fechar o RFQ e criar o Contract + as duas partes.
+   *
+   * As checagens de estado (`status ABERTO`/`ENVIADA`) rodam DUAS vezes: uma
+   * vez antes, só pra dar um erro rápido e amigável no caso comum; e de novo
+   * DENTRO da transação, via `updateMany` condicional + checagem de `count`
+   * — essa segunda é a que garante corretude de verdade. Sem ela, dois
+   * aceites concorrentes (ex: duas propostas do mesmo RFQ aceitas quase ao
+   * mesmo tempo) passariam os dois pela checagem "de fora" antes de
+   * qualquer commit e gerariam 2 Contracts pro mesmo RFQ — achado em code
+   * review desta sessão.
    */
   async acceptProposal(proposalId: string, clienteId: string): Promise<ContractPublic> {
     const proposal = await this.prisma.rfqProposal.findUnique({
@@ -40,19 +45,25 @@ export class ContractsService {
     }
 
     const contract = await this.prisma.$transaction(async (tx) => {
-      await tx.rfqProposal.update({
-        where: { id: proposalId },
+      const proposalUpdate = await tx.rfqProposal.updateMany({
+        where: { id: proposalId, status: "ENVIADA" },
         data: { status: "ACEITA" },
       });
+      if (proposalUpdate.count === 0) {
+        throw new ConflictException("Esta proposta não está mais disponível para aceite");
+      }
+
+      const rfqUpdate = await tx.rfq.updateMany({
+        where: { id: proposal.rfqId, status: "ABERTO" },
+        data: { status: "CONTRATADO" },
+      });
+      if (rfqUpdate.count === 0) {
+        throw new ConflictException("Este RFQ não está mais aberto");
+      }
 
       await tx.rfqProposal.updateMany({
         where: { rfqId: proposal.rfqId, id: { not: proposalId }, status: "ENVIADA" },
         data: { status: "RECUSADA" },
-      });
-
-      await tx.rfq.update({
-        where: { id: proposal.rfqId },
-        data: { status: "CONTRATADO" },
       });
 
       const created = await tx.contract.create({

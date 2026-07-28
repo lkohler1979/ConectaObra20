@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
 import type {
   CreateRfqProposalInput,
   RfqProposalPublic,
@@ -33,6 +34,9 @@ export class RfqProposalService {
       throw new ConflictException("Este RFQ não está mais aberto para propostas");
     }
 
+    // Checagem "rápida" pra dar um erro amigável no caso comum — mas quem
+    // garante a regra de fato é a constraint única no banco (achado em code
+    // review: um check-then-insert sozinho permite duplicata sob concorrência).
     const existing = await this.prisma.rfqProposal.findFirst({
       where: { rfqId, proponenteId },
     });
@@ -42,15 +46,23 @@ export class RfqProposalService {
 
     await this.enforceMonthlyCap(proponenteId);
 
-    const proposal = await this.prisma.rfqProposal.create({
-      data: {
-        rfqId,
-        proponenteId,
-        precoCentavos: input.precoCentavos,
-        prazoDias: input.prazoDias,
-        observacoes: input.observacoes,
-      },
-    });
+    let proposal;
+    try {
+      proposal = await this.prisma.rfqProposal.create({
+        data: {
+          rfqId,
+          proponenteId,
+          precoCentavos: input.precoCentavos,
+          prazoDias: input.prazoDias,
+          observacoes: input.observacoes,
+        },
+      });
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+        throw new ConflictException("Você já enviou uma proposta para este RFQ");
+      }
+      throw err;
+    }
 
     await this.auditLog.record({
       userId: proponenteId,

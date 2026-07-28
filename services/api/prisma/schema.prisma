@@ -307,6 +307,10 @@ model RfqProposal {
   proponente User      @relation(fields: [proponenteId], references: [id])
   contract   Contract?
 
+  /// Uma proposta por prestador por RFQ — imposto pelo banco, não só pela
+  /// aplicação (achado em code review: um check-then-insert sozinho permite
+  /// duplicata sob concorrência).
+  @@unique([rfqId, proponenteId])
   @@map("rfq_proposals")
 }
 
