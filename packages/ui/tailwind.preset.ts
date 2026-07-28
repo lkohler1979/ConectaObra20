@@ -20,7 +20,8 @@ const preset: Partial<Config> = {
         vermelho: colors.vermelho,
       },
       fontFamily: {
-        sans: fontFamily.sans,
+        // Tailwind espera string[] mutável — fontFamily.sans é readonly (as const).
+        sans: [...fontFamily.sans],
       },
       fontSize,
       borderRadius: {
