@@ -164,7 +164,7 @@ pm2 startup   # siga as instruções impressas na tela pra sobreviver a reboot
 ```
 
 Isso sobe dois processos (definidos em `infra/deploy/ecosystem.config.cjs`):
-- `conectaobra-api` — `node services/api/dist/main.js`, porta 3333
+- `conectaobra-api` — `node services/api/dist/src/main.js`, porta 3333
 - `conectaobra-web` — `next start` em `apps/web`, porta 3000
 
 Conferir:

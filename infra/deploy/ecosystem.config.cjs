@@ -9,7 +9,7 @@ module.exports = {
     {
       name: "conectaobra-api",
       cwd: path.join(ROOT, "services/api"),
-      script: "dist/main.js",
+      script: "dist/src/main.js",
       interpreter: "node",
       env: { NODE_ENV: "production" },
       max_memory_restart: "400M",

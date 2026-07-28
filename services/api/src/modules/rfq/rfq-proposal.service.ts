@@ -56,6 +56,7 @@ export class RfqProposalService {
           prazoDias: input.prazoDias,
           observacoes: input.observacoes,
         },
+        include: { proponente: { select: { nome: true } } },
       });
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
@@ -88,12 +89,14 @@ export class RfqProposalService {
       const proposals = await this.prisma.rfqProposal.findMany({
         where: { rfqId },
         orderBy: { createdAt: "asc" },
+        include: { proponente: { select: { nome: true } } },
       });
       return proposals.map(toPublicRfqProposal);
     }
 
     const own = await this.prisma.rfqProposal.findFirst({
       where: { rfqId, proponenteId: requesterId },
+      include: { proponente: { select: { nome: true } } },
     });
     return own ? [toPublicRfqProposal(own)] : [];
   }

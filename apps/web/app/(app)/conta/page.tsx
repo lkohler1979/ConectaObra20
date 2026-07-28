@@ -1,8 +1,7 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Alert, AlertDescription, Badge, Card, CardContent, CardTitle } from "@conectaobra/ui";
 import { ApiUnavailableError, apiFetchOrThrow } from "@/lib/api-client";
-import { ACCESS_COOKIE } from "@/lib/session";
+import { requireAccessToken } from "@/lib/auth-session";
 import { LogoutButton } from "./logout-button";
 
 const TIPO_LABEL: Record<string, string> = {
@@ -23,10 +22,7 @@ interface MeResponse {
 }
 
 export default async function ContaPage() {
-  const accessToken = (await cookies()).get(ACCESS_COOKIE)?.value;
-  if (!accessToken) {
-    redirect("/entrar?redirect=/conta");
-  }
+  const accessToken = await requireAccessToken("/conta");
 
   let res: Response;
   try {

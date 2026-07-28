@@ -14,6 +14,7 @@ export const rfqProposalPublicSchema = z.object({
   id: z.string().uuid(),
   rfqId: z.string().uuid(),
   proponenteId: z.string().uuid(),
+  proponenteNome: z.string(),
   precoCentavos: z.number().int(),
   prazoDias: z.number().int(),
   observacoes: z.string().nullable(),
