@@ -3,6 +3,7 @@ import { defineConfig } from "tsup";
 export default defineConfig({
   entry: [
     "src/index.ts",
+    "src/ai-calc.ts",
     "src/auth.ts",
     "src/contracts.ts",
     "src/documents.ts",

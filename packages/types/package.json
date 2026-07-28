@@ -8,6 +8,11 @@
       "require": "./dist/index.js",
       "import": "./dist/index.mjs"
     },
+    "./ai-calc": {
+      "types": "./dist/ai-calc.d.ts",
+      "require": "./dist/ai-calc.js",
+      "import": "./dist/ai-calc.mjs"
+    },
     "./auth": {
       "types": "./dist/auth.d.ts",
       "require": "./dist/auth.js",
