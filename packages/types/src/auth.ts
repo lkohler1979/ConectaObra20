@@ -16,8 +16,12 @@ export type PublicUserType = z.infer<typeof publicUserTypeSchema>;
 
 export const registerInputSchema = z.object({
   tipo: publicUserTypeSchema,
-  nome: z.string().trim().min(2).max(160),
-  email: z.string().trim().toLowerCase().email(),
+  nome: z
+    .string()
+    .trim()
+    .min(2, "Nome deve ter ao menos 2 caracteres")
+    .max(160, "Nome muito longo"),
+  email: z.string().trim().toLowerCase().email("E-mail inválido"),
   telefone: telefoneSchema,
   cpfCnpj: cpfCnpjSchema,
   senha: z
@@ -37,8 +41,8 @@ export const registerInputSchema = z.object({
 export type RegisterInput = z.infer<typeof registerInputSchema>;
 
 export const loginInputSchema = z.object({
-  email: z.string().trim().toLowerCase().email(),
-  senha: z.string().min(1),
+  email: z.string().trim().toLowerCase().email("E-mail inválido"),
+  senha: z.string().min(1, "Senha é obrigatória"),
 });
 export type LoginInput = z.infer<typeof loginInputSchema>;
 

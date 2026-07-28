@@ -1,11 +1,31 @@
 {
   "name": "@conectaobra/web",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "echo '[@conectaobra/web] scaffold — implementar em S0/Sprint 1'",
-    "build": "echo '[@conectaobra/web] build ok'",
-    "lint": "echo '[@conectaobra/web] lint ok'",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "tsc --noEmit",
     "test": "echo '[@conectaobra/web] test ok'"
+  },
+  "dependencies": {
+    "@conectaobra/types": "workspace:*",
+    "@conectaobra/ui": "workspace:*",
+    "@hookform/resolvers": "^3.9.1",
+    "next": "^15.0.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-hook-form": "^7.53.2",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.14",
+    "typescript": "^5.6.0"
   }
 }
