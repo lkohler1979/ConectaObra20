@@ -24,6 +24,15 @@ export const registerInputSchema = z.object({
     .string()
     .min(8, "Senha deve ter ao menos 8 caracteres")
     .max(72, "Senha muito longa"), // 72 bytes é o limite do bcrypt
+  // LGPD (E1-08): sem aceite explícito dos dois, não há cadastro — ver GET /legal/versions.
+  aceitouTermos: z
+    .boolean()
+    .refine((v) => v === true, { message: "É necessário aceitar os Termos de Uso" }),
+  aceitouPolitica: z
+    .boolean()
+    .refine((v) => v === true, {
+      message: "É necessário aceitar a Política de Privacidade",
+    }),
 });
 export type RegisterInput = z.infer<typeof registerInputSchema>;
 

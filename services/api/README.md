@@ -3,7 +3,7 @@
 NestJS monólito modular. Ver `docs/prd/03_Estrutura_Projeto.md` para a
 estrutura-alvo completa (módulos de domínio em `src/modules/*`).
 
-## Conteúdo desta sessão (S0-05 + S0-06 + E1-01 + E1-02 + E1-04 + E1-07)
+## Conteúdo desta sessão (S0-05 + S0-06 + E1-01 + E1-02 + E1-04 + E1-07 + E1-08)
 
 - `prisma/schema.prisma` — schema inicial (S0-05) + `senha_hash`,
   `telefone_verificado`, `refresh_tokens`, `otp_codes` (E1-01, ver
@@ -58,6 +58,23 @@ estrutura-alvo completa (módulos de domínio em `src/modules/*`).
   possível; isso fica para um worker assíncrono (BullMQ, já provisionado
   no `docker-compose.local.yml`, mas nenhum consumer foi criado ainda) —
   ver `PENDENCIAS.md` P-018.
+- `src/modules/identity/legal/` (**E1-08**) — `GET /legal/versions`
+  (público) + `POST /legal/consent` (autenticado, só
+  `COMUNICACAO_MARKETING` — os obrigatórios entram no cadastro).
+  `ConsentService` grava em `consents`, que é **append-only** (cada
+  aceite/revogação é uma linha nova, mesmo espírito da regra 1 do
+  CLAUDE.md) — o estado atual é sempre a linha mais recente por
+  `(userId, tipo)`. `POST /auth/register` agora exige
+  `aceitouTermos`/`aceitouPolitica` (ambos `true`) e grava os dois
+  consentimentos obrigatórios automaticamente.
+- `src/modules/identity/account/` (**E1-08**) — `DELETE /account`
+  (autenticado, exige senha atual). Exclusão de conta é **anonimização,
+  não hard-delete**: nome/e-mail/telefone/CPF-CNPJ sobrescritos, senha
+  invalidada, MFA desligado, todas as sessões (`refresh_tokens`)
+  revogadas, `deletedAt` marcado. Um `DELETE` de verdade falharia por FK
+  assim que o usuário tivesse qualquer contrato/RFQ (as relações usam
+  `Restrict` por padrão), e além disso destruiria histórico que
+  `escrow_transactions`/`audit_log` precisam reter por serem append-only.
 - `src/health/health.controller.ts` — `GET /health`.
 
 ## Rodando localmente
@@ -71,9 +88,12 @@ pnpm --filter @conectaobra/api seed            # opcional — senha "senha12345"
 pnpm --filter @conectaobra/api dev
 curl localhost:3333/health
 
+curl localhost:3333/legal/versions
+
 curl -X POST localhost:3333/auth/register -H 'content-type: application/json' -d '{
   "tipo":"PRESTADOR","nome":"Teste","email":"teste@example.com",
-  "telefone":"+5527999998888","cpfCnpj":"52998224725","senha":"senha12345"
+  "telefone":"+5527999998888","cpfCnpj":"52998224725","senha":"senha12345",
+  "aceitouTermos":true,"aceitouPolitica":true
 }'
 
 # com o accessToken retornado acima:
@@ -81,23 +101,29 @@ curl -X PUT localhost:3333/profile/prestador \
   -H 'content-type: application/json' -H 'authorization: Bearer <accessToken>' -d '{
   "categorias":["eletrica"],"experienciaAnos":5,"raioAtendimentoKm":20
 }'
+
+curl -X DELETE localhost:3333/account \
+  -H 'content-type: application/json' -H 'authorization: Bearer <accessToken>' -d '{
+  "senha":"senha12345"
+}'
 ```
 
 ## Status
 
 Todo o bootstrap e a árvore de injeção de dependências de `AuthModule`,
-`ProfileModule` e `MediaModule` (controller → service → guards →
-strategies → throttler → audit log → prisma) foram validados nesta sessão
-com `tsc --noEmit`, `nest build` e execução real do `dist/src/main.js` —
-inclusive **sem nenhuma credencial S3 configurada**, confirmando que
-`MediaService` degrada normalmente em vez de derrubar o boot. A única
-falha observada foi a esperada, "Can't reach database server", porque não
-havia Postgres disponível no ambiente (sem Docker). Esse mesmo tipo de
-teste já pegou e corrigiu um bug real de DI (`AuditLogModule` não
-importado em `AuthModule`, no S0-06/E1-01) que `tsc`/`nest build` sozinhos
-não detectam. As funções do `otplib` (`generateSecret`/`keyuri`/`check`)
-também foram testadas isoladamente e se comportam como esperado.
+`ProfileModule`, `MediaModule`, `LegalModule` e `AccountModule` (controller
+→ service → guards → strategies → throttler → audit log → prisma) foram
+validados nesta sessão com `tsc --noEmit`, `nest build` e execução real do
+`dist/src/main.js` — inclusive **sem nenhuma credencial S3 configurada**,
+confirmando que `MediaService` degrada normalmente em vez de derrubar o
+boot. A única falha observada foi a esperada, "Can't reach database
+server", porque não havia Postgres disponível no ambiente (sem Docker).
+Esse mesmo tipo de teste já pegou e corrigiu um bug real de DI
+(`AuditLogModule` não importado em `AuthModule`, no S0-06/E1-01) que
+`tsc`/`nest build` sozinhos não detectam. As funções do `otplib`
+(`generateSecret`/`keyuri`/`check`) também foram testadas isoladamente e
+se comportam como esperado.
 
 **Ninguém rodou isso contra um banco (ou bucket S3) real ainda** — validar
 com `docker compose up` + os `curl` acima antes do merge (ver
-`PENDENCIAS.md` P-010/P-011/P-013/P-014/P-015/P-017/P-018).
+`PENDENCIAS.md` P-010/P-011/P-013/P-014/P-015/P-017/P-018/P-019).

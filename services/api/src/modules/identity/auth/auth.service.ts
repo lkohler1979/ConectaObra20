@@ -11,6 +11,7 @@ import type {
 import { PrismaService } from "../../../common/prisma/prisma.service";
 import { AuditLogService } from "../../../common/audit/audit-log.service";
 import { env } from "../../../config/env";
+import { ConsentService } from "../legal/consent.service";
 import { MfaService } from "./mfa.service";
 import { PasswordService } from "./password.service";
 import { TokenService, type RequestMeta } from "./token.service";
@@ -28,6 +29,7 @@ export class AuthService {
     private readonly password: PasswordService,
     private readonly tokens: TokenService,
     private readonly mfa: MfaService,
+    private readonly consent: ConsentService,
     private readonly auditLog: AuditLogService,
   ) {}
 
@@ -56,6 +58,8 @@ export class AuthService {
         senhaHash,
       },
     });
+
+    await this.consent.recordMandatoryOnRegister(user.id);
 
     await this.auditLog.record({
       userId: user.id,

@@ -5,6 +5,7 @@ export default defineConfig({
     "src/index.ts",
     "src/auth.ts",
     "src/documents.ts",
+    "src/legal.ts",
     "src/media.ts",
     "src/profile.ts",
   ],

@@ -58,6 +58,10 @@ model User {
   /// Secret TOTP (otplib) — nunca logar. Em produção deve ser criptografado
   /// em repouso (KMS/envelope encryption); aqui fica em claro (E1-04, MVP).
   mfaSecret          String?   @map("mfa_secret")
+  /// Exclusão de conta (E1-08) é anonimização, não hard-delete — ver Consent
+  /// e AccountService. Não confundir com soft-delete "reversível": os
+  /// campos identificadores já são sobrescritos no momento em que isto é setado.
+  deletedAt          DateTime? @map("deleted_at")
   createdAt          DateTime  @default(now()) @map("created_at")
   updatedAt          DateTime  @updatedAt @map("updated_at")
 
@@ -65,6 +69,7 @@ model User {
   profileFornecedor ProfileFornecedor?
   refreshTokens     RefreshToken[]
   otpCodes          OtpCode[]
+  consents          Consent[]
 
   obras               Work[]
   rfqs                Rfq[]
@@ -170,6 +175,32 @@ model OtpCode {
 
   @@index([userId])
   @@map("otp_codes")
+}
+
+enum ConsentType {
+  TERMOS_USO
+  POLITICA_PRIVACIDADE
+  COMUNICACAO_MARKETING
+
+  @@map("consent_type")
+}
+
+/// Append-only (E1-08, mesmo espírito da regra 1 do CLAUDE.md): cada aceite
+/// ou revogação é uma linha nova, nunca um UPDATE — o estado atual é a linha
+/// mais recente por (userId, tipo). Isso prova o histórico de consentimento
+/// exigido pela LGPD.
+model Consent {
+  id        String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId    String      @map("user_id") @db.Uuid
+  tipo      ConsentType
+  versao    String
+  aceito    Boolean
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, tipo])
+  @@map("consents")
 }
 
 // ─── Obras e RFQ (E3) ───────────────────────────────────────────────────────

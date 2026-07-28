@@ -126,6 +126,14 @@ export class TokenService {
     });
   }
 
+  /** Usado pela exclusão de conta (E1-08) — encerra todas as sessões do usuário. */
+  async revokeAllForUser(userId: string): Promise<void> {
+    await this.prisma.refreshToken.updateMany({
+      where: { userId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+  }
+
   private refreshExpiry(): Date {
     return new Date(Date.now() + env.JWT_REFRESH_TTL_DAYS * 24 * 60 * 60 * 1000);
   }

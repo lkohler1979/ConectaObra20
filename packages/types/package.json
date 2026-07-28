@@ -18,6 +18,11 @@
       "require": "./dist/documents.js",
       "import": "./dist/documents.mjs"
     },
+    "./legal": {
+      "types": "./dist/legal.d.ts",
+      "require": "./dist/legal.js",
+      "import": "./dist/legal.mjs"
+    },
     "./media": {
       "types": "./dist/media.d.ts",
       "require": "./dist/media.js",

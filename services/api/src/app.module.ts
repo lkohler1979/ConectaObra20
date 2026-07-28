@@ -7,6 +7,7 @@ import { SentryExceptionFilter } from "./common/observability/sentry-exception.f
 import { PrismaModule } from "./common/prisma/prisma.module";
 import { AuditLogModule } from "./common/audit/audit-log.module";
 import { HealthController } from "./health/health.controller";
+import { AccountModule } from "./modules/identity/account/account.module";
 import { AuthModule } from "./modules/identity/auth/auth.module";
 import { ProfileModule } from "./modules/identity/profile/profile.module";
 import { MediaModule } from "./modules/media/media.module";
@@ -21,6 +22,7 @@ import { MediaModule } from "./modules/media/media.module";
     AuthModule,
     ProfileModule,
     MediaModule,
+    AccountModule,
   ],
   controllers: [HealthController],
   providers: [
