@@ -43,6 +43,11 @@
       "require": "./dist/rfq.js",
       "import": "./dist/rfq.mjs"
     },
+    "./rfq-proposals": {
+      "types": "./dist/rfq-proposals.d.ts",
+      "require": "./dist/rfq-proposals.js",
+      "import": "./dist/rfq-proposals.mjs"
+    },
     "./works": {
       "types": "./dist/works.d.ts",
       "require": "./dist/works.js",

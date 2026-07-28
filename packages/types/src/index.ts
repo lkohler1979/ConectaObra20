@@ -5,4 +5,5 @@ export * from "./legal";
 export * from "./media";
 export * from "./profile";
 export * from "./rfq";
+export * from "./rfq-proposals";
 export * from "./works";

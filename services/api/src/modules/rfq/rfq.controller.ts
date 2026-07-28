@@ -6,18 +6,26 @@ import {
   type CreateRfqInput,
   type UpdateRfqInput,
 } from "@conectaobra/types/rfq";
+import {
+  createRfqProposalInputSchema,
+  type CreateRfqProposalInput,
+} from "@conectaobra/types/rfq-proposals";
 import { ZodValidationPipe } from "../../common/pipes/zod-validation.pipe";
 import { AllowedUserTypes } from "../../common/decorators/allowed-user-types.decorator";
 import { UserTypeGuard } from "../../common/guards/user-type.guard";
 import { CurrentUser } from "../identity/auth/current-user.decorator";
 import { JwtAuthGuard } from "../identity/auth/guards/jwt-auth.guard";
 import type { JwtPayload } from "../identity/auth/strategies/jwt.strategy";
+import { RfqProposalService } from "./rfq-proposal.service";
 import { RfqService } from "./rfq.service";
 
 @Controller("rfq")
 @UseGuards(JwtAuthGuard)
 export class RfqController {
-  constructor(private readonly rfqService: RfqService) {}
+  constructor(
+    private readonly rfqService: RfqService,
+    private readonly rfqProposalService: RfqProposalService,
+  ) {}
 
   @Post()
   @UseGuards(UserTypeGuard)
@@ -59,5 +67,25 @@ export class RfqController {
     @CurrentUser() user: JwtPayload,
   ) {
     return this.rfqService.update(user.sub, id, body);
+  }
+
+  @Post(":id/proposals")
+  @UseGuards(UserTypeGuard)
+  @AllowedUserTypes("PRESTADOR", "TECNICO")
+  submitProposal(
+    @Param("id", new ZodValidationPipe(rfqIdSchema)) id: string,
+    @Body(new ZodValidationPipe(createRfqProposalInputSchema)) body: CreateRfqProposalInput,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.rfqProposalService.submit(id, user.sub, body);
+  }
+
+  /** Dono do RFQ vê todas as propostas; prestador vê só a própria. */
+  @Get(":id/proposals")
+  listProposals(
+    @Param("id", new ZodValidationPipe(rfqIdSchema)) id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.rfqProposalService.listForRfq(id, user.sub);
   }
 }

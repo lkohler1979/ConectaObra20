@@ -3,7 +3,7 @@
 NestJS monólito modular. Ver `docs/prd/03_Estrutura_Projeto.md` para a
 estrutura-alvo completa (módulos de domínio em `src/modules/*`).
 
-## Conteúdo (S0-05 + S0-06 + E1-01 + E1-02 + E1-04 + E1-07 + E1-08 + E3-01 + E3-02 + E3-03)
+## Conteúdo (S0-05 + S0-06 + E1-01 + E1-02 + E1-04 + E1-07 + E1-08 + E3-01 + E3-02 + E3-03 + E3-05)
 
 > S0-05 até E3-02 já estão mesclados em `main` (2026-07-28). O que segue é
 > o inventário cumulativo; a seção **Status** no fim descreve o que ainda
@@ -111,6 +111,18 @@ estrutura-alvo completa (módulos de domínio em `src/modules/*`).
   `PRESTADOR`/`TECNICO`) lista os RFQs abertos casados com o próprio
   perfil. **Sem notificação ainda** — isso é E3-04 (fila BullMQ, infra já
   no `docker-compose.local.yml` mas sem consumer criado).
+- `src/modules/rfq/rfq-proposal.service.ts` (**E3-05**) —
+  `POST /rfq/:id/proposals` (autenticado, `PRESTADOR`/`TECNICO`): preço,
+  prazo, observações. Uma proposta por prestador por RFQ (409 na
+  segunda tentativa), só enquanto o RFQ estiver `ABERTO`.
+  `GET /rfq/:id/proposals`: o dono do RFQ vê todas as propostas; um
+  prestador só vê a própria — é um leilão, ninguém vê preço/prazo da
+  concorrência. **"Caps por plano" é um placeholder**: sem nenhuma
+  `Subscription`, o prestador é tratado como plano gratuito e sujeito a
+  `FREE_PLAN_MONTHLY_PROPOSAL_LIMIT` (env, default 5/mês); qualquer
+  `Subscription` isenta do teto por enquanto — os tiers pagos de verdade
+  (79/149/299/599 etc., doc `04_Tasks_Backlog.md` E8-01) ainda não foram
+  implementados. Ver `PENDENCIAS.md` P-025.
 - `src/health/health.controller.ts` — `GET /health`.
 
 ## Rodando localmente
@@ -159,14 +171,23 @@ curl -X POST localhost:3333/rfq \
 
 # prestador com categorias:["eletrica"] no perfil (PUT /profile/prestador) descobre o RFQ acima:
 curl localhost:3333/rfq/discover -H 'authorization: Bearer <accessTokenDePrestador>'
+
+# com o id do RFQ acima:
+curl -X POST localhost:3333/rfq/<rfqId>/proposals \
+  -H 'content-type: application/json' -H 'authorization: Bearer <accessTokenDePrestador>' -d '{
+  "precoCentavos":120000,"prazoDias":5,"observacoes":"Inclui material básico."
+}'
+
+curl localhost:3333/rfq/<rfqId>/proposals -H 'authorization: Bearer <accessTokenDeCliente>'
 ```
 
 ## Status
 
 Todo o bootstrap e a árvore de injeção de dependências de `AuthModule`,
 `ProfileModule`, `MediaModule`, `LegalModule`, `AccountModule`,
-`WorksModule`, `RfqModule` e `MatchingModule` (controller → service →
-guards → strategies → throttler → audit log → prisma) foram validados com
+`WorksModule`, `RfqModule` (incluindo `RfqProposalService`) e
+`MatchingModule` (controller → service → guards → strategies →
+throttler → audit log → prisma) foram validados com
 `tsc --noEmit`, `nest build` e execução real do `dist/src/main.js` —
 inclusive **sem nenhuma credencial S3 configurada**, confirmando que
 `MediaService` degrada normalmente em vez de derrubar o boot. A única

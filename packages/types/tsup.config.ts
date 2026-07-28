@@ -10,6 +10,7 @@ export default defineConfig({
     "src/media.ts",
     "src/profile.ts",
     "src/rfq.ts",
+    "src/rfq-proposals.ts",
     "src/works.ts",
   ],
   format: ["cjs", "esm"],

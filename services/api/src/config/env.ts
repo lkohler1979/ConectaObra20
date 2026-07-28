@@ -16,6 +16,10 @@ export const envSchema = baseEnvSchema.extend({
   S3_SECRET_ACCESS_KEY: z.string().optional(),
   /// Só necessário para S3-compatível fora da AWS (MinIO, R2 etc.).
   S3_ENDPOINT: z.string().url().optional(),
+  /// Placeholder até E8-01 definir os planos/tiers de verdade (79/149/299/599
+  /// etc. — ver docs/prd/04_Tasks_Backlog.md). Hoje: sem Subscription = plano
+  /// gratuito = limite mensal de propostas; qualquer Subscription = sem limite.
+  FREE_PLAN_MONTHLY_PROPOSAL_LIMIT: z.coerce.number().int().positive().default(5),
 });
 
 export const env = parseEnv(envSchema);
