@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-28 · Branch: `feat/E3-01-criar-obra`
+> Última atualização: 2026-07-28 · Branch: `feat/E3-02-publicar-rfq`
 
 ---
 
@@ -34,6 +34,7 @@
 | P-019 | LGPD: consentimentos + exclusão de conta, branch `feat/E1-08-lgpd` (empilhada sobre E1-07, ainda não mesclada) | E1-08 | Em revisão | `GET /legal/versions`, `POST /legal/consent` (append-only em `consents`), `DELETE /account` (anonimização, não hard-delete — preserva histórico financeiro/contratual e respeita `escrow_transactions`/`audit_log` append-only). `POST /auth/register` agora exige `aceitouTermos`/`aceitouPolitica`. **Nenhum texto real de Termos de Uso ou Política de Privacidade existe ainda** (`docs/legal/` vazio) — usa uma versão única (`v0-mvp`) até os documentos serem escritos e versionados de verdade. Validado com `tsc`/`nest build`/execução real; nunca contra um Postgres real. `register()` e `deleteAccount()` foram revisados e corrigidos para rodar em `$transaction` (achado em code review desta sessão — sem isso, uma falha parcial podia deixar usuário sem consentimento gravado, ou conta anonimizada com refresh tokens antigos ainda válidos) |
 | P-020 | Access tokens (JWT) não são revogados na exclusão de conta nem ao desligar MFA — um token emitido pouco antes continua válido até expirar (`JWT_ACCESS_TTL_SECONDS`, 15min por padrão) | E1-04, E1-08 | Aberto | Trade-off aceitável de JWT stateless com TTL curto — não é um bug a corrigir agora, mas registrar como limitação conhecida (achado em code review). Se algum dia precisar de revogação imediata de access token, a opção padrão é uma denylist em Redis (já no stack) checada no `JwtStrategy.validate()` |
 | P-021 | Criar obra (CRUD básico), branch `feat/E3-01-criar-obra` (empilhada sobre E1-08, ainda não mesclada) | E3-01 | Em revisão | `POST/GET/GET:id/PATCH /works`, restrito a `CLIENTE_PF`/`CLIENTE_PJ` para criar/editar; leitura restrita ao dono (404 se for de outro cliente). `status` fica livre (`"planejamento"` no create) — workflow de estados fica pra E6. **Geocoding automático (endereço → lat/lng) não implementado** — nenhum provedor escolhido (Google Geocoding/Mapbox/Nominatim); `geo` é opcional, client manda lat/lng direto se tiver. Validado com `tsc`/`nest build`/execução real; nunca contra um Postgres real |
+| P-022 | Publicar RFQ, branch `feat/E3-02-publicar-rfq` (empilhada sobre E3-01, ainda não mesclada) | E3-02 | Em revisão | `POST/GET/GET:id/PATCH /rfq`, restrito a `CLIENTE_PF`/`CLIENTE_PJ`; exige que a `obraId` pertença ao próprio cliente (404 senão); `PATCH` só enquanto `status = ABERTO`. `Rfq.fotos` (array de URLs do S3, via E1-07) precisou de nova migração — ausente do doc 02 §3. **Sem matching regional, notificação ou propostas ainda** (E3-03/E3-04/E3-05). Validado com `tsc`/`nest build`/execução real; nunca contra um Postgres real |
 
 ## 🟢 DÍVIDAS TÉCNICAS / MELHORIAS (não bloqueiam)
 
@@ -66,6 +67,7 @@
 | 2026-07-28 | LGPD (E1-08, parcial): consentimentos append-only (`GET/POST /legal/*`) + exclusão de conta por anonimização (`DELETE /account`), branch `feat/E1-08-lgpd` — ver P-019 |
 | 2026-07-28 | Code review completo da sessão (main → feat/E1-08-lgpd): 2 bugs de atomicidade corrigidos (`register()`/`deleteAccount()` agora em `$transaction`) e 1 limitação documentada (P-020) |
 | 2026-07-28 | Criar obra (E3-01, parcial): `WorksModule` (`POST/GET/GET:id/PATCH /works`), branch `feat/E3-01-criar-obra` — ver P-021 |
+| 2026-07-28 | Publicar RFQ (E3-02, parcial): `RfqModule` (`POST/GET/GET:id/PATCH /rfq`), branch `feat/E3-02-publicar-rfq` — ver P-022 |
 
 ---
 

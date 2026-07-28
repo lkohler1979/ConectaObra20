@@ -38,6 +38,11 @@
       "require": "./dist/profile.js",
       "import": "./dist/profile.mjs"
     },
+    "./rfq": {
+      "types": "./dist/rfq.d.ts",
+      "require": "./dist/rfq.js",
+      "import": "./dist/rfq.mjs"
+    },
     "./works": {
       "types": "./dist/works.d.ts",
       "require": "./dist/works.js",

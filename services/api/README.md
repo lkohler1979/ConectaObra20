@@ -3,7 +3,7 @@
 NestJS monólito modular. Ver `docs/prd/03_Estrutura_Projeto.md` para a
 estrutura-alvo completa (módulos de domínio em `src/modules/*`).
 
-## Conteúdo desta sessão (S0-05 + S0-06 + E1-01 + E1-02 + E1-04 + E1-07 + E1-08 + E3-01)
+## Conteúdo desta sessão (S0-05 + S0-06 + E1-01 + E1-02 + E1-04 + E1-07 + E1-08 + E3-01 + E3-02)
 
 - `prisma/schema.prisma` — schema inicial (S0-05) + `senha_hash`,
   `telefone_verificado`, `refresh_tokens`, `otp_codes` (E1-01, ver
@@ -86,6 +86,14 @@ estrutura-alvo completa (módulos de domínio em `src/modules/*`).
   converter o texto do endereço em coordenadas automaticamente exige um
   provedor (Google Geocoding/Mapbox/Nominatim) ainda não escolhido — ver
   `PENDENCIAS.md` P-021.
+- `src/modules/rfq/` (**E3-02**) — `POST /rfq`, `GET /rfq`, `GET /rfq/:id`,
+  `PATCH /rfq/:id` (só enquanto `status = ABERTO`). Publicar um RFQ exige
+  que a `obraId` informada pertença ao próprio cliente (senão 404, mesmo
+  padrão de information-hiding do `WorksModule`). `fotos` é um array de
+  URLs já enviadas via `POST /media/presigned-upload` (E1-07) — precisou
+  de uma nova migração (`Rfq.fotos`, ausente do doc 02 §3). Sem matching
+  regional, notificação ou propostas ainda — isso é E3-03/E3-04/E3-05,
+  tasks separadas.
 - `src/health/health.controller.ts` — `GET /health`.
 
 ## Rodando localmente
@@ -118,20 +126,27 @@ curl -X DELETE localhost:3333/account \
   "senha":"senha12345"
 }'
 
-# POST /works exige tipo CLIENTE_PF/CLIENTE_PJ — registre uma conta desse tipo primeiro
+# POST /works e POST /rfq exigem tipo CLIENTE_PF/CLIENTE_PJ — registre uma conta desse tipo primeiro
 curl -X POST localhost:3333/works \
   -H 'content-type: application/json' -H 'authorization: Bearer <accessTokenDeCliente>' -d '{
   "titulo":"Reforma cozinha","tipo":"REFORMA","endereco":"Rua Exemplo, 123 — Vitória/ES",
   "areaM2":12.5,"orcamentoPrevistoCentavos":800000
+}'
+
+# com o id da obra retornado acima:
+curl -X POST localhost:3333/rfq \
+  -H 'content-type: application/json' -H 'authorization: Bearer <accessTokenDeCliente>' -d '{
+  "obraId":"<workId>","categoria":"eletrica",
+  "descricao":"Troca completa do quadro elétrico e pontos de luz da cozinha."
 }'
 ```
 
 ## Status
 
 Todo o bootstrap e a árvore de injeção de dependências de `AuthModule`,
-`ProfileModule`, `MediaModule`, `LegalModule`, `AccountModule` e
-`WorksModule` (controller → service → guards → strategies → throttler →
-audit log → prisma) foram validados nesta sessão com `tsc --noEmit`,
+`ProfileModule`, `MediaModule`, `LegalModule`, `AccountModule`,
+`WorksModule` e `RfqModule` (controller → service → guards → strategies →
+throttler → audit log → prisma) foram validados nesta sessão com `tsc --noEmit`,
 `nest build` e execução real do `dist/src/main.js` — inclusive **sem
 nenhuma credencial S3 configurada**, confirmando que `MediaService`
 degrada normalmente em vez de derrubar o boot. A única falha observada foi

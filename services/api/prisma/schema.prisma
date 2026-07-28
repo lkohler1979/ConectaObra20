@@ -251,6 +251,8 @@ model Rfq {
   clienteId     String    @map("cliente_id") @db.Uuid
   categoria     String
   descricao     String    @db.Text
+  /// URLs de mídia já enviadas via POST /media/presigned-upload (E1-07) — ausente do doc 02 §3 (E3-02).
+  fotos         String[]  @default([])
   prazoResposta DateTime? @map("prazo_resposta")
   regiao        String?
   status        RfqStatus @default(ABERTO)

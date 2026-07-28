@@ -9,6 +9,7 @@ export default defineConfig({
     "src/legal.ts",
     "src/media.ts",
     "src/profile.ts",
+    "src/rfq.ts",
     "src/works.ts",
   ],
   format: ["cjs", "esm"],
