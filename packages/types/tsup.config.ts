@@ -4,6 +4,7 @@ export default defineConfig({
   entry: [
     "src/index.ts",
     "src/auth.ts",
+    "src/contracts.ts",
     "src/documents.ts",
     "src/geo.ts",
     "src/legal.ts",

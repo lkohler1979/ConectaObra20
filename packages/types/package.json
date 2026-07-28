@@ -13,6 +13,11 @@
       "require": "./dist/auth.js",
       "import": "./dist/auth.mjs"
     },
+    "./contracts": {
+      "types": "./dist/contracts.d.ts",
+      "require": "./dist/contracts.js",
+      "import": "./dist/contracts.mjs"
+    },
     "./documents": {
       "types": "./dist/documents.d.ts",
       "require": "./dist/documents.js",

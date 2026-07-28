@@ -13,6 +13,7 @@ import { ProfileModule } from "./modules/identity/profile/profile.module";
 import { MediaModule } from "./modules/media/media.module";
 import { WorksModule } from "./modules/works/works.module";
 import { RfqModule } from "./modules/rfq/rfq.module";
+import { ContractsModule } from "./modules/contracts/contracts.module";
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { RfqModule } from "./modules/rfq/rfq.module";
     AccountModule,
     WorksModule,
     RfqModule,
+    ContractsModule,
   ],
   controllers: [HealthController],
   providers: [

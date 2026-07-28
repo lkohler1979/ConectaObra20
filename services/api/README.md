@@ -3,7 +3,7 @@
 NestJS monólito modular. Ver `docs/prd/03_Estrutura_Projeto.md` para a
 estrutura-alvo completa (módulos de domínio em `src/modules/*`).
 
-## Conteúdo (S0-05 + S0-06 + E1-01 + E1-02 + E1-04 + E1-07 + E1-08 + E3-01 + E3-02 + E3-03 + E3-05)
+## Conteúdo (S0-05 + S0-06 + E1-01 + E1-02 + E1-04 + E1-07 + E1-08 + E3-01 + E3-02 + E3-03 + E3-05 + E3-07)
 
 > S0-05 até E3-02 já estão mesclados em `main` (2026-07-28). O que segue é
 > o inventário cumulativo; a seção **Status** no fim descreve o que ainda
@@ -123,6 +123,15 @@ estrutura-alvo completa (módulos de domínio em `src/modules/*`).
   `Subscription` isenta do teto por enquanto — os tiers pagos de verdade
   (79/149/299/599 etc., doc `04_Tasks_Backlog.md` E8-01) ainda não foram
   implementados. Ver `PENDENCIAS.md` P-025.
+- `src/modules/contracts/` (**E3-07**) — `POST /proposals/:id/accept`
+  (autenticado, `CLIENTE_PF`/`CLIENTE_PJ`, dono do RFQ por trás da
+  proposta). Numa única transação: marca a proposta `ACEITA`, recusa
+  (`RECUSADA`) as demais propostas `ENVIADA` do mesmo RFQ, fecha o RFQ
+  (`CONTRATADO`) e cria um `Contract` (`status: "rascunho"`) + as duas
+  `ContractParty` (`CONTRATANTE` = cliente, `CONTRATADO` = proponente).
+  **Sem PDF nem assinatura eletrônica** — isso é E4-01/E4-02, fora do
+  escopo desta task. Rota fica em `/proposals` (não `/rfq/...`), seguindo
+  o contrato de API do doc 02 §4.
 - `src/health/health.controller.ts` — `GET /health`.
 
 ## Rodando localmente
@@ -179,15 +188,19 @@ curl -X POST localhost:3333/rfq/<rfqId>/proposals \
 }'
 
 curl localhost:3333/rfq/<rfqId>/proposals -H 'authorization: Bearer <accessTokenDeCliente>'
+
+# com o id da proposta retornada acima — aceitar já gera o rascunho de contrato:
+curl -X POST localhost:3333/proposals/<proposalId>/accept \
+  -H 'authorization: Bearer <accessTokenDeCliente>'
 ```
 
 ## Status
 
 Todo o bootstrap e a árvore de injeção de dependências de `AuthModule`,
 `ProfileModule`, `MediaModule`, `LegalModule`, `AccountModule`,
-`WorksModule`, `RfqModule` (incluindo `RfqProposalService`) e
-`MatchingModule` (controller → service → guards → strategies →
-throttler → audit log → prisma) foram validados com
+`WorksModule`, `RfqModule` (incluindo `RfqProposalService`),
+`MatchingModule` e `ContractsModule` (controller → service → guards →
+strategies → throttler → audit log → prisma) foram validados com
 `tsc --noEmit`, `nest build` e execução real do `dist/src/main.js` —
 inclusive **sem nenhuma credencial S3 configurada**, confirmando que
 `MediaService` degrada normalmente em vez de derrubar o boot. A única
