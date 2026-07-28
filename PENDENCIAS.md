@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-28 · Branch: `main`
+> Última atualização: 2026-07-28 · Branch: `feat/E3-03-matching`
 
 ---
 
@@ -36,6 +36,7 @@
 | P-021 | Criar obra (CRUD básico) — **mesclado em `main`** | E3-01 | Mesclado | `POST/GET/GET:id/PATCH /works`, restrito a `CLIENTE_PF`/`CLIENTE_PJ` para criar/editar; leitura restrita ao dono (404 se for de outro cliente). `status` fica livre (`"planejamento"` no create) — workflow de estados fica pra E6. **Geocoding automático (endereço → lat/lng) não implementado** — nenhum provedor escolhido (Google Geocoding/Mapbox/Nominatim); `geo` é opcional, client manda lat/lng direto se tiver. Validado com `tsc`/`nest build`/execução real; nunca contra um Postgres real |
 | P-022 | Publicar RFQ — **mesclado em `main`** | E3-02 | Mesclado | `POST/GET/GET:id/PATCH /rfq`, restrito a `CLIENTE_PF`/`CLIENTE_PJ`; exige que a `obraId` pertença ao próprio cliente (404 senão); `PATCH` só enquanto `status = ABERTO`. `Rfq.fotos` (array de URLs do S3, via E1-07) precisou de nova migração — ausente do doc 02 §3. **Sem matching regional, notificação ou propostas ainda** (E3-03/E3-04/E3-05). Validado com `tsc`/`nest build`/execução real; nunca contra um Postgres real |
 | P-023 | `WorksService.create()`/`update()` gravam `geo` via `$executeRaw` numa chamada separada do `prisma.work.create()`, sem transação (mesmo padrão de `ProfileService.upsertPrestador`) | E3-01 | Aberto | Achado em code review (severidade baixa): uma falha entre as duas deixa a obra sem coordenadas até o cliente reenviar. Nada de segurança/dinheiro/compliance em jogo — não corrigido agora, só registrado |
+| P-024 | Motor de matching regional, branch `feat/E3-03-matching` (empilhada sobre `main`, ainda não mesclada) | E3-03 | Em revisão | `MatchingService.matchRfq()` casa RFQ com até 10 prestadores por categoria + raio (PostGIS `ST_DWithin`), com rodízio via `ProfilePrestador.ultimoMatchEm` (nova migração, junto com `RfqMatch` pra persistir o resultado). Roda automaticamente e de forma best-effort dentro de `RfqService.create()` — falha no matching não impede a publicação do RFQ. `GET /rfq/discover` pro prestador ver os RFQs casados. **Sem obra.geo, o match cai pra só categoria** (geocoding ainda não existe, P-021). **Sem notificação ainda** (E3-04, precisa de worker BullMQ). Validado com `tsc`/`nest build`/execução real; nunca contra um Postgres real |
 
 ## 🟢 DÍVIDAS TÉCNICAS / MELHORIAS (não bloqueiam)
 
@@ -70,6 +71,7 @@
 | 2026-07-28 | Criar obra (E3-01, parcial): `WorksModule` (`POST/GET/GET:id/PATCH /works`), branch `feat/E3-01-criar-obra` — ver P-021 |
 | 2026-07-28 | Publicar RFQ (E3-02, parcial): `RfqModule` (`POST/GET/GET:id/PATCH /rfq`), branch `feat/E3-02-publicar-rfq` — ver P-022 |
 | 2026-07-28 | **Merge de toda a sessão em `main`**: `S0-04 → S0-05 → S0-06 → E1-01 → E1-02 → E1-04 → E1-07 → E1-08 → E3-01 → E3-02` (fast-forward da pilha principal + merge do S0-04 independente, único conflito foi em PENDENCIAS.md, resolvido mantendo a versão mais atualizada). Validação completa pós-merge (`tsc`/`nest build`/build de todos os pacotes/execução real) achou e corrigiu 1 bug real: `packages/ui/tailwind.preset.ts` não tipava contra o `tailwindcss` de verdade (nunca fora buildado antes por falta de `pnpm install`) — `fontFamily.sans` é uma tupla `readonly`, incompatível com o `string[]` mutável que o `Config` do Tailwind espera |
+| 2026-07-28 | Motor de matching regional (E3-03, parcial): `MatchingService` (categoria + raio PostGIS + rodízio) integrado em `RfqService.create()` + `GET /rfq/discover`, branch `feat/E3-03-matching` — ver P-024 |
 
 ---
 

@@ -100,8 +100,11 @@ model ProfilePrestador {
   selo              String?
   notaMedia         Decimal?                               @map("nota_media") @db.Decimal(3, 2)
   agendaConfig      Json?                                  @map("agenda_config")
+  /// Rodízio do matching (E3-03): quem não é casado há mais tempo tem prioridade.
+  ultimoMatchEm     DateTime?                              @map("ultimo_match_em")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  matches RfqMatch[]
 
   @@map("profiles_prestador")
 }
@@ -261,8 +264,25 @@ model Rfq {
   obra      Work          @relation(fields: [obraId], references: [id], onDelete: Cascade)
   cliente   User          @relation(fields: [clienteId], references: [id])
   proposals RfqProposal[]
+  matches   RfqMatch[]
 
   @@map("rfq")
+}
+
+/// Resultado persistido do motor de matching (E3-03) — quem foi casado com
+/// qual RFQ. Serve de auditoria ("o prestador X nunca foi notificado?") e de
+/// base pra E3-04 (notificação) sem precisar recalcular o match.
+model RfqMatch {
+  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  rfqId       String   @map("rfq_id") @db.Uuid
+  prestadorId String   @map("prestador_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  rfq       Rfq              @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+  prestador ProfilePrestador @relation(fields: [prestadorId], references: [userId], onDelete: Cascade)
+
+  @@unique([rfqId, prestadorId])
+  @@map("rfq_matches")
 }
 
 enum RfqProposalStatus {

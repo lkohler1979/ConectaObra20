@@ -34,6 +34,14 @@ export class RfqController {
     return this.rfqService.listMine(user.sub);
   }
 
+  /** Precisa vir antes de ":id" — senão o Nest casaria "discover" como :id. */
+  @Get("discover")
+  @UseGuards(UserTypeGuard)
+  @AllowedUserTypes("PRESTADOR", "TECNICO")
+  discover(@CurrentUser() user: JwtPayload) {
+    return this.rfqService.discoverForPrestador(user.sub);
+  }
+
   @Get(":id")
   getOne(
     @Param("id", new ZodValidationPipe(rfqIdSchema)) id: string,

@@ -3,7 +3,11 @@
 NestJS monólito modular. Ver `docs/prd/03_Estrutura_Projeto.md` para a
 estrutura-alvo completa (módulos de domínio em `src/modules/*`).
 
-## Conteúdo desta sessão (S0-05 + S0-06 + E1-01 + E1-02 + E1-04 + E1-07 + E1-08 + E3-01 + E3-02)
+## Conteúdo (S0-05 + S0-06 + E1-01 + E1-02 + E1-04 + E1-07 + E1-08 + E3-01 + E3-02 + E3-03)
+
+> S0-05 até E3-02 já estão mesclados em `main` (2026-07-28). O que segue é
+> o inventário cumulativo; a seção **Status** no fim descreve o que ainda
+> falta validar contra infra real (Postgres/S3/Sentry).
 
 - `prisma/schema.prisma` — schema inicial (S0-05) + `senha_hash`,
   `telefone_verificado`, `refresh_tokens`, `otp_codes` (E1-01, ver
@@ -91,9 +95,22 @@ estrutura-alvo completa (módulos de domínio em `src/modules/*`).
   que a `obraId` informada pertença ao próprio cliente (senão 404, mesmo
   padrão de information-hiding do `WorksModule`). `fotos` é um array de
   URLs já enviadas via `POST /media/presigned-upload` (E1-07) — precisou
-  de uma nova migração (`Rfq.fotos`, ausente do doc 02 §3). Sem matching
-  regional, notificação ou propostas ainda — isso é E3-03/E3-04/E3-05,
-  tasks separadas.
+  de uma nova migração (`Rfq.fotos`, ausente do doc 02 §3).
+- `src/modules/matching/` (**E3-03**) — `MatchingService.matchRfq()` casa
+  um RFQ recém-publicado com até 10 prestadores: categoria em comum
+  (`categoria = ANY(pp.categorias)`) e, se a obra tiver `geo`, dentro do
+  raio de atendimento do prestador via PostGIS `ST_DWithin`. Sem `geo` na
+  obra, cai pra match só por categoria (ver P-021). **Rodízio**:
+  `ProfilePrestador.ultimoMatchEm` (nova migração) — ordena por quem não
+  é casado há mais tempo primeiro e marca a hora do match pros
+  selecionados, pra não sempre entregar os leads aos mesmos prestadores.
+  Persistido em `RfqMatch` (auditoria + base pra E3-04 quando existir).
+  Roda automaticamente dentro de `RfqService.create()`, mas de forma
+  *best-effort*: uma falha no matching (ex: erro de SQL) não impede a
+  publicação do RFQ, só fica logada. `GET /rfq/discover` (autenticado,
+  `PRESTADOR`/`TECNICO`) lista os RFQs abertos casados com o próprio
+  perfil. **Sem notificação ainda** — isso é E3-04 (fila BullMQ, infra já
+  no `docker-compose.local.yml` mas sem consumer criado).
 - `src/health/health.controller.ts` — `GET /health`.
 
 ## Rodando localmente
@@ -133,34 +150,34 @@ curl -X POST localhost:3333/works \
   "areaM2":12.5,"orcamentoPrevistoCentavos":800000
 }'
 
-# com o id da obra retornado acima:
+# com o id da obra retornado acima — publicar já roda o matching automaticamente:
 curl -X POST localhost:3333/rfq \
   -H 'content-type: application/json' -H 'authorization: Bearer <accessTokenDeCliente>' -d '{
   "obraId":"<workId>","categoria":"eletrica",
   "descricao":"Troca completa do quadro elétrico e pontos de luz da cozinha."
 }'
+
+# prestador com categorias:["eletrica"] no perfil (PUT /profile/prestador) descobre o RFQ acima:
+curl localhost:3333/rfq/discover -H 'authorization: Bearer <accessTokenDePrestador>'
 ```
 
 ## Status
 
 Todo o bootstrap e a árvore de injeção de dependências de `AuthModule`,
 `ProfileModule`, `MediaModule`, `LegalModule`, `AccountModule`,
-`WorksModule` e `RfqModule` (controller → service → guards → strategies →
-throttler → audit log → prisma) foram validados nesta sessão com `tsc --noEmit`,
-`nest build` e execução real do `dist/src/main.js` — inclusive **sem
-nenhuma credencial S3 configurada**, confirmando que `MediaService`
-degrada normalmente em vez de derrubar o boot. A única falha observada foi
-a esperada, "Can't reach database server", porque não havia Postgres
-disponível no ambiente (sem Docker). Esse mesmo tipo de teste já pegou e
-corrigiu um bug real de DI (`AuditLogModule` não importado em
-`AuthModule`, no S0-06/E1-01) que `tsc`/`nest build` sozinhos não
-detectam. As funções do `otplib` (`generateSecret`/`keyuri`/`check`)
-também foram testadas isoladamente e se comportam como esperado. Um code
-review completo desta sessão (main → feat/E1-08-lgpd) achou e corrigiu 2
-bugs reais de atomicidade (`register()` e `deleteAccount()` agora rodam
-em `$transaction`) — ver commit `fix(api): register() e deleteAccount()
-atômicos via $transaction`.
+`WorksModule`, `RfqModule` e `MatchingModule` (controller → service →
+guards → strategies → throttler → audit log → prisma) foram validados com
+`tsc --noEmit`, `nest build` e execução real do `dist/src/main.js` —
+inclusive **sem nenhuma credencial S3 configurada**, confirmando que
+`MediaService` degrada normalmente em vez de derrubar o boot. A única
+falha observada foi a esperada, "Can't reach database server", porque não
+havia Postgres disponível no ambiente (sem Docker em nenhuma sessão até
+agora). Esse mesmo tipo de teste já pegou e corrigiu bugs reais de DI e de
+tipos que `tsc`/`nest build` sozinhos não detectam (ver `PENDENCIAS.md`
+para o histórico). As funções do `otplib` também foram testadas
+isoladamente e se comportam como esperado.
 
 **Ninguém rodou isso contra um banco (ou bucket S3) real ainda** — validar
-com `docker compose up` + os `curl` acima antes do merge (ver
-`PENDENCIAS.md` P-010/P-011/P-013/P-014/P-015/P-017/P-018/P-019/P-020/P-021).
+com `docker compose up` + os `curl` acima assim que houver Docker
+disponível (ver `PENDENCIAS.md` P-010/P-011/P-013/P-014/P-015/P-017/P-018/
+P-019/P-020/P-021/P-023/P-024).
