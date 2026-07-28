@@ -38,21 +38,26 @@ export class AccountService {
 
     const senhaInutilizada = await this.password.hash(randomBytes(32).toString("hex"));
 
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        nome: "Usuário removido",
-        email: `deleted-${userId}@removed.conectaobra.local`,
-        telefone: null,
-        cpfCnpj: `ANON-${userId}`,
-        senhaHash: senhaInutilizada,
-        mfaEnabled: false,
-        mfaSecret: null,
-        deletedAt: new Date(),
-      },
-    });
+    // Atômico: sem isso, uma falha entre anonimizar e revogar as sessões
+    // deixaria refresh tokens válidos para uma conta que já deveria estar
+    // inacessível (dá pra renovar sessão via POST /auth/refresh).
+    await this.prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          nome: "Usuário removido",
+          email: `deleted-${userId}@removed.conectaobra.local`,
+          telefone: null,
+          cpfCnpj: `ANON-${userId}`,
+          senhaHash: senhaInutilizada,
+          mfaEnabled: false,
+          mfaSecret: null,
+          deletedAt: new Date(),
+        },
+      });
 
-    await this.tokens.revokeAllForUser(userId);
+      await this.tokens.revokeAllForUser(userId, tx);
+    });
 
     await this.auditLog.record({
       userId,

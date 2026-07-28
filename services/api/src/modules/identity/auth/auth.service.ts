@@ -48,18 +48,26 @@ export class AuthService {
     }
 
     const senhaHash = await this.password.hash(input.senha);
-    const user = await this.prisma.user.create({
-      data: {
-        tipo: input.tipo,
-        nome: input.nome,
-        email: input.email,
-        telefone: input.telefone,
-        cpfCnpj: input.cpfCnpj,
-        senhaHash,
-      },
-    });
 
-    await this.consent.recordMandatoryOnRegister(user.id);
+    // Atômico: sem isso, uma falha entre criar o usuário e gravar o
+    // consentimento deixaria uma conta cadastrada sem o registro de
+    // aceite dos Termos/Política que a E1-08 existe pra garantir.
+    const user = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.user.create({
+        data: {
+          tipo: input.tipo,
+          nome: input.nome,
+          email: input.email,
+          telefone: input.telefone,
+          cpfCnpj: input.cpfCnpj,
+          senhaHash,
+        },
+      });
+
+      await this.consent.recordMandatoryOnRegister(created.id, tx);
+
+      return created;
+    });
 
     await this.auditLog.record({
       userId: user.id,

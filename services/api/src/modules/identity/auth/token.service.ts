@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
+import type { Prisma } from "@prisma/client";
 import { PrismaService } from "../../../common/prisma/prisma.service";
 import { env } from "../../../config/env";
 
@@ -8,6 +9,8 @@ export interface RequestMeta {
   userAgent?: string;
   ip?: string;
 }
+
+type PrismaClientOrTx = PrismaService | Prisma.TransactionClient;
 
 function sha256(value: string): string {
   return createHash("sha256").update(value).digest("hex");
@@ -126,9 +129,17 @@ export class TokenService {
     });
   }
 
-  /** Usado pela exclusão de conta (E1-08) — encerra todas as sessões do usuário. */
-  async revokeAllForUser(userId: string): Promise<void> {
-    await this.prisma.refreshToken.updateMany({
+  /**
+   * Usado pela exclusão de conta (E1-08) — encerra todas as sessões do
+   * usuário. `client` opcional permite chamar dentro do mesmo `$transaction`
+   * que anonimiza a conta, pra não deixar refresh tokens válidos "escapando"
+   * caso a revogação falhe depois da anonimização já ter sido commitada.
+   */
+  async revokeAllForUser(
+    userId: string,
+    client: PrismaClientOrTx = this.prisma,
+  ): Promise<void> {
+    await client.refreshToken.updateMany({
       where: { userId, revokedAt: null },
       data: { revokedAt: new Date() },
     });
