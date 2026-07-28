@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-28 · Branch: `feat/E1-01-web-auth`
+> Última atualização: 2026-07-28 · Branch: `main`
 
 ---
 
@@ -86,6 +86,7 @@
 | 2026-07-28 | **`apps/web` (E1-01, front-end) criado do zero** em `feat/E1-01-web-auth`, a partir de `main`: Next.js 15 (App Router) + Tailwind com o preset de `packages/ui` (S0-04) + `react-hook-form`/`@hookform/resolvers/zod` contra os schemas de `packages/types/auth`. Landing page (`/`), cadastro (`/cadastro`) e login (`/entrar`) com validação client-side em PT-BR, Route Handlers (`/api/auth/{register,login,logout,refresh}`) fazendo proxy pro `services/api` e guardando os tokens em cookies `httpOnly` (`lib/session.ts`) — o browser nunca vê o JWT. `middleware.ts` protege `/conta/*` redirecionando pro login com `?redirect=`. Área logada mínima (`/conta`, Server Component) busca `GET /profile/me` com o access token do cookie e tem botão de logout. Build (`next build`) e `tsc --noEmit` passam; testado no browser (preview local, sem `services/api` rodando): formulários validam certo, e as chamadas às Route Handlers devolvem 502 com mensagem PT-BR em vez de estourar erro 500 genérico — ver P-029/P-030 pelo que ficou de fora |
 | 2026-07-28 | Code review do front (achado + corrigido na mesma sessão): mensagens de erro do Zod em `registerInputSchema`/`loginInputSchema` (`nome`, `email`, `senha` do login) vazavam em inglês ("Invalid email", "String must contain..."), violando a regra de UI 100% PT-BR do `CLAUDE.md` §5 — adicionadas mensagens customizadas em `packages/types/src/auth.ts`. Também corrigido: os Route Handlers de auth e o Server Component `/conta` não tratavam falha de conexão com `services/api` (ECONNREFUSED gerava erro 500 não tratado) — agora usam `apiFetchOrThrow`/`ApiUnavailableError` (`lib/api-client.ts`) e devolvem 502 com mensagem amigável |
 | 2026-07-28 | Segunda passada de review antes do merge: `?redirect=` do `/entrar` (usado pelo `middleware.ts` pra voltar o usuário pra rota protegida após o login) era repassado direto pro `router.push()` sem validação — um link tipo `/entrar?redirect=https://evil.com` era um open redirect em potencial após login bem-sucedido. Corrigido com `safeRedirect()` (`apps/web/lib/safe-redirect.ts`), que só aceita caminho relativo interno (`/conta`, `/x`), rejeitando URL absoluta ou protocol-relative (`//evil.com`) |
+| 2026-07-28 | **Merge de `feat/E1-01-web-auth` em `main`** (fast-forward, sem conflito) — `apps/web` (landing, cadastro, login, área logada `/conta`) agora faz parte de `main` |
 
 ---
 
