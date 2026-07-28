@@ -3,7 +3,7 @@
 NestJS monólito modular. Ver `docs/prd/03_Estrutura_Projeto.md` para a
 estrutura-alvo completa (módulos de domínio em `src/modules/*`).
 
-## Conteúdo desta sessão (S0-05 + S0-06 + E1-01 + E1-02 + E1-04 + E1-07 + E1-08)
+## Conteúdo desta sessão (S0-05 + S0-06 + E1-01 + E1-02 + E1-04 + E1-07 + E1-08 + E3-01)
 
 - `prisma/schema.prisma` — schema inicial (S0-05) + `senha_hash`,
   `telefone_verificado`, `refresh_tokens`, `otp_codes` (E1-01, ver
@@ -75,6 +75,17 @@ estrutura-alvo completa (módulos de domínio em `src/modules/*`).
   assim que o usuário tivesse qualquer contrato/RFQ (as relações usam
   `Restrict` por padrão), e além disso destruiria histórico que
   `escrow_transactions`/`audit_log` precisam reter por serem append-only.
+- `src/modules/works/` (**E3-01**) — `POST /works`, `GET /works` (só as
+  próprias), `GET /works/:id` e `PATCH /works/:id` (dono only — 404, não
+  403, se a obra for de outro cliente, pra não vazar existência).
+  Restrito a `CLIENTE_PF`/`CLIENTE_PJ` para criar/editar. `status` fica
+  livre (`"planejamento"` no create) — nenhum workflow de estados foi
+  definido ainda (isso é E6). **Geocoding automático não está
+  implementado**: `endereco` é texto livre, e `geo` (lat/lng) é opcional —
+  o client manda direto se tiver (ex: mapa/autocomplete no frontend);
+  converter o texto do endereço em coordenadas automaticamente exige um
+  provedor (Google Geocoding/Mapbox/Nominatim) ainda não escolhido — ver
+  `PENDENCIAS.md` P-021.
 - `src/health/health.controller.ts` — `GET /health`.
 
 ## Rodando localmente
@@ -106,24 +117,35 @@ curl -X DELETE localhost:3333/account \
   -H 'content-type: application/json' -H 'authorization: Bearer <accessToken>' -d '{
   "senha":"senha12345"
 }'
+
+# POST /works exige tipo CLIENTE_PF/CLIENTE_PJ — registre uma conta desse tipo primeiro
+curl -X POST localhost:3333/works \
+  -H 'content-type: application/json' -H 'authorization: Bearer <accessTokenDeCliente>' -d '{
+  "titulo":"Reforma cozinha","tipo":"REFORMA","endereco":"Rua Exemplo, 123 — Vitória/ES",
+  "areaM2":12.5,"orcamentoPrevistoCentavos":800000
+}'
 ```
 
 ## Status
 
 Todo o bootstrap e a árvore de injeção de dependências de `AuthModule`,
-`ProfileModule`, `MediaModule`, `LegalModule` e `AccountModule` (controller
-→ service → guards → strategies → throttler → audit log → prisma) foram
-validados nesta sessão com `tsc --noEmit`, `nest build` e execução real do
-`dist/src/main.js` — inclusive **sem nenhuma credencial S3 configurada**,
-confirmando que `MediaService` degrada normalmente em vez de derrubar o
-boot. A única falha observada foi a esperada, "Can't reach database
-server", porque não havia Postgres disponível no ambiente (sem Docker).
-Esse mesmo tipo de teste já pegou e corrigiu um bug real de DI
-(`AuditLogModule` não importado em `AuthModule`, no S0-06/E1-01) que
-`tsc`/`nest build` sozinhos não detectam. As funções do `otplib`
-(`generateSecret`/`keyuri`/`check`) também foram testadas isoladamente e
-se comportam como esperado.
+`ProfileModule`, `MediaModule`, `LegalModule`, `AccountModule` e
+`WorksModule` (controller → service → guards → strategies → throttler →
+audit log → prisma) foram validados nesta sessão com `tsc --noEmit`,
+`nest build` e execução real do `dist/src/main.js` — inclusive **sem
+nenhuma credencial S3 configurada**, confirmando que `MediaService`
+degrada normalmente em vez de derrubar o boot. A única falha observada foi
+a esperada, "Can't reach database server", porque não havia Postgres
+disponível no ambiente (sem Docker). Esse mesmo tipo de teste já pegou e
+corrigiu um bug real de DI (`AuditLogModule` não importado em
+`AuthModule`, no S0-06/E1-01) que `tsc`/`nest build` sozinhos não
+detectam. As funções do `otplib` (`generateSecret`/`keyuri`/`check`)
+também foram testadas isoladamente e se comportam como esperado. Um code
+review completo desta sessão (main → feat/E1-08-lgpd) achou e corrigiu 2
+bugs reais de atomicidade (`register()` e `deleteAccount()` agora rodam
+em `$transaction`) — ver commit `fix(api): register() e deleteAccount()
+atômicos via $transaction`.
 
 **Ninguém rodou isso contra um banco (ou bucket S3) real ainda** — validar
 com `docker compose up` + os `curl` acima antes do merge (ver
-`PENDENCIAS.md` P-010/P-011/P-013/P-014/P-015/P-017/P-018/P-019).
+`PENDENCIAS.md` P-010/P-011/P-013/P-014/P-015/P-017/P-018/P-019/P-020/P-021).

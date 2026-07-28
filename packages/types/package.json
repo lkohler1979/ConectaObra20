@@ -18,6 +18,11 @@
       "require": "./dist/documents.js",
       "import": "./dist/documents.mjs"
     },
+    "./geo": {
+      "types": "./dist/geo.d.ts",
+      "require": "./dist/geo.js",
+      "import": "./dist/geo.mjs"
+    },
     "./legal": {
       "types": "./dist/legal.d.ts",
       "require": "./dist/legal.js",
@@ -32,6 +37,11 @@
       "types": "./dist/profile.d.ts",
       "require": "./dist/profile.js",
       "import": "./dist/profile.mjs"
+    },
+    "./works": {
+      "types": "./dist/works.d.ts",
+      "require": "./dist/works.js",
+      "import": "./dist/works.mjs"
     }
   },
   "scripts": {

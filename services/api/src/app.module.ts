@@ -11,6 +11,7 @@ import { AccountModule } from "./modules/identity/account/account.module";
 import { AuthModule } from "./modules/identity/auth/auth.module";
 import { ProfileModule } from "./modules/identity/profile/profile.module";
 import { MediaModule } from "./modules/media/media.module";
+import { WorksModule } from "./modules/works/works.module";
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { MediaModule } from "./modules/media/media.module";
     ProfileModule,
     MediaModule,
     AccountModule,
+    WorksModule,
   ],
   controllers: [HealthController],
   providers: [
