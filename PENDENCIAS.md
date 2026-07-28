@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-28 · Branch: `feat/E3-06-comparador`
+> Última atualização: 2026-07-28 · Branch: `main`
 
 ---
 
@@ -93,6 +93,7 @@
 | 2026-07-28 | Bug real achado ao validar o boot de `services/api` com `pnpm start`: o script apontava pra `dist/main.js`, mas o `nest build` gera `dist/src/main.js` (rootDir inclui `src/` e `prisma/`) — `pnpm start` sempre teria falhado (`MODULE_NOT_FOUND`) em qualquer deploy real, mesmo local. Nunca foi pego antes porque toda validação anterior desta sessão rodava `node dist/src/main.js` direto, nunca via `pnpm start`. Corrigido em `services/api/package.json`, `infra/deploy/ecosystem.config.cjs` e `DEPLOY.md` — reconfirmado com `pnpm start` rodando até o ponto esperado (`PrismaClientInitializationError: Can't reach database server`, ambiente sem Postgres) |
 | 2026-07-28 | Bug real achado ao rodar `pnpm lint` na raiz pela primeira vez nesta sessão: `packages/ui` usava `eslint src`, mas `eslint` nunca foi instalado como dependência (pré-existente desde S0-04) — `pnpm lint` da raiz inteira estava quebrado o tempo todo (`sh: eslint: command not found`), provavelmente deixando o step de lint do CI (`.github/workflows/ci.yml`) vermelho sem ninguém notar, já que cada task anterior só rodava `tsc --noEmit`/`nest build`/`next build` isoladamente, nunca `pnpm lint` da raiz. Corrigido trocando pra `tsc --noEmit`, mesmo padrão do resto do monorepo (mesmo ajuste já feito em `apps/web` na sessão anterior por causa do `next lint` interativo) |
 | 2026-07-28 | Comparador de propostas (E3-06, parcial): backend ganhou `proponenteNome` em `RfqProposalPublic` (`packages/types/src/rfq-proposals.ts` + `toPublicRfqProposal` + `RfqProposalService`, via `include: {proponente: {select: {nome:true}}}`) — sem isso o front só teria um UUID pra mostrar. `apps/web`: `/rfq` (lista "minhas RFQs"), `/rfq/[id]` (detalhe + tabela responsiva comparando preço/prazo/observações/status, com destaque determinístico "Menor preço"/"Mais rápido" — não é IA, rotulado explicitamente como tal), botão "Aceitar" com confirmação (Client Component) chamando o novo Route Handler `POST /api/proposals/[id]/accept`. `middleware.ts` estendido pra proteger `/rfq/*`. Refatorado `lib/auth-session.ts` (`requireAccessToken`) reaproveitado por `/conta` e pelas novas páginas. Escopo deliberadamente não cobre: criação de RFQ pela UI (E3-02 front ainda não existe) nem tela do prestador (ver P-032). `tsc`/`next build`/`nest build` passam; testado no browser que o middleware redireciona `/rfq` pro login corretamente — o restante do fluxo autenticado não pôde ser testado visualmente por falta de Postgres real e por não dar pra forjar o cookie `httpOnly` de sessão sem login de verdade |
+| 2026-07-28 | **Merge de `feat/E3-06-comparador` em `main`** (fast-forward, sem conflito). `pnpm build`/`pnpm lint`/`pnpm test` da raiz inteira (6 workspaces) passam limpos pós-merge |
 
 ---
 
