@@ -17,6 +17,11 @@
       "types": "./dist/documents.d.ts",
       "require": "./dist/documents.js",
       "import": "./dist/documents.mjs"
+    },
+    "./profile": {
+      "types": "./dist/profile.d.ts",
+      "require": "./dist/profile.js",
+      "import": "./dist/profile.mjs"
     }
   },
   "scripts": {

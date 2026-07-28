@@ -8,6 +8,7 @@ import { PrismaModule } from "./common/prisma/prisma.module";
 import { AuditLogModule } from "./common/audit/audit-log.module";
 import { HealthController } from "./health/health.controller";
 import { AuthModule } from "./modules/identity/auth/auth.module";
+import { ProfileModule } from "./modules/identity/profile/profile.module";
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { AuthModule } from "./modules/identity/auth/auth.module";
     PrismaModule,
     AuditLogModule,
     AuthModule,
+    ProfileModule,
   ],
   controllers: [HealthController],
   providers: [
