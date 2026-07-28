@@ -1,6 +1,7 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "../../common/prisma/prisma.service";
 import { AuditLogService } from "../../common/audit/audit-log.service";
+import { NotificationsService } from "../notifications/notifications.service";
 
 /** Tamanho do lote de rodízio por RFQ — não notifica todo mundo que combina, só os N da vez. */
 const MATCH_LIMIT = 10;
@@ -19,12 +20,18 @@ interface MatchCandidate {
  * Rodízio: ordena por `ultimoMatchEm` (quem não é casado há mais tempo
  * primeiro) e marca a hora do match pros selecionados — evita que os
  * mesmos prestadores sempre fiquem com todos os leads da categoria.
+ *
+ * Notificação (E3-04): enfileira um job por prestador casado, best-effort
+ * — falha ao enfileirar não desfaz o match nem impede a publicação do RFQ.
  */
 @Injectable()
 export class MatchingService {
+  private readonly logger = new Logger(MatchingService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async matchRfq(rfqId: string): Promise<string[]> {
@@ -71,6 +78,17 @@ export class MatchingService {
       entidade: "rfq",
       payload: { rfqId, prestadorIds, quantidade: prestadorIds.length },
     });
+
+    for (const prestadorId of prestadorIds) {
+      try {
+        await this.notifications.enqueueRfqMatch({ rfqId, prestadorId });
+      } catch (err) {
+        this.logger.error(
+          `Falha ao enfileirar notificação de match (rfq=${rfqId}, prestador=${prestadorId})`,
+          err as Error,
+        );
+      }
+    }
 
     return prestadorIds;
   }

@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-28 · Branch: `feat/E3-07-aceitar-proposta`
+> Última atualização: 2026-07-28 · Branch: `feat/E3-04-notificacoes`
 
 ---
 
@@ -39,6 +39,7 @@
 | P-024 | Motor de matching regional, branch `feat/E3-03-matching` (empilhada sobre `main`, ainda não mesclada) | E3-03 | Em revisão | `MatchingService.matchRfq()` casa RFQ com até 10 prestadores por categoria + raio (PostGIS `ST_DWithin`), com rodízio via `ProfilePrestador.ultimoMatchEm` (nova migração, junto com `RfqMatch` pra persistir o resultado). Roda automaticamente e de forma best-effort dentro de `RfqService.create()` — falha no matching não impede a publicação do RFQ. `GET /rfq/discover` pro prestador ver os RFQs casados. **Sem obra.geo, o match cai pra só categoria** (geocoding ainda não existe, P-021). **Sem notificação ainda** (E3-04, precisa de worker BullMQ). Validado com `tsc`/`nest build`/execução real; nunca contra um Postgres real |
 | P-025 | Envio de proposta + "caps por plano", branch `feat/E3-05-enviar-proposta` (empilhada sobre E3-03, ainda não mesclada) | E3-05 | Em revisão | `POST/GET /rfq/:id/proposals`, uma proposta por prestador por RFQ, só enquanto `ABERTO`; listagem restrita (dono vê todas, prestador só a própria — privacidade de leilão). **"Caps por plano" é um placeholder**: os tiers pagos de verdade (E8-01, 79/149/299/599 etc.) não existem ainda — hoje, sem nenhuma `Subscription`, o prestador tem um teto mensal fixo (`FREE_PLAN_MONTHLY_PROPOSAL_LIMIT`, env, default 5); qualquer `Subscription` isenta do teto, independente do plano real. Validado com `tsc`/`nest build`/execução real; nunca contra um Postgres real |
 | P-026 | Aceitar proposta → rascunho de contrato, branch `feat/E3-07-aceitar-proposta` (empilhada sobre E3-05, ainda não mesclada) | E3-07 | Em revisão | `POST /proposals/:id/accept` (dono do RFQ): marca a proposta `ACEITA`, recusa as demais `ENVIADA` do mesmo RFQ, fecha o RFQ (`CONTRATADO`) e cria `Contract` (`"rascunho"`) + `ContractParty` — tudo numa única `$transaction` desde o início (lição do code review anterior). **Sem PDF nem assinatura eletrônica** (E4-01/E4-02). Validado com `tsc`/`nest build`/execução real; nunca contra um Postgres real |
+| P-027 | Notificações de RFQ via fila BullMQ, branch `feat/E3-04-notificacoes` (empilhada sobre E3-07, ainda não mesclada) | E3-04 | Em revisão | `REDIS_URL` agora obrigatório no env (mesmo padrão de `DATABASE_URL` — Redis já é infra decidida, não decisão de fornecedor em aberto). `MatchingService.matchRfq()` enfileira um job por prestador casado (best-effort). **`NotificationsProcessor` é um stub que só loga** — nenhum provedor de push/e-mail/WhatsApp foi escolhido (mesmo padrão do `OtpNotifier`, E1-01; falta decisão de fornecedor, registrar junto com P-006 quando isso for discutido). Testado que a conexão `ioredis` é preguiçosa e não derruba o boot sem Redis disponível — mas nunca rodado contra um Redis real de verdade (sem Docker) |
 
 ## 🟢 DÍVIDAS TÉCNICAS / MELHORIAS (não bloqueiam)
 
@@ -76,6 +77,7 @@
 | 2026-07-28 | Motor de matching regional (E3-03, parcial): `MatchingService` (categoria + raio PostGIS + rodízio) integrado em `RfqService.create()` + `GET /rfq/discover`, branch `feat/E3-03-matching` — ver P-024 |
 | 2026-07-28 | Envio de proposta (E3-05, parcial): `RfqProposalService` (`POST/GET /rfq/:id/proposals`, cap mensal placeholder do plano gratuito), branch `feat/E3-05-enviar-proposta` — ver P-025 |
 | 2026-07-28 | Aceitar proposta → rascunho de contrato (E3-07, parcial): `ContractsModule` (`POST /proposals/:id/accept`), branch `feat/E3-07-aceitar-proposta` — ver P-026 |
+| 2026-07-28 | Notificações de RFQ via fila (E3-04, parcial): `NotificationsModule` (BullMQ) integrado em `MatchingService`, branch `feat/E3-04-notificacoes` — ver P-027. Com isso, o épico E3 (obra→RFQ→matching→proposta→aceite→contrato→notificação) está com todas as tasks P0/P1 implementadas, exceto E3-06 (comparador — mais front-end, `apps/web` ainda não existe) |
 
 ---
 

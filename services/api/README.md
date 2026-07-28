@@ -3,11 +3,11 @@
 NestJS monólito modular. Ver `docs/prd/03_Estrutura_Projeto.md` para a
 estrutura-alvo completa (módulos de domínio em `src/modules/*`).
 
-## Conteúdo (S0-05 + S0-06 + E1-01 + E1-02 + E1-04 + E1-07 + E1-08 + E3-01 + E3-02 + E3-03 + E3-05 + E3-07)
+## Conteúdo (S0-05 + S0-06 + E1-01 + E1-02 + E1-04 + E1-07 + E1-08 + E3-01 + E3-02 + E3-03 + E3-05 + E3-07 + E3-04)
 
 > S0-05 até E3-02 já estão mesclados em `main` (2026-07-28). O que segue é
 > o inventário cumulativo; a seção **Status** no fim descreve o que ainda
-> falta validar contra infra real (Postgres/S3/Sentry).
+> falta validar contra infra real (Postgres/Redis/S3/Sentry).
 
 - `prisma/schema.prisma` — schema inicial (S0-05) + `senha_hash`,
   `telefone_verificado`, `refresh_tokens`, `otp_codes` (E1-01, ver
@@ -132,6 +132,17 @@ estrutura-alvo completa (módulos de domínio em `src/modules/*`).
   **Sem PDF nem assinatura eletrônica** — isso é E4-01/E4-02, fora do
   escopo desta task. Rota fica em `/proposals` (não `/rfq/...`), seguindo
   o contrato de API do doc 02 §4.
+- `src/modules/notifications/` (**E3-04**) — fila `BullMQ` (`REDIS_URL`
+  obrigatório no env, igual `DATABASE_URL` — Redis já é infra decidida no
+  `docker-compose.local.yml`, diferente de S3/SMS que são fornecedor em
+  aberto). `MatchingService.matchRfq()` enfileira um job
+  `NotificationsService.enqueueRfqMatch()` por prestador casado
+  (best-effort: falha ao enfileirar não desfaz o match). O
+  `NotificationsProcessor` é um **stub** que só loga — nenhum provedor de
+  push/e-mail/WhatsApp foi escolhido ainda (mesmo padrão do
+  `OtpNotifier`, E1-01). A conexão `ioredis` é preguiçosa (não trava o
+  boot sem Redis disponível, só falha quando algo tentar usá-la de
+  verdade — mesmo comportamento do `PrismaService`).
 - `src/health/health.controller.ts` — `GET /health`.
 
 ## Rodando localmente
@@ -199,19 +210,22 @@ curl -X POST localhost:3333/proposals/<proposalId>/accept \
 Todo o bootstrap e a árvore de injeção de dependências de `AuthModule`,
 `ProfileModule`, `MediaModule`, `LegalModule`, `AccountModule`,
 `WorksModule`, `RfqModule` (incluindo `RfqProposalService`),
-`MatchingModule` e `ContractsModule` (controller → service → guards →
-strategies → throttler → audit log → prisma) foram validados com
-`tsc --noEmit`, `nest build` e execução real do `dist/src/main.js` —
-inclusive **sem nenhuma credencial S3 configurada**, confirmando que
-`MediaService` degrada normalmente em vez de derrubar o boot. A única
-falha observada foi a esperada, "Can't reach database server", porque não
-havia Postgres disponível no ambiente (sem Docker em nenhuma sessão até
-agora). Esse mesmo tipo de teste já pegou e corrigiu bugs reais de DI e de
-tipos que `tsc`/`nest build` sozinhos não detectam (ver `PENDENCIAS.md`
-para o histórico). As funções do `otplib` também foram testadas
-isoladamente e se comportam como esperado.
+`MatchingModule`, `ContractsModule` e `NotificationsModule` (controller →
+service → guards → strategies → throttler → audit log → prisma → fila)
+foram validados com `tsc --noEmit`, `nest build` e execução real do
+`dist/src/main.js` — inclusive **sem nenhuma credencial S3 configurada**
+e **sem Redis disponível**, confirmando que `MediaService` degrada
+normalmente em vez de derrubar o boot, e que a conexão `ioredis` do
+BullMQ é preguiçosa (não bloqueia o `NestFactory.create()`, só falharia
+quando algo de fato tentasse enfileirar/processar um job). A única falha
+observada foi a esperada, "Can't reach database server", porque não havia
+Postgres disponível no ambiente (sem Docker em nenhuma sessão até agora).
+Esse mesmo tipo de teste já pegou e corrigiu bugs reais de DI e de tipos
+que `tsc`/`nest build` sozinhos não detectam (ver `PENDENCIAS.md` para o
+histórico). As funções do `otplib` também foram testadas isoladamente e
+se comportam como esperado.
 
-**Ninguém rodou isso contra um banco (ou bucket S3) real ainda** — validar
-com `docker compose up` + os `curl` acima assim que houver Docker
+**Ninguém rodou isso contra um banco, Redis ou bucket S3 real ainda** —
+validar com `docker compose up` + os `curl` acima assim que houver Docker
 disponível (ver `PENDENCIAS.md` P-010/P-011/P-013/P-014/P-015/P-017/P-018/
-P-019/P-020/P-021/P-023/P-024).
+P-019/P-020/P-021/P-023/P-024/P-027).

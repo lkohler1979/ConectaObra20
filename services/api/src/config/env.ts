@@ -20,6 +20,10 @@ export const envSchema = baseEnvSchema.extend({
   /// etc. — ver docs/prd/04_Tasks_Backlog.md). Hoje: sem Subscription = plano
   /// gratuito = limite mensal de propostas; qualquer Subscription = sem limite.
   FREE_PLAN_MONTHLY_PROPOSAL_LIMIT: z.coerce.number().int().positive().default(5),
+  /// Redis já é infra decidida (docker-compose.local.yml, CLAUDE.md §3) —
+  /// diferente de S3/SMS (fornecedor em aberto), por isso é obrigatório
+  /// como DATABASE_URL, não opcional (E3-04).
+  REDIS_URL: z.string().url(),
 });
 
 export const env = parseEnv(envSchema);
