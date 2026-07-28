@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { loginInputSchema, type LoginInput } from "@conectaobra/types/auth";
 import { Alert, AlertDescription, Button, Input } from "@conectaobra/ui";
 import { FormField } from "@/components/form-field";
+import { safeRedirect } from "@/lib/safe-redirect";
 
 function EntrarForm() {
   const router = useRouter();
@@ -39,8 +40,7 @@ function EntrarForm() {
       return;
     }
 
-    const redirect = searchParams.get("redirect") ?? "/conta";
-    router.push(redirect);
+    router.push(safeRedirect(searchParams.get("redirect")));
     router.refresh();
   }
 
