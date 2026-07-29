@@ -4,6 +4,7 @@ export * from "./catalog";
 export * from "./contracts";
 export * from "./diario";
 export * from "./documents";
+export * from "./equipe";
 export * from "./geo";
 export * from "./legal";
 export * from "./media";

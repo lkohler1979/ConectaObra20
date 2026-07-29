@@ -65,8 +65,9 @@ export class WorksService {
     return works.map(toPublicWork);
   }
 
-  async getMine(clienteId: string, workId: string): Promise<WorkPublic> {
-    const work = await this.getOwnedOrThrow(clienteId, workId);
+  /** Dono OU membro da equipe (E6-04) pode ver — edição continua com `getOwnedOrThrow`. */
+  async getMine(requesterId: string, workId: string): Promise<WorkPublic> {
+    const work = await this.assertVisible(requesterId, workId);
     return toPublicWork(work);
   }
 
@@ -77,8 +78,8 @@ export class WorksService {
    * aprovada, avaliação registrada) já grava lá desde que o serviço
    * correspondente informe `obraId` em `auditLog.record()`.
    */
-  async listDiario(clienteId: string, workId: string): Promise<DiarioEvento[]> {
-    await this.getOwnedOrThrow(clienteId, workId);
+  async listDiario(requesterId: string, workId: string): Promise<DiarioEvento[]> {
+    await this.assertVisible(requesterId, workId);
 
     const entries = await this.prisma.auditLog.findMany({
       where: { obraId: workId },
@@ -100,8 +101,8 @@ export class WorksService {
    * P-002), nada disso é dinheiro que de fato mudou de mãos, só o valor das
    * etapas cuja entrega já foi aprovada (`Milestone.status`).
    */
-  async getPainelFinanceiro(clienteId: string, workId: string): Promise<PainelFinanceiroObra> {
-    const work = await this.getOwnedOrThrow(clienteId, workId);
+  async getPainelFinanceiro(requesterId: string, workId: string): Promise<PainelFinanceiroObra> {
+    const work = await this.assertVisible(requesterId, workId);
 
     const milestones = await this.prisma.milestone.findMany({
       where: { contract: { obraId: workId } },
@@ -170,6 +171,30 @@ export class WorksService {
   private async getOwnedOrThrow(clienteId: string, workId: string): Promise<Work> {
     const work = await this.prisma.work.findUnique({ where: { id: workId } });
     if (!work || work.clienteId !== clienteId) {
+      throw new NotFoundException("Obra não encontrada");
+    }
+    return work;
+  }
+
+  /**
+   * Dono OU membro da equipe (E6-04, só leitura) — usado por leituras
+   * compartilháveis (getMine, diário, painel financeiro) e pelo
+   * WorkTeamService.list(). Ações de escrita continuam com
+   * `getOwnedOrThrow`, estrito ao dono.
+   */
+  async assertVisible(requesterId: string, workId: string): Promise<Work> {
+    const work = await this.prisma.work.findUnique({ where: { id: workId } });
+    if (!work) {
+      throw new NotFoundException("Obra não encontrada");
+    }
+    if (work.clienteId === requesterId) {
+      return work;
+    }
+
+    const membership = await this.prisma.workTeamMember.findUnique({
+      where: { obraId_userId: { obraId: workId, userId: requesterId } },
+    });
+    if (!membership) {
       throw new NotFoundException("Obra não encontrada");
     }
     return work;

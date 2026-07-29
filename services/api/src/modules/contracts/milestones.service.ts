@@ -60,7 +60,7 @@ export class MilestonesService {
   }
 
   async listForContract(contractId: string, requesterId: string): Promise<MilestonePublic[]> {
-    await this.requireParty(contractId, requesterId);
+    await this.requirePartyOrTeamMember(contractId, requesterId);
 
     const milestones = await this.prisma.milestone.findMany({
       where: { contractId },
@@ -163,6 +163,30 @@ export class MilestonesService {
       throw new NotFoundException("Contrato não encontrado");
     }
     return party;
+  }
+
+  /**
+   * Leitura (E6-04): parte do contrato OU membro da equipe da obra (só
+   * leitura, via WorkTeamMember). Ações de escrita continuam exclusivas de
+   * `requireRole`/`requireParty` — equipe nunca cria/inicia/entrega/aprova.
+   */
+  private async requirePartyOrTeamMember(contractId: string, userId: string): Promise<void> {
+    const party = await this.prisma.contractParty.findUnique({
+      where: { contractId_userId: { contractId, userId } },
+    });
+    if (party) {
+      return;
+    }
+
+    const obraId = await this.getObraId(contractId);
+    const membership = obraId
+      ? await this.prisma.workTeamMember.findUnique({
+          where: { obraId_userId: { obraId, userId } },
+        })
+      : null;
+    if (!membership) {
+      throw new NotFoundException("Contrato não encontrado");
+    }
   }
 
   private async requireRole(

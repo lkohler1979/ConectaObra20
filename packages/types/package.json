@@ -38,6 +38,11 @@
       "require": "./dist/documents.js",
       "import": "./dist/documents.mjs"
     },
+    "./equipe": {
+      "types": "./dist/equipe.d.ts",
+      "require": "./dist/equipe.js",
+      "import": "./dist/equipe.mjs"
+    },
     "./geo": {
       "types": "./dist/geo.d.ts",
       "require": "./dist/geo.js",

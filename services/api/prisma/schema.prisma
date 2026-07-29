@@ -71,20 +71,22 @@ model User {
   otpCodes          OtpCode[]
   consents          Consent[]
 
-  obras               Work[]
-  rfqs                Rfq[]
-  rfqProposals        RfqProposal[]
-  contractParties     ContractParty[]
-  milestonesAprovados Milestone[]      @relation("milestone_aprovado_por")
-  disputesAbertas     Dispute[]        @relation("dispute_aberto_por")
-  disputesMediadas    Dispute[]        @relation("dispute_mediador")
-  reviewsFeitas       Review[]         @relation("review_avaliador")
-  reviewsRecebidas    Review[]         @relation("review_avaliado")
-  projetosCatalogo    ProjectCatalog[]
-  subscriptions       Subscription[]
-  aiConversations     AiConversation[]
-  ads                 Ad[]
-  auditLogs           AuditLog[]
+  obras                 Work[]
+  rfqs                  Rfq[]
+  rfqProposals          RfqProposal[]
+  contractParties       ContractParty[]
+  milestonesAprovados   Milestone[]      @relation("milestone_aprovado_por")
+  disputesAbertas       Dispute[]        @relation("dispute_aberto_por")
+  disputesMediadas      Dispute[]        @relation("dispute_mediador")
+  reviewsFeitas         Review[]         @relation("review_avaliador")
+  reviewsRecebidas      Review[]         @relation("review_avaliado")
+  projetosCatalogo      ProjectCatalog[]
+  subscriptions         Subscription[]
+  aiConversations       AiConversation[]
+  workTeamMemberships   WorkTeamMember[] @relation("work_team_member")
+  workTeamInvitesFeitos WorkTeamMember[] @relation("work_team_added_by")
+  ads                   Ad[]
+  auditLogs             AuditLog[]
 
   @@map("users")
 }
@@ -252,8 +254,28 @@ model Work {
   materialLists   MaterialList[]
   aiConversations AiConversation[]
   auditLogEntries AuditLog[]
+  teamMembers     WorkTeamMember[]
 
   @@map("works")
+}
+
+/// Equipe da obra (E6-04) — visualização compartilhada, só leitura. Membro
+/// não ganha nenhum poder de escrita (criar RFQ, aprovar etapa, aceitar
+/// proposta continuam exclusivos do cliente dono) — decisão confirmada com
+/// o usuário nesta sessão, ver PENDENCIAS.md.
+model WorkTeamMember {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  obraId    String   @map("obra_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  addedById String   @map("added_by_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  obra    Work @relation(fields: [obraId], references: [id], onDelete: Cascade)
+  user    User @relation("work_team_member", fields: [userId], references: [id], onDelete: Cascade)
+  addedBy User @relation("work_team_added_by", fields: [addedById], references: [id])
+
+  @@unique([obraId, userId])
+  @@map("work_team_members")
 }
 
 enum RfqStatus {
@@ -667,7 +689,7 @@ model AuditLog {
   createdAt DateTime @default(now()) @map("created_at")
 
   user User? @relation(fields: [userId], references: [id])
-  obra Work?  @relation(fields: [obraId], references: [id], onDelete: SetNull)
+  obra Work? @relation(fields: [obraId], references: [id], onDelete: SetNull)
 
   @@map("audit_log")
 }

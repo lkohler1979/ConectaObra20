@@ -9,6 +9,7 @@ export default defineConfig({
     "src/contracts.ts",
     "src/diario.ts",
     "src/documents.ts",
+    "src/equipe.ts",
     "src/geo.ts",
     "src/legal.ts",
     "src/media.ts",
