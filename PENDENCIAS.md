@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-29 · Branch: `main`
+> Última atualização: 2026-07-29 · Branch: `feat/E2-03-paginas-publicas`
 
 ---
 
@@ -50,6 +50,7 @@
 | P-035 | Índice `prestadores` do Meilisearch não inclui geolocalização (`_geo`) — busca por texto/categoria funciona, mas não dá pra combinar busca textual com raio geográfico numa única query | E2-01/E2-02 | Aberto | O matching de RFQ (E3-03) já resolve geo+categoria via PostGIS direto, então não bloqueia o loop principal. Portar `geo` (Postgres `Unsupported("geography")`) pro formato `_geo: {lat, lng}` do Meilisearch exigiria uma leitura via raw SQL na hora de indexar — deixado de fora deste primeiro corte |
 | P-036 | `POST /contracts/:id/reviews` permite avaliar qualquer contrato do qual eu seja parte, independente do trabalho ter sido de fato entregue — `Contract.status` ainda é `String` livre, sem um estado "concluído" definido | E2-04, E6 | Aberto | Decisão deliberada por enquanto (documentada em `ReviewsService.create`): sem o workflow de execução da obra (E6 — cronograma, milestones, entregas), não existe sinal de "serviço concluído" pra amarrar a liberação da avaliação. Cliente e prestador podem avaliar um contrato recém-criado, antes de qualquer trabalho. Revisitar quando E6/E4 (milestones `ENTREGUE`/`APROVADO`) existirem — restringir a avaliação a contratos com pelo menos um milestone aprovado |
 | P-037 | "Selo básico" do E2-05 não foi implementado — só a nota agregada (`notaMedia`) | E2-05 | Aberto | As únicas definições de "selo" nos docs (`docs/prd/01`) são: (1) "Perfil Verificado" ligado a KYC, bloqueado por P-006; (2) Bronze/Prata/Ouro/Platinum do job mensal de ranking, que é explicitamente escopo do E8-04 ("critérios objetivos e auditáveis"), uma task separada. Implementar um selo por conta própria aqui seria inventar um critério de negócio não documentado — não fiz isso |
+| P-038 | `apps/web/app/prestadores/[id]` e `/fornecedores/[id]` (E2-03) só são alcançáveis digitando a URL direto — não existe nenhuma página de resultado de busca no frontend linkando pra elas | E2-02 (web), E2-03 | Aberto | O backend de busca (`GET /search/*`, E2-01/E2-02) já existe, mas nunca ganhou UI em `apps/web` — só as páginas de perfil público em si (E2-03) foram construídas. Cria uma lacuna de navegação: as páginas de perfil são reais e indexáveis por SEO, mas hoje só chegam nelas por link direto ou pelo Google depois de indexado |
 
 ## 🟢 DÍVIDAS TÉCNICAS / MELHORIAS (não bloqueiam)
 
@@ -111,6 +112,7 @@
 | 2026-07-29 | **Merge de `feat/E2-04-avaliacoes` em `main`** (fast-forward, sem conflito) |
 | 2026-07-29 | Nota agregada no perfil (E2-05, parcial): `ReviewsService.create()` agora recalcula `notaMedia` (média simples de prazo/qualidade/preço de todas as reviews recebidas) e grava em `ProfilePrestador.notaMedia`/`ProfileFornecedor.notaMedia` (`updateMany`, seguro mesmo se o avaliado for um CLIENTE sem nenhum dos dois perfis) — depois reindexa no Meilisearch via `MeilisearchService.updatePrestadorNota`/`updateFornecedorNota`, novos métodos que usam `updateDocuments` (merge parcial, diferente de `addDocuments` que substitui o documento inteiro). Resiliência a Meilisearch indisponível testada isoladamente de novo (`node -e`), mesmo padrão do E2-01. **"Selo básico" não implementado** — registrado como P-037, com o porquê (as únicas definições de selo nos docs dependem de KYC bloqueado ou são escopo do job de ranking de E8-04). `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
 | 2026-07-29 | **Merge de `feat/E2-05-nota-agregada` em `main`** (fast-forward, sem conflito) |
+| 2026-07-29 | Páginas públicas de prestador/fornecedor (E2-03, parcial): novo `PublicProfilesModule` (`services/api/src/modules/public-profiles/`) — `GET /public/{prestadores,fornecedores}/:id`, **primeiro controller da API sem `JwtAuthGuard`**, filtrando `deletedAt: null` e só devolvendo campos seguros (nunca e-mail/telefone/CPF-CNPJ/kycStatus); ainda coberto pelo rate-limit global do `ThrottlerGuard`. `apps/web`: `/prestadores/[id]` e `/fornecedores/[id]`, Server Components sem `requireAccessToken` (de propósito — visitante sem conta), com `generateMetadata` pra SEO e `notFound()` quando o perfil não existe. Testado no browser de ponta a ponta pela primeira vez nesta sessão pra uma página autenticada-opcional: renderiza sem redirecionar pro login (confirma que é mesmo pública) e degrada graciosamente pro "serviço indisponível" sem erro de console. Escopo não cobre uma tela de resultado de busca linkando pra cá — ver P-038. `tsc`/`next build`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
 
 ---
 

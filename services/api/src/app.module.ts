@@ -21,6 +21,7 @@ import { NotificationsModule } from "./modules/notifications/notifications.modul
 import { AiModule } from "./modules/ai/ai.module";
 import { CatalogModule } from "./modules/catalog/catalog.module";
 import { SearchModule } from "./modules/search/search.module";
+import { PublicProfilesModule } from "./modules/public-profiles/public-profiles.module";
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { SearchModule } from "./modules/search/search.module";
     AiModule,
     CatalogModule,
     SearchModule,
+    PublicProfilesModule,
   ],
   controllers: [HealthController],
   providers: [

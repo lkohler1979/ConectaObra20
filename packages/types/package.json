@@ -63,6 +63,11 @@
       "require": "./dist/rfq.js",
       "import": "./dist/rfq.mjs"
     },
+    "./public-profiles": {
+      "types": "./dist/public-profiles.d.ts",
+      "require": "./dist/public-profiles.js",
+      "import": "./dist/public-profiles.mjs"
+    },
     "./reviews": {
       "types": "./dist/reviews.d.ts",
       "require": "./dist/reviews.js",

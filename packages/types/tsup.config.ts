@@ -13,6 +13,7 @@ export default defineConfig({
     "src/media.ts",
     "src/portfolio.ts",
     "src/profile.ts",
+    "src/public-profiles.ts",
     "src/rfq.ts",
     "src/reviews.ts",
     "src/rfq-proposals.ts",

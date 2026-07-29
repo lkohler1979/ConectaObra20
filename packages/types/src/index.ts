@@ -8,6 +8,7 @@ export * from "./legal";
 export * from "./media";
 export * from "./portfolio";
 export * from "./profile";
+export * from "./public-profiles";
 export * from "./rfq";
 export * from "./reviews";
 export * from "./rfq-proposals";
