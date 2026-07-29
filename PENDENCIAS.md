@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-29 · Branch: `feat/E2-01-busca-meilisearch`
+> Última atualização: 2026-07-29 · Branch: `main`
 
 ---
 
@@ -104,6 +104,7 @@
 | 2026-07-28 | Portfólio de obras anteriores do prestador (E1-05, parcial): novo model `PortfolioItem` (título, descrição, fotos[], FK pra `profiles_prestador`) — migração escrita à mão seguindo as convenções do Prisma (mesmo padrão de toda migração desta sessão, sem Postgres real disponível pra gerar via `prisma migrate dev`), validada com `prisma validate`/`prisma generate` (schema-only, não precisa de conexão real). `POST/GET/PATCH/DELETE /profile/prestador/portfolio[/:id]` no `ProfileModule` existente, restrito a `PRESTADOR`/`TECNICO` dono. `create()` valida que o `ProfilePrestador` existe antes de inserir (mesmo padrão do catálogo de produtos — evita erro cru de FK). Com isso, E1-05 cobre os 5 itens do backlog (fotos, obras, certificados, experiência, raio — os 3 últimos já vinham de E1-02). `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam; migração em si **nunca foi aplicada a um Postgres real** (mesma limitação de todas as migrações desta sessão, ver P-010) |
 | 2026-07-28 | **Merge de `feat/E1-05-portfolio-prestador` em `main`** (fast-forward, sem conflito) |
 | 2026-07-29 | Indexação e busca via Meilisearch (E2-01/E2-02, parcial): `MEILI_HOST`/`MEILI_API_KEY` obrigatórios em `env.ts` (infra já decidida, mesmo status do `REDIS_URL`) — client `meilisearch@0.60.0` instalado, mas é preguiçoso (`new Meilisearch(...)` não conecta), então a ausência de um servidor real não derruba o boot. Novo `SearchModule`: `MeilisearchService` é um wrapper best-effort (nenhum método público propaga erro, mesmo padrão do enfileiramento BullMQ em `MatchingService`) sobre 3 índices (`prestadores`, `fornecedores`, `produtos`); `GET /search/{prestadores,fornecedores,produtos}` com filtros por categoria/região. `ProfileService.upsertPrestador`/`upsertFornecedor` e `ProductsService.create/update/remove` agora sincronizam o índice depois de cada escrita no Postgres. Resiliência a Meilisearch indisponível **testada isoladamente fora do Nest** (`node -e` instanciando `MeilisearchService` direto contra `localhost:7700`, que não existe neste ambiente) — confirmado que `onModuleInit`/`indexPrestador`/`searchPrestadores` nunca lançam exceção, só logam warning e devolvem fallback seguro (`[]` na busca). Isso não pôde ser confirmado via boot completo da API porque o `PrismaService` já quebra antes por falta de Postgres real (mesma limitação de sempre, ver P-010). Escopo não cobre: busca pública sem login (P-034) nem geo-busca combinada com texto (P-035). `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
+| 2026-07-29 | **Merge de `feat/E2-01-busca-meilisearch` em `main`** (fast-forward, sem conflito) |
 
 ---
 
