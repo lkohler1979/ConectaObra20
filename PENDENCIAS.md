@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-29 · Branch: `feat/E7-01-lista-materiais`
+> Última atualização: 2026-07-29 · Branch: `main`
 
 ---
 
@@ -129,6 +129,7 @@
 | 2026-07-29 | **Merge de `feat/E6-02-painel-financeiro` em `main`** (fast-forward, sem conflito) |
 | 2026-07-29 | Gestão de equipe da obra (E6-04, parcial): novo model `WorkTeamMember` (migração manual, `@@unique([obraId, userId])`) e `WorkTeamController`/`WorkTeamService` em `WorksModule` — `POST/GET/DELETE /works/:id/equipe/[:userId]`. Modelo de permissão decidido com o usuário via checklist (`AskUserQuestion`): **visualização compartilhada, só leitura** — membro nunca ganha poder de escrita, tudo continua exclusivo do cliente dono. `WorksService` ganhou `assertVisible()` (dono OU membro), usado por `getMine`/`listDiario`/`getPainelFinanceiro` (a versão estrita `getOwnedOrThrow` continua reservada pra `update()` e pras próprias mutações de equipe); `MilestonesService.listForContract()` ganhou o mesmo tratamento (`requirePartyOrTeamMember`, via `Contract.obraId`). **E6-05 (controle de entregas de materiais) foi pulado por decisão do usuário** — depende do épico E7 (compras/logística), ainda não iniciado; não registrado como pendência por não ser um item resolvível, e sim um adiamento intencional até E7 começar. Sem UI em `apps/web` — ver P-042. `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
 | 2026-07-29 | Lista de materiais (E7-01, parcial): novo `ProcurementModule` (`services/api/src/modules/procurement/`, nome já previsto em `CLAUDE.md` §4) — `MaterialListsService`/`MaterialListsController`, `POST/GET/GET:id/PATCH /material-lists`. Os models `MaterialList`/`PurchaseQuote`/`MaterialListOrigin` já existiam no schema desde S0-05, sem endpoints. Escrita exclusiva do cliente dono da obra; leitura reaproveita `WorksService.assertVisible()` (E6-04, dono OU membro da equipe) — por isso `WorksModule` passou a `export: [WorksService]`. Só `origem: MANUAL` implementado — ver P-043 pelo porquê de IA/cotação/comparador/checkout ficarem de fora. `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
+| 2026-07-29 | **Merge de `feat/E6-04-equipe` e `feat/E7-01-lista-materiais` em `main`** (fast-forward em sequência, sem conflito). `main` revalidado de ponta a ponta pós-merge (`pnpm build`/`lint`/`test` da raiz) — épico E6 (Planejamento e Gestão da Obra) completo (E6-01 a E6-04, E6-05 pulado por decisão do usuário) e épico E7 (Compras Inteligentes) iniciado (E7-01 de 4 tasks) |
 
 ---
 
