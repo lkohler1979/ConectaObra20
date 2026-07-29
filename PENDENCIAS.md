@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-29 · Branch: `feat/E2-03-paginas-publicas`
+> Última atualização: 2026-07-29 · Branch: `main`
 
 ---
 
@@ -113,6 +113,7 @@
 | 2026-07-29 | Nota agregada no perfil (E2-05, parcial): `ReviewsService.create()` agora recalcula `notaMedia` (média simples de prazo/qualidade/preço de todas as reviews recebidas) e grava em `ProfilePrestador.notaMedia`/`ProfileFornecedor.notaMedia` (`updateMany`, seguro mesmo se o avaliado for um CLIENTE sem nenhum dos dois perfis) — depois reindexa no Meilisearch via `MeilisearchService.updatePrestadorNota`/`updateFornecedorNota`, novos métodos que usam `updateDocuments` (merge parcial, diferente de `addDocuments` que substitui o documento inteiro). Resiliência a Meilisearch indisponível testada isoladamente de novo (`node -e`), mesmo padrão do E2-01. **"Selo básico" não implementado** — registrado como P-037, com o porquê (as únicas definições de selo nos docs dependem de KYC bloqueado ou são escopo do job de ranking de E8-04). `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
 | 2026-07-29 | **Merge de `feat/E2-05-nota-agregada` em `main`** (fast-forward, sem conflito) |
 | 2026-07-29 | Páginas públicas de prestador/fornecedor (E2-03, parcial): novo `PublicProfilesModule` (`services/api/src/modules/public-profiles/`) — `GET /public/{prestadores,fornecedores}/:id`, **primeiro controller da API sem `JwtAuthGuard`**, filtrando `deletedAt: null` e só devolvendo campos seguros (nunca e-mail/telefone/CPF-CNPJ/kycStatus); ainda coberto pelo rate-limit global do `ThrottlerGuard`. `apps/web`: `/prestadores/[id]` e `/fornecedores/[id]`, Server Components sem `requireAccessToken` (de propósito — visitante sem conta), com `generateMetadata` pra SEO e `notFound()` quando o perfil não existe. Testado no browser de ponta a ponta pela primeira vez nesta sessão pra uma página autenticada-opcional: renderiza sem redirecionar pro login (confirma que é mesmo pública) e degrada graciosamente pro "serviço indisponível" sem erro de console. Escopo não cobre uma tela de resultado de busca linkando pra cá — ver P-038. `tsc`/`next build`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
+| 2026-07-29 | **Merge de `feat/E2-03-paginas-publicas` em `main`** (fast-forward, sem conflito). Com isso, o épico E2 (Marketplace e Busca) está com as 6 tasks P0/P1 do backlog completas |
 
 ---
 
