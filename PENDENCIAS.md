@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-29 · Branch: `feat/E2-04-avaliacoes`
+> Última atualização: 2026-07-29 · Branch: `main`
 
 ---
 
@@ -107,6 +107,7 @@
 | 2026-07-29 | Indexação e busca via Meilisearch (E2-01/E2-02, parcial): `MEILI_HOST`/`MEILI_API_KEY` obrigatórios em `env.ts` (infra já decidida, mesmo status do `REDIS_URL`) — client `meilisearch@0.60.0` instalado, mas é preguiçoso (`new Meilisearch(...)` não conecta), então a ausência de um servidor real não derruba o boot. Novo `SearchModule`: `MeilisearchService` é um wrapper best-effort (nenhum método público propaga erro, mesmo padrão do enfileiramento BullMQ em `MatchingService`) sobre 3 índices (`prestadores`, `fornecedores`, `produtos`); `GET /search/{prestadores,fornecedores,produtos}` com filtros por categoria/região. `ProfileService.upsertPrestador`/`upsertFornecedor` e `ProductsService.create/update/remove` agora sincronizam o índice depois de cada escrita no Postgres. Resiliência a Meilisearch indisponível **testada isoladamente fora do Nest** (`node -e` instanciando `MeilisearchService` direto contra `localhost:7700`, que não existe neste ambiente) — confirmado que `onModuleInit`/`indexPrestador`/`searchPrestadores` nunca lançam exceção, só logam warning e devolvem fallback seguro (`[]` na busca). Isso não pôde ser confirmado via boot completo da API porque o `PrismaService` já quebra antes por falta de Postgres real (mesma limitação de sempre, ver P-010). Escopo não cobre: busca pública sem login (P-034) nem geo-busca combinada com texto (P-035). `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
 | 2026-07-29 | **Merge de `feat/E2-01-busca-meilisearch` em `main`** (fast-forward, sem conflito) |
 | 2026-07-29 | Avaliações pós-contrato (E2-04, parcial): `@@unique([contratoId, avaliadorId])` em `Review` (migração manual, mesmo padrão de sempre) — impede a mesma pessoa avaliar o mesmo contrato duas vezes, tratado como 409 amigável (P2002). `POST/GET /contracts/:contractId/reviews` (`ContractReviewsController`) e `GET /reviews/received` (`MyReviewsController`), ambos novos em `ContractsModule`. `ReviewsService.create()` nunca aceita `avaliadoId` do cliente — descobre sozinho quem é a outra parte do contrato via `ContractParty`; 404 se o requisitante não for parte do contrato (não vaza existência). **Limitação deliberada**: qualquer contrato existente permite avaliação, não há checagem de "serviço concluído" — `Contract.status` ainda não tem esse estado definido (depende de E6). Registrado como P-036. `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
+| 2026-07-29 | **Merge de `feat/E2-04-avaliacoes` em `main`** (fast-forward, sem conflito) |
 
 ---
 
