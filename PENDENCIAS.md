@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-29 · Branch: `feat/E6-03-diario-obra`
+> Última atualização: 2026-07-29 · Branch: `main`
 
 ---
 
@@ -121,6 +121,7 @@
 | 2026-07-29 | Varredura de pendências resolvíveis (a pedido): triados todos os itens abertos de `PENDENCIAS.md` entre "resolvível agora sem decisão externa" e "precisa de Fundador/Tech Lead/fornecedor/contratação". Resolvidos nesta sessão: **P-005** (pasta `app/` legada estava vazia — removida), **P-013** (confirmado por pesquisa que `pgvector/pgvector:pg16` não tem PostGIS — `infra/docker/Dockerfile.postgres` própria a partir de `postgis/postgis:16-3.5` + pgvector compilado, `docker-compose.local.yml` atualizado; não testado com Docker real), **P-023** (`WorksService`/`ProfileService` — escrita de `geo` agora atômica com o create/upsert via `$transaction`), **P-028** (`RfqProposalService.submit()` agora usa `pg_advisory_xact_lock` por prestador dentro de uma transação, fechando a race do teto mensal), **P-032** (`RfqService.getMine()` agora também permite o prestador que propôs, não só o cliente dono), **P-034** (`GET /search/*` agora é público — a condição que a própria pendência citava, E2-03 existir, já foi cumprida). **Não resolvíveis agora** (decisão de Fundador/Tech Lead, fornecedor externo ou orçamento, fora do meu alcance): P-001 (stack final), P-002 (PSP/escrow), P-003 (cidade-piloto), P-006 (assinatura eletrônica/KYC), P-008 (secrets de CI/CD — precisa da infra decidida), P-011 (DSN real do Sentry), P-012 (contratar engenheiro civil), P-031 (testar DEPLOY.md numa VPS real), P-033 (revisão das calculadoras pelo engenheiro), P-037 (critério de selo). `tsc`/`nest build`/`next build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
 | 2026-07-29 | **Merge de `fix/pendencias-resolviveis` em `main`** (fast-forward, sem conflito) |
 | 2026-07-29 | Diário de obra (E6-03, parcial): `AuditLog` ganhou `obraId` opcional (migração manual, `onDelete: SetNull` — não conflita com a trigger append-only, que só bloqueia `UPDATE`/`DELETE`, não `ALTER TABLE`). `WorksService`, `RfqService`, `RfqProposalService`, `ContractsService`, `MilestonesService` e `ReviewsService` agora informam `obraId` em cada `auditLog.record()` (para milestones/reviews, que não têm `obraId` direto, um pequeno `getObraId()` busca via `Contract.obraId`). Novo `GET /works/:id/diario` (`WorksService.listDiario`, restrito ao cliente dono) devolve o feed cronológico. Reaproveitou o `audit_log` já existente desde S0-06 em vez de criar uma tabela de eventos dedicada. Sem UI em `apps/web` e sem fotos geolocalizadas (não existe em nenhum upload do sistema) — ver P-040. `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
+| 2026-07-29 | **Merge de `feat/E6-03-diario-obra` em `main`** (fast-forward, sem conflito) |
 
 ---
 
