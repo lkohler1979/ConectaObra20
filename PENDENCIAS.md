@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-28 · Branch: `feat/E1-05-portfolio-prestador`
+> Última atualização: 2026-07-28 · Branch: `main`
 
 ---
 
@@ -100,6 +100,7 @@
 | 2026-07-28 | Catálogo de produtos do fornecedor (E1-06/E2-06, parcial): `CatalogModule` novo em `services/api/src/modules/catalog/` — `POST/GET/GET:id/PATCH/DELETE /products`, restrito a `FORNECEDOR` dono (mesmo padrão 404-pra-quem-não-é-dono de `works`/`rfq`). O model `Product` já existia desde S0-05 (nunca tinha CRUD); `create()` agora checa que o `ProfileFornecedor` existe antes de inserir, senão a FK do banco quebraria com erro cru em vez de uma mensagem amigável. Escopo não cobre: vitrine pública (E2-03) nem busca/descoberta (E2-01/E2-02) — isso é catálogo de gestão do próprio fornecedor, sem tela nem endpoint público ainda. `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
 | 2026-07-28 | **Merge de `feat/E1-06-catalogo-produtos` em `main`** (fast-forward, sem conflito) |
 | 2026-07-28 | Portfólio de obras anteriores do prestador (E1-05, parcial): novo model `PortfolioItem` (título, descrição, fotos[], FK pra `profiles_prestador`) — migração escrita à mão seguindo as convenções do Prisma (mesmo padrão de toda migração desta sessão, sem Postgres real disponível pra gerar via `prisma migrate dev`), validada com `prisma validate`/`prisma generate` (schema-only, não precisa de conexão real). `POST/GET/PATCH/DELETE /profile/prestador/portfolio[/:id]` no `ProfileModule` existente, restrito a `PRESTADOR`/`TECNICO` dono. `create()` valida que o `ProfilePrestador` existe antes de inserir (mesmo padrão do catálogo de produtos — evita erro cru de FK). Com isso, E1-05 cobre os 5 itens do backlog (fotos, obras, certificados, experiência, raio — os 3 últimos já vinham de E1-02). `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam; migração em si **nunca foi aplicada a um Postgres real** (mesma limitação de todas as migrações desta sessão, ver P-010) |
+| 2026-07-28 | **Merge de `feat/E1-05-portfolio-prestador` em `main`** (fast-forward, sem conflito) |
 
 ---
 
