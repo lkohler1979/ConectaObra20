@@ -11,6 +11,7 @@ export default defineConfig({
     "src/geo.ts",
     "src/legal.ts",
     "src/media.ts",
+    "src/portfolio.ts",
     "src/profile.ts",
     "src/rfq.ts",
     "src/rfq-proposals.ts",

@@ -103,10 +103,26 @@ model ProfilePrestador {
   /// Rodízio do matching (E3-03): quem não é casado há mais tempo tem prioridade.
   ultimoMatchEm     DateTime?                              @map("ultimo_match_em")
 
-  user    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  matches RfqMatch[]
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  matches   RfqMatch[]
+  portfolio PortfolioItem[]
 
   @@map("profiles_prestador")
+}
+
+/// Obras anteriores do prestador (E1-05) — cada item é um projeto do
+/// portfólio, com suas próprias fotos.
+model PortfolioItem {
+  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  prestadorId String   @map("prestador_id") @db.Uuid
+  titulo      String
+  descricao   String?  @db.Text
+  fotos       String[] @default([])
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  prestador ProfilePrestador @relation(fields: [prestadorId], references: [userId], onDelete: Cascade)
+
+  @@map("portfolio_items")
 }
 
 model ProfileFornecedor {
