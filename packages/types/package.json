@@ -63,6 +63,11 @@
       "require": "./dist/rfq.js",
       "import": "./dist/rfq.mjs"
     },
+    "./reviews": {
+      "types": "./dist/reviews.d.ts",
+      "require": "./dist/reviews.js",
+      "import": "./dist/reviews.mjs"
+    },
     "./rfq-proposals": {
       "types": "./dist/rfq-proposals.d.ts",
       "require": "./dist/rfq-proposals.js",

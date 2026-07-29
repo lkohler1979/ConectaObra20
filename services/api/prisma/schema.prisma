@@ -471,6 +471,9 @@ model Review {
   avaliador User     @relation("review_avaliador", fields: [avaliadorId], references: [id])
   avaliado  User     @relation("review_avaliado", fields: [avaliadoId], references: [id])
 
+  /// Uma avaliação por avaliador por contrato — evita spam da mesma pessoa
+  /// no mesmo contrato (E2-04).
+  @@unique([contratoId, avaliadorId])
   @@map("reviews")
 }
 

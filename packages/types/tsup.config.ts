@@ -14,6 +14,7 @@ export default defineConfig({
     "src/portfolio.ts",
     "src/profile.ts",
     "src/rfq.ts",
+    "src/reviews.ts",
     "src/rfq-proposals.ts",
     "src/search.ts",
     "src/works.ts",

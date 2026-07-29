@@ -9,6 +9,7 @@ export * from "./media";
 export * from "./portfolio";
 export * from "./profile";
 export * from "./rfq";
+export * from "./reviews";
 export * from "./rfq-proposals";
 export * from "./search";
 export * from "./works";
