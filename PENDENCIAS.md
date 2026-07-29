@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-29 · Branch: `feat/E6-02-painel-financeiro`
+> Última atualização: 2026-07-29 · Branch: `main`
 
 ---
 
@@ -124,6 +124,7 @@
 | 2026-07-29 | Diário de obra (E6-03, parcial): `AuditLog` ganhou `obraId` opcional (migração manual, `onDelete: SetNull` — não conflita com a trigger append-only, que só bloqueia `UPDATE`/`DELETE`, não `ALTER TABLE`). `WorksService`, `RfqService`, `RfqProposalService`, `ContractsService`, `MilestonesService` e `ReviewsService` agora informam `obraId` em cada `auditLog.record()` (para milestones/reviews, que não têm `obraId` direto, um pequeno `getObraId()` busca via `Contract.obraId`). Novo `GET /works/:id/diario` (`WorksService.listDiario`, restrito ao cliente dono) devolve o feed cronológico. Reaproveitou o `audit_log` já existente desde S0-06 em vez de criar uma tabela de eventos dedicada. Sem UI em `apps/web` e sem fotos geolocalizadas (não existe em nenhum upload do sistema) — ver P-040. `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
 | 2026-07-29 | **Merge de `feat/E6-03-diario-obra` em `main`** (fast-forward, sem conflito) |
 | 2026-07-29 | Painel financeiro da obra (E6-02, parcial): `GET /works/:id/financeiro` (`WorksService.getPainelFinanceiro`, restrito ao cliente dono) — compara `orcamentoPrevistoCentavos` da obra com a soma de `Milestone.valorCentavos` por etapa (`valorPrevistoCentavos`) e o valor já aprovado (`valorAprovadoCentavos`, só etapas `APROVADO`/`PAGO`), buscando via `contract.obraId` (uma obra pode ter várias RFQs → vários contratos). Matemática validada com dados de exemplo fora do framework (`node -e`). Nomenclatura deliberada: "aprovado", não "realizado" — ver P-041 pelo porquê. Sem UI em `apps/web`. `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
+| 2026-07-29 | **Merge de `feat/E6-02-painel-financeiro` em `main`** (fast-forward, sem conflito) |
 
 ---
 
