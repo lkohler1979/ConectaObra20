@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma, type Work } from "@prisma/client";
+import type { DiarioEvento } from "@conectaobra/types/diario";
 import type { GeoPoint } from "@conectaobra/types/geo";
 import type {
   CreateWorkInput,
@@ -46,6 +47,7 @@ export class WorksService {
 
     await this.auditLog.record({
       userId: clienteId,
+      obraId: work.id,
       acao: "work.created",
       entidade: "work",
       payload: { workId: work.id, tipo: work.tipo },
@@ -65,6 +67,30 @@ export class WorksService {
   async getMine(clienteId: string, workId: string): Promise<WorkPublic> {
     const work = await this.getOwnedOrThrow(clienteId, workId);
     return toPublicWork(work);
+  }
+
+  /**
+   * Diário de obra (E6-03) — feed automático a partir do `audit_log`
+   * (S0-06) filtrado por `obraId`, sem tabela nova: cada ação relevante
+   * (RFQ publicado, proposta recebida, contrato criado, etapa entregue/
+   * aprovada, avaliação registrada) já grava lá desde que o serviço
+   * correspondente informe `obraId` em `auditLog.record()`.
+   */
+  async listDiario(clienteId: string, workId: string): Promise<DiarioEvento[]> {
+    await this.getOwnedOrThrow(clienteId, workId);
+
+    const entries = await this.prisma.auditLog.findMany({
+      where: { obraId: workId },
+      orderBy: { createdAt: "asc" },
+    });
+
+    return entries.map((entry) => ({
+      id: entry.id,
+      acao: entry.acao,
+      entidade: entry.entidade,
+      payload: (entry.payload ?? {}) as Record<string, unknown>,
+      createdAt: entry.createdAt.toISOString(),
+    }));
   }
 
   async update(
@@ -95,6 +121,7 @@ export class WorksService {
 
     await this.auditLog.record({
       userId: clienteId,
+      obraId: workId,
       acao: "work.updated",
       entidade: "work",
       payload: { workId },

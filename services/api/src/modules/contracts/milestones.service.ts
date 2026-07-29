@@ -50,6 +50,7 @@ export class MilestonesService {
 
     await this.auditLog.record({
       userId: requesterId,
+      obraId: await this.getObraId(contractId),
       acao: "milestone.created",
       entidade: "milestone",
       payload: { milestoneId: milestone.id, contractId, ordem: milestone.ordem },
@@ -87,6 +88,7 @@ export class MilestonesService {
 
     await this.auditLog.record({
       userId: requesterId,
+      obraId: await this.getObraId(contractId),
       acao: "milestone.iniciado",
       entidade: "milestone",
       payload: { milestoneId },
@@ -115,6 +117,7 @@ export class MilestonesService {
 
     await this.auditLog.record({
       userId: requesterId,
+      obraId: await this.getObraId(contractId),
       acao: "milestone.entregue",
       entidade: "milestone",
       payload: { milestoneId, quantidadeFotos: input.fotos.length },
@@ -142,6 +145,7 @@ export class MilestonesService {
 
     await this.auditLog.record({
       userId: requesterId,
+      obraId: await this.getObraId(contractId),
       acao: "milestone.aprovado",
       entidade: "milestone",
       payload: { milestoneId },
@@ -181,5 +185,14 @@ export class MilestonesService {
       throw new NotFoundException("Etapa não encontrada");
     }
     return milestone;
+  }
+
+  /** Alimenta o diário de obra (E6-03) — Milestone não tem obraId direto, só via Contract. */
+  private async getObraId(contractId: string): Promise<string | undefined> {
+    const contract = await this.prisma.contract.findUnique({
+      where: { id: contractId },
+      select: { obraId: true },
+    });
+    return contract?.obraId;
   }
 }

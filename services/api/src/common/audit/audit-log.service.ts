@@ -5,6 +5,8 @@ import { sanitizePayload } from "./sanitize-payload";
 
 export interface AuditLogEntry {
   userId?: string;
+  /** Obra relacionada, quando aplicável — alimenta o diário de obra (E6-03). */
+  obraId?: string;
   acao: string;
   entidade: string;
   payload: Record<string, unknown>;
@@ -24,6 +26,7 @@ export class AuditLogService {
     await this.prisma.auditLog.create({
       data: {
         userId: entry.userId,
+        obraId: entry.obraId,
         acao: entry.acao,
         entidade: entry.entidade,
         payload: sanitizePayload(entry.payload) as Prisma.InputJsonValue,

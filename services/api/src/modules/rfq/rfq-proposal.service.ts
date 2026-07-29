@@ -76,6 +76,7 @@ export class RfqProposalService {
 
     await this.auditLog.record({
       userId: proponenteId,
+      obraId: rfq.obraId,
       acao: "rfq_proposal.created",
       entidade: "rfq_proposal",
       payload: { rfqId, proposalId: proposal.id },

@@ -36,6 +36,7 @@ export class RfqService {
 
     await this.auditLog.record({
       userId: clienteId,
+      obraId: rfq.obraId,
       acao: "rfq.created",
       entidade: "rfq",
       payload: { rfqId: rfq.id, obraId: rfq.obraId, categoria: rfq.categoria },
@@ -126,6 +127,7 @@ export class RfqService {
 
     await this.auditLog.record({
       userId: clienteId,
+      obraId: existing.obraId,
       acao: "rfq.updated",
       entidade: "rfq",
       payload: { rfqId },

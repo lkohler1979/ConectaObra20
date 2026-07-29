@@ -2,6 +2,7 @@ export * from "./ai-calc";
 export * from "./auth";
 export * from "./catalog";
 export * from "./contracts";
+export * from "./diario";
 export * from "./documents";
 export * from "./geo";
 export * from "./legal";

@@ -58,6 +58,7 @@ export class ReviewsService {
 
     await this.auditLog.record({
       userId: avaliadorId,
+      obraId: await this.getObraId(contratoId),
       acao: "review.created",
       entidade: "review",
       payload: { reviewId: review.id, contratoId },
@@ -111,6 +112,15 @@ export class ReviewsService {
     }
 
     return { avaliador: avaliadorId, avaliado: outraParte.userId };
+  }
+
+  /** Alimenta o diário de obra (E6-03) — Review não tem obraId direto, só via Contract. */
+  private async getObraId(contratoId: string): Promise<string | undefined> {
+    const contract = await this.prisma.contract.findUnique({
+      where: { id: contratoId },
+      select: { obraId: true },
+    });
+    return contract?.obraId;
   }
 
   /**

@@ -42,6 +42,14 @@ export class WorksController {
     return this.worksService.getMine(user.sub, id);
   }
 
+  @Get(":id/diario")
+  diario(
+    @Param("id", new ZodValidationPipe(workIdSchema)) id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.worksService.listDiario(user.sub, id);
+  }
+
   @Patch(":id")
   @UseGuards(UserTypeGuard)
   @AllowedUserTypes("CLIENTE_PF", "CLIENTE_PJ")

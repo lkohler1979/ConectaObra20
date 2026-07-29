@@ -28,6 +28,11 @@
       "require": "./dist/contracts.js",
       "import": "./dist/contracts.mjs"
     },
+    "./diario": {
+      "types": "./dist/diario.d.ts",
+      "require": "./dist/diario.js",
+      "import": "./dist/diario.mjs"
+    },
     "./documents": {
       "types": "./dist/documents.d.ts",
       "require": "./dist/documents.js",

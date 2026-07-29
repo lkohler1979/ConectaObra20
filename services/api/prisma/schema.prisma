@@ -251,6 +251,7 @@ model Work {
   contracts       Contract[]
   materialLists   MaterialList[]
   aiConversations AiConversation[]
+  auditLogEntries AuditLog[]
 
   @@map("works")
 }
@@ -654,6 +655,11 @@ model Ad {
 model AuditLog {
   id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   userId    String?  @map("user_id") @db.Uuid
+  /// Obra relacionada, quando aplicável (E6-03 — diário de obra). Nulo pra
+  /// eventos sem obra (auth, perfil, LGPD etc). SetNull em vez de Cascade:
+  /// audit_log é append-only, uma obra excluída no futuro não pode apagar
+  /// registros de auditoria já gravados.
+  obraId    String?  @map("obra_id") @db.Uuid
   acao      String
   entidade  String
   payload   Json
@@ -661,6 +667,7 @@ model AuditLog {
   createdAt DateTime @default(now()) @map("created_at")
 
   user User? @relation(fields: [userId], references: [id])
+  obra Work?  @relation(fields: [obraId], references: [id], onDelete: SetNull)
 
   @@map("audit_log")
 }

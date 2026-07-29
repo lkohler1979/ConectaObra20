@@ -87,6 +87,7 @@ export class ContractsService {
 
     await this.auditLog.record({
       userId: clienteId,
+      obraId: proposal.rfq.obraId,
       acao: "rfq_proposal.accepted",
       entidade: "contract",
       payload: { proposalId, rfqId: proposal.rfqId, contractId: contract.id },
