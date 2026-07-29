@@ -6,6 +6,7 @@ export * from "./documents";
 export * from "./geo";
 export * from "./legal";
 export * from "./media";
+export * from "./milestones";
 export * from "./portfolio";
 export * from "./profile";
 export * from "./public-profiles";

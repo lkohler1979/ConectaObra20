@@ -6,10 +6,17 @@ import { ContractsService } from "./contracts.service";
 import { ContractReviewsController } from "./contract-reviews.controller";
 import { MyReviewsController } from "./my-reviews.controller";
 import { ReviewsService } from "./reviews.service";
+import { MilestonesController } from "./milestones.controller";
+import { MilestonesService } from "./milestones.service";
 
 @Module({
   imports: [AuditLogModule, SearchModule],
-  controllers: [ContractsController, ContractReviewsController, MyReviewsController],
-  providers: [ContractsService, ReviewsService],
+  controllers: [
+    ContractsController,
+    ContractReviewsController,
+    MyReviewsController,
+    MilestonesController,
+  ],
+  providers: [ContractsService, ReviewsService, MilestonesService],
 })
 export class ContractsModule {}

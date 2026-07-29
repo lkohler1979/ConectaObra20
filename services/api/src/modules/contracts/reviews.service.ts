@@ -16,9 +16,9 @@ export class ReviewsService {
 
   /**
    * `avaliadoId` nunca vem do cliente — é sempre a outra parte do contrato,
-   * descoberta aqui. Hoje qualquer contrato existente permite avaliação
-   * (não há um status "concluído" definido — isso é E6, gestão de obra);
-   * registrado como limitação conhecida (ver PENDENCIAS.md P-036).
+   * descoberta aqui. Exige pelo menos 1 milestone `APROVADO` no contrato
+   * (E6-01) — sem isso, não há sinal de que algum trabalho foi de fato
+   * entregue e aceito (resolve a limitação registrada em PENDENCIAS.md P-036).
    */
   async create(
     contratoId: string,
@@ -26,6 +26,15 @@ export class ReviewsService {
     input: CreateReviewInput,
   ): Promise<ReviewPublic> {
     const { avaliador, avaliado } = await this.resolveParties(contratoId, avaliadorId);
+
+    const milestonesAprovados = await this.prisma.milestone.count({
+      where: { contractId: contratoId, status: "APROVADO" },
+    });
+    if (milestonesAprovados === 0) {
+      throw new ConflictException(
+        "Este contrato ainda não tem nenhuma etapa aprovada — avalie depois que ao menos uma entrega for aprovada",
+      );
+    }
 
     let review;
     try {

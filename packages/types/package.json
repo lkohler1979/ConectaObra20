@@ -48,6 +48,11 @@
       "require": "./dist/media.js",
       "import": "./dist/media.mjs"
     },
+    "./milestones": {
+      "types": "./dist/milestones.d.ts",
+      "require": "./dist/milestones.js",
+      "import": "./dist/milestones.mjs"
+    },
     "./portfolio": {
       "types": "./dist/portfolio.d.ts",
       "require": "./dist/portfolio.js",
