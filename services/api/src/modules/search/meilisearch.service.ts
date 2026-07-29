@@ -68,6 +68,27 @@ export class MeilisearchService implements OnModuleInit {
     await this.safeCall(() => this.client.index(PRODUTOS_INDEX).deleteDocument(id));
   }
 
+  /**
+   * `updateDocuments` faz merge parcial (diferente de `addDocuments`, que
+   * substitui o documento inteiro) — usado pra atualizar só `notaMedia` sem
+   * precisar reconstruir o documento completo (E2-05).
+   */
+  async updatePrestadorNota(userId: string, notaMedia: number): Promise<void> {
+    await this.safeCall(() =>
+      this.client
+        .index<PrestadorSearchHit>(PRESTADORES_INDEX)
+        .updateDocuments([{ userId, notaMedia }], { primaryKey: "userId" }),
+    );
+  }
+
+  async updateFornecedorNota(userId: string, notaMedia: number): Promise<void> {
+    await this.safeCall(() =>
+      this.client
+        .index<FornecedorSearchHit>(FORNECEDORES_INDEX)
+        .updateDocuments([{ userId, notaMedia }], { primaryKey: "userId" }),
+    );
+  }
+
   async searchPrestadores(
     q: string | undefined,
     categoria: string | undefined,

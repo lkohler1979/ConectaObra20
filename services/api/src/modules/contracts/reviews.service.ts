@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import type { CreateReviewInput, ReviewPublic } from "@conectaobra/types/reviews";
 import { PrismaService } from "../../common/prisma/prisma.service";
 import { AuditLogService } from "../../common/audit/audit-log.service";
+import { MeilisearchService } from "../search/meilisearch.service";
 import { toPublicReview } from "./review-public.mapper";
 
 @Injectable()
@@ -10,6 +11,7 @@ export class ReviewsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
+    private readonly meilisearch: MeilisearchService,
   ) {}
 
   /**
@@ -51,6 +53,8 @@ export class ReviewsService {
       entidade: "review",
       payload: { reviewId: review.id, contratoId },
     });
+
+    await this.recalcularNotaMedia(avaliado);
 
     return toPublicReview(review);
   }
@@ -98,5 +102,38 @@ export class ReviewsService {
     }
 
     return { avaliador: avaliadorId, avaliado: outraParte.userId };
+  }
+
+  /**
+   * Média simples das 3 notas (prazo/qualidade/preço) de todas as reviews já
+   * recebidas, gravada em `ProfilePrestador.notaMedia`/`ProfileFornecedor.
+   * notaMedia` (E2-05). `updateMany` é seguro mesmo sem o perfil correspondente
+   * — o avaliado pode ser um CLIENTE, que não tem nenhum dos dois (User não
+   * guarda nota própria; ver PENDENCIAS.md).
+   */
+  private async recalcularNotaMedia(avaliadoId: string): Promise<void> {
+    const agg = await this.prisma.review.aggregate({
+      where: { avaliadoId },
+      _avg: { notaPrazo: true, notaQualidade: true, notaPreco: true },
+    });
+
+    const medias = [agg._avg.notaPrazo, agg._avg.notaQualidade, agg._avg.notaPreco].filter(
+      (n): n is number => n !== null,
+    );
+    if (medias.length === 0) return;
+
+    const notaMedia = medias.reduce((a, b) => a + b, 0) / medias.length;
+
+    await this.prisma.profilePrestador.updateMany({
+      where: { userId: avaliadoId },
+      data: { notaMedia },
+    });
+    await this.prisma.profileFornecedor.updateMany({
+      where: { userId: avaliadoId },
+      data: { notaMedia },
+    });
+
+    await this.meilisearch.updatePrestadorNota(avaliadoId, notaMedia);
+    await this.meilisearch.updateFornecedorNota(avaliadoId, notaMedia);
   }
 }

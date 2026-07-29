@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-29 · Branch: `main`
+> Última atualização: 2026-07-29 · Branch: `feat/E2-05-nota-agregada`
 
 ---
 
@@ -49,6 +49,7 @@
 | P-034 | `GET /search/*` (E2-01/E2-02) exige login (`JwtAuthGuard`), igual o resto da API — mas busca de marketplace é naturalmente uma jornada pública (visitante sem conta procurando prestador/fornecedor) | E2-01/E2-02, E2-03 | Aberto | Decisão deliberada por enquanto: tornar público exigiria pensar em CORS/rate-limit diferenciado pra tráfego anônimo, e ainda não existe nenhuma página pública (E2-03) que precisaria disso. Revisitar quando E2-03 entrar em pauta |
 | P-035 | Índice `prestadores` do Meilisearch não inclui geolocalização (`_geo`) — busca por texto/categoria funciona, mas não dá pra combinar busca textual com raio geográfico numa única query | E2-01/E2-02 | Aberto | O matching de RFQ (E3-03) já resolve geo+categoria via PostGIS direto, então não bloqueia o loop principal. Portar `geo` (Postgres `Unsupported("geography")`) pro formato `_geo: {lat, lng}` do Meilisearch exigiria uma leitura via raw SQL na hora de indexar — deixado de fora deste primeiro corte |
 | P-036 | `POST /contracts/:id/reviews` permite avaliar qualquer contrato do qual eu seja parte, independente do trabalho ter sido de fato entregue — `Contract.status` ainda é `String` livre, sem um estado "concluído" definido | E2-04, E6 | Aberto | Decisão deliberada por enquanto (documentada em `ReviewsService.create`): sem o workflow de execução da obra (E6 — cronograma, milestones, entregas), não existe sinal de "serviço concluído" pra amarrar a liberação da avaliação. Cliente e prestador podem avaliar um contrato recém-criado, antes de qualquer trabalho. Revisitar quando E6/E4 (milestones `ENTREGUE`/`APROVADO`) existirem — restringir a avaliação a contratos com pelo menos um milestone aprovado |
+| P-037 | "Selo básico" do E2-05 não foi implementado — só a nota agregada (`notaMedia`) | E2-05 | Aberto | As únicas definições de "selo" nos docs (`docs/prd/01`) são: (1) "Perfil Verificado" ligado a KYC, bloqueado por P-006; (2) Bronze/Prata/Ouro/Platinum do job mensal de ranking, que é explicitamente escopo do E8-04 ("critérios objetivos e auditáveis"), uma task separada. Implementar um selo por conta própria aqui seria inventar um critério de negócio não documentado — não fiz isso |
 
 ## 🟢 DÍVIDAS TÉCNICAS / MELHORIAS (não bloqueiam)
 
@@ -108,6 +109,7 @@
 | 2026-07-29 | **Merge de `feat/E2-01-busca-meilisearch` em `main`** (fast-forward, sem conflito) |
 | 2026-07-29 | Avaliações pós-contrato (E2-04, parcial): `@@unique([contratoId, avaliadorId])` em `Review` (migração manual, mesmo padrão de sempre) — impede a mesma pessoa avaliar o mesmo contrato duas vezes, tratado como 409 amigável (P2002). `POST/GET /contracts/:contractId/reviews` (`ContractReviewsController`) e `GET /reviews/received` (`MyReviewsController`), ambos novos em `ContractsModule`. `ReviewsService.create()` nunca aceita `avaliadoId` do cliente — descobre sozinho quem é a outra parte do contrato via `ContractParty`; 404 se o requisitante não for parte do contrato (não vaza existência). **Limitação deliberada**: qualquer contrato existente permite avaliação, não há checagem de "serviço concluído" — `Contract.status` ainda não tem esse estado definido (depende de E6). Registrado como P-036. `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
 | 2026-07-29 | **Merge de `feat/E2-04-avaliacoes` em `main`** (fast-forward, sem conflito) |
+| 2026-07-29 | Nota agregada no perfil (E2-05, parcial): `ReviewsService.create()` agora recalcula `notaMedia` (média simples de prazo/qualidade/preço de todas as reviews recebidas) e grava em `ProfilePrestador.notaMedia`/`ProfileFornecedor.notaMedia` (`updateMany`, seguro mesmo se o avaliado for um CLIENTE sem nenhum dos dois perfis) — depois reindexa no Meilisearch via `MeilisearchService.updatePrestadorNota`/`updateFornecedorNota`, novos métodos que usam `updateDocuments` (merge parcial, diferente de `addDocuments` que substitui o documento inteiro). Resiliência a Meilisearch indisponível testada isoladamente de novo (`node -e`), mesmo padrão do E2-01. **"Selo básico" não implementado** — registrado como P-037, com o porquê (as únicas definições de selo nos docs dependem de KYC bloqueado ou são escopo do job de ranking de E8-04). `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
 
 ---
 

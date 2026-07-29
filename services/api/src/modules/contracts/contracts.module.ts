@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { AuditLogModule } from "../../common/audit/audit-log.module";
+import { SearchModule } from "../search/search.module";
 import { ContractsController } from "./contracts.controller";
 import { ContractsService } from "./contracts.service";
 import { ContractReviewsController } from "./contract-reviews.controller";
@@ -7,7 +8,7 @@ import { MyReviewsController } from "./my-reviews.controller";
 import { ReviewsService } from "./reviews.service";
 
 @Module({
-  imports: [AuditLogModule],
+  imports: [AuditLogModule, SearchModule],
   controllers: [ContractsController, ContractReviewsController, MyReviewsController],
   providers: [ContractsService, ReviewsService],
 })
