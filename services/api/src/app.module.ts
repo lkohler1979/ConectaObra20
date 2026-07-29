@@ -19,6 +19,7 @@ import { RfqModule } from "./modules/rfq/rfq.module";
 import { ContractsModule } from "./modules/contracts/contracts.module";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
 import { AiModule } from "./modules/ai/ai.module";
+import { CatalogModule } from "./modules/catalog/catalog.module";
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { AiModule } from "./modules/ai/ai.module";
     ContractsModule,
     NotificationsModule,
     AiModule,
+    CatalogModule,
   ],
   controllers: [HealthController],
   providers: [

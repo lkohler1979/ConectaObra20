@@ -18,6 +18,11 @@
       "require": "./dist/auth.js",
       "import": "./dist/auth.mjs"
     },
+    "./catalog": {
+      "types": "./dist/catalog.d.ts",
+      "require": "./dist/catalog.js",
+      "import": "./dist/catalog.mjs"
+    },
     "./contracts": {
       "types": "./dist/contracts.d.ts",
       "require": "./dist/contracts.js",

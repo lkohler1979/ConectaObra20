@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-28 · Branch: `main`
+> Última atualização: 2026-07-28 · Branch: `feat/E1-06-catalogo-produtos`
 
 ---
 
@@ -97,6 +97,7 @@
 | 2026-07-28 | **Merge de `feat/E3-06-comparador` em `main`** (fast-forward, sem conflito). `pnpm build`/`pnpm lint`/`pnpm test` da raiz inteira (6 workspaces) passam limpos pós-merge |
 | 2026-07-28 | Calculadoras determinísticas (E5-04, parcial): `AiModule` novo em `services/api/src/modules/ai/` — `POST /ai/calc/{concreto,blocos,argamassa,tinta}`, endpoints públicos (sem dado sensível, cobertos pelo rate-limit global). `CalculatorsService` com funções puras: traço de concreto (método de partes + fator de conversão ~1,53), blocos por m² (geometria: área do bloco + junta), argamassa de assentamento (geometria: volume assentado − volume do bloco, não coeficiente fixo), tinta (área × demãos ÷ rendimento informado). Toda resposta inclui `disclaimer` (CLAUDE.md §5 regra 3 — tema estrutural exige recomendação de profissional habilitado). Testado com valores conhecidos fora do framework (`node -e` chamando o service direto): resultados batem com faixas comumente publicadas (blocos ~12,5/m², argamassa ~11L/m² pra bloco 9x19x39 com junta 1cm). **Coeficientes pendentes de revisão por engenheiro civil** — ver P-033/P-012. `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
 | 2026-07-28 | **Merge de `feat/E5-04-calculadoras` em `main`** (fast-forward, sem conflito) |
+| 2026-07-28 | Catálogo de produtos do fornecedor (E1-06/E2-06, parcial): `CatalogModule` novo em `services/api/src/modules/catalog/` — `POST/GET/GET:id/PATCH/DELETE /products`, restrito a `FORNECEDOR` dono (mesmo padrão 404-pra-quem-não-é-dono de `works`/`rfq`). O model `Product` já existia desde S0-05 (nunca tinha CRUD); `create()` agora checa que o `ProfileFornecedor` existe antes de inserir, senão a FK do banco quebraria com erro cru em vez de uma mensagem amigável. Escopo não cobre: vitrine pública (E2-03) nem busca/descoberta (E2-01/E2-02) — isso é catálogo de gestão do próprio fornecedor, sem tela nem endpoint público ainda. `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
 
 ---
 

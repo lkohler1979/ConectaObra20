@@ -1,5 +1,6 @@
 export * from "./ai-calc";
 export * from "./auth";
+export * from "./catalog";
 export * from "./contracts";
 export * from "./documents";
 export * from "./geo";

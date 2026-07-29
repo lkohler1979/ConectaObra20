@@ -5,6 +5,7 @@ export default defineConfig({
     "src/index.ts",
     "src/ai-calc.ts",
     "src/auth.ts",
+    "src/catalog.ts",
     "src/contracts.ts",
     "src/documents.ts",
     "src/geo.ts",
