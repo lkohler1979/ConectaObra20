@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-28 · Branch: `feat/E5-04-calculadoras`
+> Última atualização: 2026-07-28 · Branch: `main`
 
 ---
 
@@ -96,6 +96,7 @@
 | 2026-07-28 | Comparador de propostas (E3-06, parcial): backend ganhou `proponenteNome` em `RfqProposalPublic` (`packages/types/src/rfq-proposals.ts` + `toPublicRfqProposal` + `RfqProposalService`, via `include: {proponente: {select: {nome:true}}}`) — sem isso o front só teria um UUID pra mostrar. `apps/web`: `/rfq` (lista "minhas RFQs"), `/rfq/[id]` (detalhe + tabela responsiva comparando preço/prazo/observações/status, com destaque determinístico "Menor preço"/"Mais rápido" — não é IA, rotulado explicitamente como tal), botão "Aceitar" com confirmação (Client Component) chamando o novo Route Handler `POST /api/proposals/[id]/accept`. `middleware.ts` estendido pra proteger `/rfq/*`. Refatorado `lib/auth-session.ts` (`requireAccessToken`) reaproveitado por `/conta` e pelas novas páginas. Escopo deliberadamente não cobre: criação de RFQ pela UI (E3-02 front ainda não existe) nem tela do prestador (ver P-032). `tsc`/`next build`/`nest build` passam; testado no browser que o middleware redireciona `/rfq` pro login corretamente — o restante do fluxo autenticado não pôde ser testado visualmente por falta de Postgres real e por não dar pra forjar o cookie `httpOnly` de sessão sem login de verdade |
 | 2026-07-28 | **Merge de `feat/E3-06-comparador` em `main`** (fast-forward, sem conflito). `pnpm build`/`pnpm lint`/`pnpm test` da raiz inteira (6 workspaces) passam limpos pós-merge |
 | 2026-07-28 | Calculadoras determinísticas (E5-04, parcial): `AiModule` novo em `services/api/src/modules/ai/` — `POST /ai/calc/{concreto,blocos,argamassa,tinta}`, endpoints públicos (sem dado sensível, cobertos pelo rate-limit global). `CalculatorsService` com funções puras: traço de concreto (método de partes + fator de conversão ~1,53), blocos por m² (geometria: área do bloco + junta), argamassa de assentamento (geometria: volume assentado − volume do bloco, não coeficiente fixo), tinta (área × demãos ÷ rendimento informado). Toda resposta inclui `disclaimer` (CLAUDE.md §5 regra 3 — tema estrutural exige recomendação de profissional habilitado). Testado com valores conhecidos fora do framework (`node -e` chamando o service direto): resultados batem com faixas comumente publicadas (blocos ~12,5/m², argamassa ~11L/m² pra bloco 9x19x39 com junta 1cm). **Coeficientes pendentes de revisão por engenheiro civil** — ver P-033/P-012. `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
+| 2026-07-28 | **Merge de `feat/E5-04-calculadoras` em `main`** (fast-forward, sem conflito) |
 
 ---
 
