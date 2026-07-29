@@ -9,5 +9,6 @@ import { WorkTeamService } from "./work-team.service";
   imports: [AuditLogModule],
   controllers: [WorksController, WorkTeamController],
   providers: [WorksService, WorkTeamService],
+  exports: [WorksService],
 })
 export class WorksModule {}

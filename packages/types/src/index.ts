@@ -7,6 +7,7 @@ export * from "./documents";
 export * from "./equipe";
 export * from "./geo";
 export * from "./legal";
+export * from "./material-lists";
 export * from "./media";
 export * from "./milestones";
 export * from "./painel-financeiro";

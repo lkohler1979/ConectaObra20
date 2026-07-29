@@ -53,6 +53,11 @@
       "require": "./dist/legal.js",
       "import": "./dist/legal.mjs"
     },
+    "./material-lists": {
+      "types": "./dist/material-lists.d.ts",
+      "require": "./dist/material-lists.js",
+      "import": "./dist/material-lists.mjs"
+    },
     "./media": {
       "types": "./dist/media.d.ts",
       "require": "./dist/media.js",

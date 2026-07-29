@@ -12,6 +12,7 @@ export default defineConfig({
     "src/equipe.ts",
     "src/geo.ts",
     "src/legal.ts",
+    "src/material-lists.ts",
     "src/media.ts",
     "src/milestones.ts",
     "src/painel-financeiro.ts",
