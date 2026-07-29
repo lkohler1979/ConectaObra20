@@ -20,6 +20,7 @@ import { ContractsModule } from "./modules/contracts/contracts.module";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
 import { AiModule } from "./modules/ai/ai.module";
 import { CatalogModule } from "./modules/catalog/catalog.module";
+import { SearchModule } from "./modules/search/search.module";
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { CatalogModule } from "./modules/catalog/catalog.module";
     NotificationsModule,
     AiModule,
     CatalogModule,
+    SearchModule,
   ],
   controllers: [HealthController],
   providers: [

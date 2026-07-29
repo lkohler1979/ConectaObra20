@@ -7,6 +7,7 @@ import type {
 } from "@conectaobra/types/catalog";
 import { PrismaService } from "../../common/prisma/prisma.service";
 import { AuditLogService } from "../../common/audit/audit-log.service";
+import { MeilisearchService } from "../search/meilisearch.service";
 import { toPublicProduct } from "./product-public.mapper";
 
 @Injectable()
@@ -14,6 +15,7 @@ export class ProductsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
+    private readonly meilisearch: MeilisearchService,
   ) {}
 
   async create(fornecedorId: string, input: CreateProductInput): Promise<ProductPublic> {
@@ -45,6 +47,15 @@ export class ProductsService {
       acao: "product.created",
       entidade: "product",
       payload: { productId: product.id, nome: product.nome },
+    });
+
+    await this.meilisearch.indexProduto({
+      id: product.id,
+      fornecedorId: product.fornecedorId,
+      nome: product.nome,
+      categoria: product.categoria,
+      precoCentavos: product.precoCentavos,
+      unidade: product.unidade,
     });
 
     return toPublicProduct(product);
@@ -89,6 +100,15 @@ export class ProductsService {
       payload: { productId },
     });
 
+    await this.meilisearch.indexProduto({
+      id: product.id,
+      fornecedorId: product.fornecedorId,
+      nome: product.nome,
+      categoria: product.categoria,
+      precoCentavos: product.precoCentavos,
+      unidade: product.unidade,
+    });
+
     return toPublicProduct(product);
   }
 
@@ -103,6 +123,8 @@ export class ProductsService {
       entidade: "product",
       payload: { productId },
     });
+
+    await this.meilisearch.removeProduto(productId);
   }
 
   /** Não vaza se o produto existe e é de outro fornecedor — 404 nos dois casos. */

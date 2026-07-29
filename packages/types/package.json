@@ -68,6 +68,11 @@
       "require": "./dist/rfq-proposals.js",
       "import": "./dist/rfq-proposals.mjs"
     },
+    "./search": {
+      "types": "./dist/search.d.ts",
+      "require": "./dist/search.js",
+      "import": "./dist/search.mjs"
+    },
     "./works": {
       "types": "./dist/works.d.ts",
       "require": "./dist/works.js",

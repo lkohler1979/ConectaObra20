@@ -24,6 +24,12 @@ export const envSchema = baseEnvSchema.extend({
   /// diferente de S3/SMS (fornecedor em aberto), por isso é obrigatório
   /// como DATABASE_URL, não opcional (E3-04).
   REDIS_URL: z.string().url(),
+  /// Meilisearch também é infra decidida (mesmo status do Redis) — mas o
+  /// client é preguiçoso (não conecta na hora do `new`), então a ausência
+  /// dele no ambiente não derruba o boot, só faz a indexação/busca falhar
+  /// de forma best-effort (E2-01).
+  MEILI_HOST: z.string().url(),
+  MEILI_API_KEY: z.string().min(1),
 });
 
 export const env = parseEnv(envSchema);

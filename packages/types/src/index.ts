@@ -10,4 +10,5 @@ export * from "./portfolio";
 export * from "./profile";
 export * from "./rfq";
 export * from "./rfq-proposals";
+export * from "./search";
 export * from "./works";

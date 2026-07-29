@@ -15,6 +15,7 @@ export default defineConfig({
     "src/profile.ts",
     "src/rfq.ts",
     "src/rfq-proposals.ts",
+    "src/search.ts",
     "src/works.ts",
   ],
   format: ["cjs", "esm"],
