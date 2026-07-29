@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma, type Work } from "@prisma/client";
 import type { DiarioEvento } from "@conectaobra/types/diario";
 import type { GeoPoint } from "@conectaobra/types/geo";
+import type { PainelFinanceiroObra } from "@conectaobra/types/painel-financeiro";
 import type {
   CreateWorkInput,
   UpdateWorkInput,
@@ -91,6 +92,41 @@ export class WorksService {
       payload: (entry.payload ?? {}) as Record<string, unknown>,
       createdAt: entry.createdAt.toISOString(),
     }));
+  }
+
+  /**
+   * Painel financeiro (E6-02): previsto × aprovado por etapa. Deliberadamente
+   * "aprovado", não "realizado"/"pago" — sem escrow (E4, bloqueado por
+   * P-002), nada disso é dinheiro que de fato mudou de mãos, só o valor das
+   * etapas cuja entrega já foi aprovada (`Milestone.status`).
+   */
+  async getPainelFinanceiro(clienteId: string, workId: string): Promise<PainelFinanceiroObra> {
+    const work = await this.getOwnedOrThrow(clienteId, workId);
+
+    const milestones = await this.prisma.milestone.findMany({
+      where: { contract: { obraId: workId } },
+      orderBy: [{ contractId: "asc" }, { ordem: "asc" }],
+    });
+
+    const etapas = milestones.map((m) => {
+      const aprovado = m.status === "APROVADO" || m.status === "PAGO";
+      return {
+        milestoneId: m.id,
+        contractId: m.contractId,
+        descricao: m.descricao,
+        status: m.status,
+        valorPrevistoCentavos: m.valorCentavos,
+        valorAprovadoCentavos: aprovado ? m.valorCentavos : 0,
+      };
+    });
+
+    return {
+      obraId: workId,
+      orcamentoPrevistoCentavos: work.orcamentoPrevistoCentavos,
+      totalEtapasCentavos: etapas.reduce((sum, e) => sum + e.valorPrevistoCentavos, 0),
+      totalAprovadoCentavos: etapas.reduce((sum, e) => sum + e.valorAprovadoCentavos, 0),
+      etapas,
+    };
   }
 
   async update(

@@ -13,6 +13,7 @@ export default defineConfig({
     "src/legal.ts",
     "src/media.ts",
     "src/milestones.ts",
+    "src/painel-financeiro.ts",
     "src/portfolio.ts",
     "src/profile.ts",
     "src/public-profiles.ts",

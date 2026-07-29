@@ -50,6 +50,14 @@ export class WorksController {
     return this.worksService.listDiario(user.sub, id);
   }
 
+  @Get(":id/financeiro")
+  financeiro(
+    @Param("id", new ZodValidationPipe(workIdSchema)) id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.worksService.getPainelFinanceiro(user.sub, id);
+  }
+
   @Patch(":id")
   @UseGuards(UserTypeGuard)
   @AllowedUserTypes("CLIENTE_PF", "CLIENTE_PJ")

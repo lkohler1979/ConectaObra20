@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-29 · Branch: `main`
+> Última atualização: 2026-07-29 · Branch: `feat/E6-02-painel-financeiro`
 
 ---
 
@@ -53,6 +53,7 @@
 | P-038 | `apps/web/app/prestadores/[id]` e `/fornecedores/[id]` (E2-03) só são alcançáveis digitando a URL direto — não existe nenhuma página de resultado de busca no frontend linkando pra elas | E2-02 (web), E2-03 | Aberto | O backend de busca (`GET /search/*`, E2-01/E2-02) já existe, mas nunca ganhou UI em `apps/web` — só as páginas de perfil público em si (E2-03) foram construídas. Cria uma lacuna de navegação: as páginas de perfil são reais e indexáveis por SEO, mas hoje só chegam nelas por link direto ou pelo Google depois de indexado |
 | P-039 | Cronograma de etapas (E6-01) não tem Gantt visual nem dependências entre etapas — só CRUD + máquina de estados (`PENDENTE→EM_EXECUCAO→ENTREGUE→APROVADO`) | E6-01 | Aberto | O backlog descreve E6-01 como "Gantt simplificado, dependências"; o schema (`Milestone.ordem`) só modela ordem sequencial, sem grafo de dependência. Implementei o que já estava modelado (a máquina de estados que casa exatamente com o loop do CLAUDE.md) e deixei de fora a parte visual/Gantt e o grafo de dependências, que exigiriam schema novo e trabalho de frontend significativo — nenhuma UI em `apps/web` foi construída para milestones ainda |
 | P-040 | Diário de obra (E6-03) não tem UI em `apps/web` (só o endpoint `GET /works/:id/diario`), não tem "fotos geolocalizadas" (o backlog cita isso; nenhum evento gravado no `audit_log` tem geolocalização de foto) e só cobre eventos que os serviços já instrumentam (obra/RFQ/proposta/contrato/etapa/avaliação) — não dá pra registrar uma entrada manual no diário | E6-03 | Aberto | Escopo deliberado: reaproveitei o `audit_log` (S0-06) em vez de criar uma tabela de eventos dedicada, adicionando só `obraId` opcional nele. Cobre o essencial ("feed automático de eventos") sem inventar geolocalização de fotos que não existe em nenhum upload do sistema hoje (E1-07 não grava lat/lng do EXIF) |
+| P-041 | Painel financeiro (E6-02) mostra "previsto × aprovado" em vez de "previsto × realizado" (como o backlog descreve), e não tem UI em `apps/web` (só `GET /works/:id/financeiro`) | E6-02 | Aberto | Decisão deliberada de nomenclatura: sem o escrow (E4, bloqueado por P-002), nenhum dinheiro de verdade se move ainda — "realizado" sugeriria pagamento de fato, o que seria enganoso (CLAUDE.md §5 regra 1: dinheiro é levado a sério neste projeto). `valorAprovadoCentavos` reflete só o valor das etapas com `Milestone.status = APROVADO`/`PAGO`. Quando o escrow existir, revisitar pra separar "aprovado" (liberação autorizada) de "pago de fato" (webhook do PSP confirmado) |
 
 ## 🟢 DÍVIDAS TÉCNICAS / MELHORIAS (não bloqueiam)
 
@@ -122,6 +123,7 @@
 | 2026-07-29 | **Merge de `fix/pendencias-resolviveis` em `main`** (fast-forward, sem conflito) |
 | 2026-07-29 | Diário de obra (E6-03, parcial): `AuditLog` ganhou `obraId` opcional (migração manual, `onDelete: SetNull` — não conflita com a trigger append-only, que só bloqueia `UPDATE`/`DELETE`, não `ALTER TABLE`). `WorksService`, `RfqService`, `RfqProposalService`, `ContractsService`, `MilestonesService` e `ReviewsService` agora informam `obraId` em cada `auditLog.record()` (para milestones/reviews, que não têm `obraId` direto, um pequeno `getObraId()` busca via `Contract.obraId`). Novo `GET /works/:id/diario` (`WorksService.listDiario`, restrito ao cliente dono) devolve o feed cronológico. Reaproveitou o `audit_log` já existente desde S0-06 em vez de criar uma tabela de eventos dedicada. Sem UI em `apps/web` e sem fotos geolocalizadas (não existe em nenhum upload do sistema) — ver P-040. `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
 | 2026-07-29 | **Merge de `feat/E6-03-diario-obra` em `main`** (fast-forward, sem conflito) |
+| 2026-07-29 | Painel financeiro da obra (E6-02, parcial): `GET /works/:id/financeiro` (`WorksService.getPainelFinanceiro`, restrito ao cliente dono) — compara `orcamentoPrevistoCentavos` da obra com a soma de `Milestone.valorCentavos` por etapa (`valorPrevistoCentavos`) e o valor já aprovado (`valorAprovadoCentavos`, só etapas `APROVADO`/`PAGO`), buscando via `contract.obraId` (uma obra pode ter várias RFQs → vários contratos). Matemática validada com dados de exemplo fora do framework (`node -e`). Nomenclatura deliberada: "aprovado", não "realizado" — ver P-041 pelo porquê. Sem UI em `apps/web`. `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
 
 ---
 

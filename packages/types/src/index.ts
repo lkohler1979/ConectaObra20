@@ -8,6 +8,7 @@ export * from "./geo";
 export * from "./legal";
 export * from "./media";
 export * from "./milestones";
+export * from "./painel-financeiro";
 export * from "./portfolio";
 export * from "./profile";
 export * from "./public-profiles";
