@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import type { Work } from "@prisma/client";
+import { Prisma, type Work } from "@prisma/client";
 import type { GeoPoint } from "@conectaobra/types/geo";
 import type {
   CreateWorkInput,
@@ -21,21 +21,28 @@ export class WorksService {
   ) {}
 
   async create(clienteId: string, input: CreateWorkInput): Promise<WorkPublic> {
-    const work = await this.prisma.work.create({
-      data: {
-        clienteId,
-        titulo: input.titulo,
-        tipo: input.tipo,
-        endereco: input.endereco,
-        areaM2: input.areaM2,
-        orcamentoPrevistoCentavos: input.orcamentoPrevistoCentavos,
-        status: STATUS_INICIAL,
-      },
-    });
+    // create() + gravação de geo numa única transação (achado em code
+    // review — P-023: as duas chamadas eram separadas, deixando a obra sem
+    // coordenadas se a segunda falhasse).
+    const work = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.work.create({
+        data: {
+          clienteId,
+          titulo: input.titulo,
+          tipo: input.tipo,
+          endereco: input.endereco,
+          areaM2: input.areaM2,
+          orcamentoPrevistoCentavos: input.orcamentoPrevistoCentavos,
+          status: STATUS_INICIAL,
+        },
+      });
 
-    if (input.geo) {
-      await this.setGeo(work.id, input.geo);
-    }
+      if (input.geo) {
+        await this.setGeo(tx, created.id, input.geo);
+      }
+
+      return created;
+    });
 
     await this.auditLog.record({
       userId: clienteId,
@@ -67,20 +74,24 @@ export class WorksService {
   ): Promise<WorkPublic> {
     await this.getOwnedOrThrow(clienteId, workId);
 
-    const work = await this.prisma.work.update({
-      where: { id: workId },
-      data: {
-        titulo: input.titulo,
-        tipo: input.tipo,
-        endereco: input.endereco,
-        areaM2: input.areaM2,
-        orcamentoPrevistoCentavos: input.orcamentoPrevistoCentavos,
-      },
-    });
+    const work = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.work.update({
+        where: { id: workId },
+        data: {
+          titulo: input.titulo,
+          tipo: input.tipo,
+          endereco: input.endereco,
+          areaM2: input.areaM2,
+          orcamentoPrevistoCentavos: input.orcamentoPrevistoCentavos,
+        },
+      });
 
-    if (input.geo) {
-      await this.setGeo(workId, input.geo);
-    }
+      if (input.geo) {
+        await this.setGeo(tx, workId, input.geo);
+      }
+
+      return updated;
+    });
 
     await this.auditLog.record({
       userId: clienteId,
@@ -102,8 +113,12 @@ export class WorksService {
   }
 
   /// PostGIS — Unsupported("geography") não é gravável pelo client (mesmo padrão de ProfilePrestador/ProfileService).
-  private async setGeo(workId: string, geo: GeoPoint): Promise<void> {
-    await this.prisma.$executeRaw`
+  private async setGeo(
+    tx: Prisma.TransactionClient,
+    workId: string,
+    geo: GeoPoint,
+  ): Promise<void> {
+    await tx.$executeRaw`
       UPDATE works
       SET geo = ST_SetSRID(ST_MakePoint(${geo.lng}, ${geo.lat}), 4326)::geography
       WHERE id = ${workId}::uuid

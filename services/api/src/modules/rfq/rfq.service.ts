@@ -60,8 +60,29 @@ export class RfqService {
     return rfqs.map(toPublicRfq);
   }
 
-  async getMine(clienteId: string, rfqId: string): Promise<RfqPublic> {
-    const rfq = await this.getOwnedOrThrow(clienteId, rfqId);
+  /**
+   * Cliente dono OU prestador que enviou proposta pra este RFQ pode ver os
+   * detalhes (resolve P-032, achado ao construir o comparador E3-06: um
+   * prestador conseguia ver a própria proposta via GET /rfq/:id/proposals
+   * mas não os dados do RFQ em si). Editar (`update()`) continua estrito
+   * ao dono — usa `getOwnedOrThrow`, não este método.
+   */
+  async getMine(requesterId: string, rfqId: string): Promise<RfqPublic> {
+    const rfq = await this.prisma.rfq.findUnique({ where: { id: rfqId } });
+    if (!rfq) {
+      throw new NotFoundException("RFQ não encontrado");
+    }
+    if (rfq.clienteId === requesterId) {
+      return toPublicRfq(rfq);
+    }
+
+    const hasProposal = await this.prisma.rfqProposal.findFirst({
+      where: { rfqId, proponenteId: requesterId },
+    });
+    if (!hasProposal) {
+      throw new NotFoundException("RFQ não encontrado");
+    }
+
     return toPublicRfq(rfq);
   }
 

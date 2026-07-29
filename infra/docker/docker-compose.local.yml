@@ -1,7 +1,9 @@
 name: conectaobra-local
 services:
   postgres:
-    image: pgvector/pgvector:pg16
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
     environment:
       POSTGRES_USER: conectaobra
       POSTGRES_PASSWORD: conectaobra

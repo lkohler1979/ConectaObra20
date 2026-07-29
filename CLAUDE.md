@@ -44,7 +44,6 @@ services/api    → NestJS modular (identity, marketplace, rfq, escrow, works,
 packages/ui     → design system  ·  packages/types → DTOs zod compartilhados
 infra/docker    → docker-compose local  ·  .github/workflows → CI
 docs/           → prd, adr, api, legal
-app/            → [LEGADO] pasta do commit inicial — migrar/remover em S0-01
 ```
 
 ## 5. Regras inegociáveis (o Claude DEVE respeitar)

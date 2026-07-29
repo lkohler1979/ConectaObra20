@@ -1,0 +1,29 @@
+# syntax=docker/dockerfile:1
+#
+# Postgres 16 + PostGIS + pgvector — nenhuma imagem oficial única tem as
+# duas extensões juntas (P-013 em PENDENCIAS.md: pgvector/pgvector:pg16 é
+# só postgres:16 + pgvector, sem PostGIS; CREATE EXTENSION postgis em
+# init-extensions.sql quebraria no primeiro `docker compose up`).
+#
+# Base: imagem oficial postgis/postgis (já tem PostGIS). Pgvector é
+# compilado a partir da fonte seguindo exatamente a receita do Dockerfile
+# oficial do projeto pgvector (github.com/pgvector/pgvector/blob/master/Dockerfile),
+# só trocando a imagem base de postgres:$PG_MAJOR pra postgis/postgis.
+FROM postgis/postgis:16-3.5
+
+ADD https://github.com/pgvector/pgvector.git#v0.8.5 /tmp/pgvector
+
+RUN apt-get update && \
+    apt-mark hold locales && \
+    apt-get install -y --no-install-recommends build-essential postgresql-server-dev-16 && \
+    cd /tmp/pgvector && \
+    make clean && \
+    make OPTFLAGS="" && \
+    make install && \
+    mkdir -p /usr/share/doc/pgvector && \
+    cp LICENSE README.md /usr/share/doc/pgvector && \
+    rm -rf /tmp/pgvector && \
+    apt-get remove -y build-essential postgresql-server-dev-16 && \
+    apt-get autoremove -y && \
+    apt-mark unhold locales && \
+    rm -rf /var/lib/apt/lists/*

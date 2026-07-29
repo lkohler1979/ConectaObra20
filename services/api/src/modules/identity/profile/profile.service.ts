@@ -37,20 +37,25 @@ export class ProfileService {
       raioAtendimentoKm: input.raioAtendimentoKm,
     };
 
-    await this.prisma.profilePrestador.upsert({
-      where: { userId },
-      create: { userId, ...data },
-      update: data,
-    });
+    // upsert + gravação de geo numa única transação (achado em code review
+    // — P-023: as duas chamadas eram separadas, deixando o perfil sem
+    // coordenadas se a segunda falhasse).
+    await this.prisma.$transaction(async (tx) => {
+      await tx.profilePrestador.upsert({
+        where: { userId },
+        create: { userId, ...data },
+        update: data,
+      });
 
-    // Unsupported("geography") não é gravável pelo client — usa PostGIS via raw SQL.
-    if (input.geo) {
-      await this.prisma.$executeRaw`
-        UPDATE profiles_prestador
-        SET geo = ST_SetSRID(ST_MakePoint(${input.geo.lng}, ${input.geo.lat}), 4326)::geography
-        WHERE user_id = ${userId}::uuid
-      `;
-    }
+      // Unsupported("geography") não é gravável pelo client — usa PostGIS via raw SQL.
+      if (input.geo) {
+        await tx.$executeRaw`
+          UPDATE profiles_prestador
+          SET geo = ST_SetSRID(ST_MakePoint(${input.geo.lng}, ${input.geo.lat}), 4326)::geography
+          WHERE user_id = ${userId}::uuid
+        `;
+      }
+    });
 
     await this.auditLog.record({
       userId,

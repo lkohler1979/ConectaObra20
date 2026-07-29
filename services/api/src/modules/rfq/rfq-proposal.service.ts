@@ -44,19 +44,28 @@ export class RfqProposalService {
       throw new ConflictException("Você já enviou uma proposta para este RFQ");
     }
 
-    await this.enforceMonthlyCap(proponenteId);
-
     let proposal;
     try {
-      proposal = await this.prisma.rfqProposal.create({
-        data: {
-          rfqId,
-          proponenteId,
-          precoCentavos: input.precoCentavos,
-          prazoDias: input.prazoDias,
-          observacoes: input.observacoes,
-        },
-        include: { proponente: { select: { nome: true } } },
+      proposal = await this.prisma.$transaction(async (tx) => {
+        // Serializa submissões concorrentes do MESMO prestador (fecha a
+        // race do teto mensal — P-028, achado em code review: count-then-
+        // -insert sem lock deixava passar 1 proposta a mais sob
+        // concorrência) sem travar outros prestadores enviando ao mesmo
+        // tempo. Lock transacional — libera sozinho no commit/rollback.
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${proponenteId}))`;
+
+        await this.enforceMonthlyCap(tx, proponenteId);
+
+        return tx.rfqProposal.create({
+          data: {
+            rfqId,
+            proponenteId,
+            precoCentavos: input.precoCentavos,
+            prazoDias: input.prazoDias,
+            observacoes: input.observacoes,
+          },
+          include: { proponente: { select: { nome: true } } },
+        });
       });
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
@@ -107,8 +116,11 @@ export class RfqProposalService {
    * teto mensal; qualquer Subscription (seja qual for o plano) isenta por
    * enquanto — não há ainda tiers pagos distintos implementados.
    */
-  private async enforceMonthlyCap(proponenteId: string): Promise<void> {
-    const hasSubscription = await this.prisma.subscription.findFirst({
+  private async enforceMonthlyCap(
+    tx: Prisma.TransactionClient,
+    proponenteId: string,
+  ): Promise<void> {
+    const hasSubscription = await tx.subscription.findFirst({
       where: { userId: proponenteId },
     });
     if (hasSubscription) return;
@@ -116,7 +128,7 @@ export class RfqProposalService {
     const now = new Date();
     const startOfMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
 
-    const count = await this.prisma.rfqProposal.count({
+    const count = await tx.rfqProposal.count({
       where: { proponenteId, createdAt: { gte: startOfMonth } },
     });
 

@@ -80,8 +80,8 @@ export default async function RfqComparadorPage({
       <main className="mx-auto flex min-h-screen max-w-3xl flex-col justify-center gap-4 bg-areia px-5 py-10">
         <Alert variant="danger">
           <AlertDescription>
-            RFQ não encontrado, ou você não tem acesso a ele. Hoje esta tela só funciona pra quem
-            publicou o RFQ.
+            RFQ não encontrado, ou você não tem acesso a ele. Esta tela é visível pra quem
+            publicou o RFQ e pra quem enviou uma proposta pra ele.
           </AlertDescription>
         </Alert>
         <Link href="/rfq" className="text-sm font-semibold text-azul-planta">
