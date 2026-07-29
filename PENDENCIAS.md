@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-29 · Branch: `fix/pendencias-resolviveis`
+> Última atualização: 2026-07-29 · Branch: `main`
 
 ---
 
@@ -118,6 +118,7 @@
 | 2026-07-29 | Cronograma de etapas (E6-01, parcial): `MilestonesService`/`MilestonesController` novos em `ContractsModule` — `POST/GET /contracts/:contractId/milestones` e `PATCH .../:id/{iniciar,entregar,aprovar}`. Máquina de estados casa exatamente com o loop central do `CLAUDE.md` ("prestador executa a etapa e entrega evidências [fotos+checklist] → cliente aprova"): `CONTRATANTE` cria etapas e aprova entregas; `CONTRATADO` inicia execução e entrega (fotos). O model `Milestone` já existia desde S0-05 (nunca tinha endpoints). Sem Gantt visual nem dependências entre etapas — ver P-039. **Resolvido P-036**: `ReviewsService.create()` agora exige pelo menos 1 milestone `APROVADO` no contrato antes de aceitar uma avaliação, exatamente como a pendência antecipava. `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
 | 2026-07-29 | **Merge de `feat/E6-01-milestones` em `main`** (fast-forward, sem conflito) |
 | 2026-07-29 | Varredura de pendências resolvíveis (a pedido): triados todos os itens abertos de `PENDENCIAS.md` entre "resolvível agora sem decisão externa" e "precisa de Fundador/Tech Lead/fornecedor/contratação". Resolvidos nesta sessão: **P-005** (pasta `app/` legada estava vazia — removida), **P-013** (confirmado por pesquisa que `pgvector/pgvector:pg16` não tem PostGIS — `infra/docker/Dockerfile.postgres` própria a partir de `postgis/postgis:16-3.5` + pgvector compilado, `docker-compose.local.yml` atualizado; não testado com Docker real), **P-023** (`WorksService`/`ProfileService` — escrita de `geo` agora atômica com o create/upsert via `$transaction`), **P-028** (`RfqProposalService.submit()` agora usa `pg_advisory_xact_lock` por prestador dentro de uma transação, fechando a race do teto mensal), **P-032** (`RfqService.getMine()` agora também permite o prestador que propôs, não só o cliente dono), **P-034** (`GET /search/*` agora é público — a condição que a própria pendência citava, E2-03 existir, já foi cumprida). **Não resolvíveis agora** (decisão de Fundador/Tech Lead, fornecedor externo ou orçamento, fora do meu alcance): P-001 (stack final), P-002 (PSP/escrow), P-003 (cidade-piloto), P-006 (assinatura eletrônica/KYC), P-008 (secrets de CI/CD — precisa da infra decidida), P-011 (DSN real do Sentry), P-012 (contratar engenheiro civil), P-031 (testar DEPLOY.md numa VPS real), P-033 (revisão das calculadoras pelo engenheiro), P-037 (critério de selo). `tsc`/`nest build`/`next build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
+| 2026-07-29 | **Merge de `fix/pendencias-resolviveis` em `main`** (fast-forward, sem conflito) |
 
 ---
 
