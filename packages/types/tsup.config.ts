@@ -10,6 +10,7 @@ export default defineConfig({
     "src/diario.ts",
     "src/documents.ts",
     "src/equipe.ts",
+    "src/escrow.ts",
     "src/geo.ts",
     "src/legal.ts",
     "src/material-lists.ts",

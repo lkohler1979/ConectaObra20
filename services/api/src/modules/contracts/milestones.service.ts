@@ -7,20 +7,24 @@ import type {
 } from "@conectaobra/types/milestones";
 import { PrismaService } from "../../common/prisma/prisma.service";
 import { AuditLogService } from "../../common/audit/audit-log.service";
+import { EscrowService } from "../escrow/escrow.service";
 import { toPublicMilestone } from "./milestone-public.mapper";
 
 /**
  * Cronograma de etapas (E6-01) — segue o loop central do CLAUDE.md:
  * CONTRATANTE (cliente) define e aprova etapas; CONTRATADO (prestador/
  * fornecedor) executa e entrega evidências. Sem Gantt/dependências entre
- * etapas (não modelado); sem liberação de escrow (E4, bloqueado por P-002)
- * — "aprovar" aqui só marca o status, não movimenta dinheiro.
+ * etapas (não modelado). Escrow (E4) é PSP **simulado**, ver
+ * `EscrowService` — `aprovar()` libera automaticamente quando a etapa teve
+ * depósito prévio; sem depósito, continua só marcando `APROVADO` (opt-in,
+ * retrocompatível).
  */
 @Injectable()
 export class MilestonesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
+    private readonly escrowService: EscrowService,
   ) {}
 
   async create(
@@ -138,7 +142,7 @@ export class MilestonesService {
       throw new ConflictException("Etapa precisa estar entregue pra ser aprovada");
     }
 
-    const updated = await this.prisma.milestone.update({
+    let updated = await this.prisma.milestone.update({
       where: { id: milestoneId },
       data: { status: "APROVADO", aprovadoEm: new Date(), aprovadoPorId: requesterId },
     });
@@ -150,6 +154,15 @@ export class MilestonesService {
       entidade: "milestone",
       payload: { milestoneId },
     });
+
+    const liberado = await this.escrowService.liberarSeDepositado(
+      contractId,
+      milestoneId,
+      requesterId,
+    );
+    if (liberado) {
+      updated = liberado;
+    }
 
     return toPublicMilestone(updated);
   }

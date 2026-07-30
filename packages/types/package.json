@@ -43,6 +43,11 @@
       "require": "./dist/equipe.js",
       "import": "./dist/equipe.mjs"
     },
+    "./escrow": {
+      "types": "./dist/escrow.d.ts",
+      "require": "./dist/escrow.js",
+      "import": "./dist/escrow.mjs"
+    },
     "./geo": {
       "types": "./dist/geo.d.ts",
       "require": "./dist/geo.js",

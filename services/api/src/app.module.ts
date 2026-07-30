@@ -23,6 +23,7 @@ import { CatalogModule } from "./modules/catalog/catalog.module";
 import { SearchModule } from "./modules/search/search.module";
 import { PublicProfilesModule } from "./modules/public-profiles/public-profiles.module";
 import { ProcurementModule } from "./modules/procurement/procurement.module";
+import { EscrowModule } from "./modules/escrow/escrow.module";
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { ProcurementModule } from "./modules/procurement/procurement.module";
     SearchModule,
     PublicProfilesModule,
     ProcurementModule,
+    EscrowModule,
   ],
   controllers: [HealthController],
   providers: [

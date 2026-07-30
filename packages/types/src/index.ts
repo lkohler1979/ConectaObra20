@@ -5,6 +5,7 @@ export * from "./contracts";
 export * from "./diario";
 export * from "./documents";
 export * from "./equipe";
+export * from "./escrow";
 export * from "./geo";
 export * from "./legal";
 export * from "./material-lists";

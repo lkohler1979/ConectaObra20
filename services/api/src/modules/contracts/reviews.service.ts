@@ -16,9 +16,13 @@ export class ReviewsService {
 
   /**
    * `avaliadoId` nunca vem do cliente — é sempre a outra parte do contrato,
-   * descoberta aqui. Exige pelo menos 1 milestone `APROVADO` no contrato
-   * (E6-01) — sem isso, não há sinal de que algum trabalho foi de fato
-   * entregue e aceito (resolve a limitação registrada em PENDENCIAS.md P-036).
+   * descoberta aqui. Exige pelo menos 1 milestone `APROVADO` OU `PAGO` no
+   * contrato (E6-01) — sem isso, não há sinal de que algum trabalho foi de
+   * fato entregue e aceito (resolve a limitação registrada em
+   * PENDENCIAS.md P-036). `PAGO` entra aqui porque o escrow simulado (E4)
+   * agora libera automaticamente e avança o status pra `PAGO` — sem incluir
+   * esse estado, contratos com etapas já liberadas parariam de contar pro
+   * gate, o oposto do que deveria acontecer.
    */
   async create(
     contratoId: string,
@@ -28,7 +32,7 @@ export class ReviewsService {
     const { avaliador, avaliado } = await this.resolveParties(contratoId, avaliadorId);
 
     const milestonesAprovados = await this.prisma.milestone.count({
-      where: { contractId: contratoId, status: "APROVADO" },
+      where: { contractId: contratoId, status: { in: ["APROVADO", "PAGO"] } },
     });
     if (milestonesAprovados === 0) {
       throw new ConflictException(

@@ -24,6 +24,10 @@ export const envSchema = baseEnvSchema.extend({
   /// negócio fechada, só um valor razoável pro checkout simulado funcionar
   /// enquanto o PSP real (P-002) não existe. Em basis points (500 = 5%).
   PROCUREMENT_COMMISSION_BPS: z.coerce.number().int().min(0).max(10_000).default(500),
+  /// Placeholder dentro da faixa "2–5%" do Hub Financeiro (`01_PRD` M4) — não
+  /// é decisão de negócio fechada, só um valor razoável pro escrow simulado
+  /// funcionar enquanto o PSP real (P-002) não existe. Basis points (300 = 3%).
+  ESCROW_COMMISSION_BPS: z.coerce.number().int().min(0).max(10_000).default(300),
   /// Redis já é infra decidida (docker-compose.local.yml, CLAUDE.md §3) —
   /// diferente de S3/SMS (fornecedor em aberto), por isso é obrigatório
   /// como DATABASE_URL, não opcional (E3-04).
