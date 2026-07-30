@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-30 · Branch: `chore/seed-personas-teste`
+> Última atualização: 2026-07-30 · Branch: `main`
 
 ---
 
@@ -145,6 +145,7 @@
 | 2026-07-30 | Fluxo de disputa (E4-09/E4-10, parcial): novos `DisputesService`/`DisputesController` em `EscrowModule`, reaproveitando `Dispute` (schema desde S0-05, sem endpoints). `POST /contracts/:id/milestones/:id/disputas` (qualquer parte do contrato abre, com motivo + evidências) marca `Milestone.status = EM_DISPUTA` — congela iniciar/entregar/aprovar sozinho, sem precisar de guarda extra, porque nenhum dos status checks existentes casa com `EM_DISPUTA` (fecha exatamente o requisito "disputa congela liberação imediatamente" do checklist B.3). `GET .../disputas` (parte/equipe) e `GET /disputas` (fila de mediação, ADMIN). `PATCH /disputas/:id/resolver` (ADMIN): `APROVAR` reverte pra `ENTREGUE` (segue o fluxo normal); `ESTORNAR`/`LIBERAR_PARCIAL` chamam os 2 métodos novos de `EscrowService` (`estornarDeposito`/`liberarParcial`) que criam `ESTORNO`/`LIBERACAO` parcial no mesmo ledger de hash encadeado do escrow — validados fora do framework (`node -e`): líquido + comissão + estornado sempre bate com o valor depositado, em 3 cenários (parcial, estorno total, liberação total). Sem SLA de mediação, sem notificação e sem calculadora de proporção pro mediador — ver P-048 (inclui a observação de que nenhum usuário `ADMIN` existe ainda no sistema pra de fato mediar). `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
 | 2026-07-30 | **Merge de `feat/E4-disputas` em `main`** (fast-forward, sem conflito). `main` revalidado de ponta a ponta pós-merge (`pnpm build`/`lint`/`test` da raiz) — épico E4 (Hub Financeiro/Escrow) com núcleo + disputa/estorno rodando em PSP simulado, ver P-047/P-048 |
 | 2026-07-30 | Seed de desenvolvimento (`prisma/seed.ts`, a pedido do usuário) estendido pra cobrir as 5 personas de teste ponta a ponta: **admin** (`admin@conectaobra.example.com`, mediador de disputas — resolve parcialmente o "nenhum ADMIN existe" de P-048), cliente e prestador (já existiam), **engenheiro** (`julia.engenheira@example.com`, `tipo: TECNICO` reaproveitando `ProfilePrestador` conforme decisão de E1-02/P-015, categorias `estrutural`/`projetos`) e fornecedor (já existia). Senha de todos: `senha12345`. `tsc`/`pnpm build`/`lint`/`test` da raiz passam. **Não executado contra um Postgres real** — sem Docker disponível nesta sessão (mesma limitação de sempre, P-010); rodar com `pnpm --filter @conectaobra/api seed` assim que houver banco |
+| 2026-07-30 | **Merge de `chore/seed-personas-teste` em `main`** (fast-forward, sem conflito). `main` revalidado de ponta a ponta pós-merge (`pnpm build`/`lint`/`test` da raiz) |
 | 2026-07-29 | **Merge de `feat/E7-02-cotacao-automatica` em `main`** (fast-forward, sem conflito). `main` revalidado de ponta a ponta pós-merge (`pnpm build`/`lint`/`test` da raiz) — épico E7 com E7-01 e E7-02 completos, E7-03 (comparador) e E7-04 (checkout, bloqueado por P-002) restantes |
 
 ---
