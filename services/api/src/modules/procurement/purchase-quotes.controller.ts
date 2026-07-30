@@ -36,6 +36,14 @@ export class PurchaseQuotesController {
     return this.purchaseQuotesService.listForMaterialList(user.sub, materialListId);
   }
 
+  @Get("material-lists/:id/comparison")
+  getComparison(
+    @Param("id", new ZodValidationPipe(materialListIdSchema)) materialListId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.purchaseQuotesService.getComparison(user.sub, materialListId);
+  }
+
   @Get("purchase-quotes")
   @UseGuards(UserTypeGuard)
   @AllowedUserTypes("FORNECEDOR")

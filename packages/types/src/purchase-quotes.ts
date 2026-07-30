@@ -38,3 +38,24 @@ export const purchaseQuotePublicSchema = z.object({
   createdAt: z.string(),
 });
 export type PurchaseQuotePublic = z.infer<typeof purchaseQuotePublicSchema>;
+
+/**
+ * Comparador (E7-03) — só cotações `RESPONDIDA` entram (as pendentes ainda
+ * não têm preço/frete/prazo pra comparar). Destaques marcam TODAS as
+ * cotações empatadas no critério, não só a primeira.
+ */
+export const materialListComparisonItemSchema = purchaseQuotePublicSchema.extend({
+  notaMediaFornecedor: z.number().nullable(),
+  totalCentavos: z.number().int(),
+  menorPreco: z.boolean(),
+  menorFrete: z.boolean(),
+  melhorAvaliacao: z.boolean(),
+  menorPrazo: z.boolean(),
+});
+export type MaterialListComparisonItem = z.infer<typeof materialListComparisonItemSchema>;
+
+export const materialListComparisonSchema = z.object({
+  materialListId: z.string().uuid(),
+  cotacoes: z.array(materialListComparisonItemSchema),
+});
+export type MaterialListComparison = z.infer<typeof materialListComparisonSchema>;

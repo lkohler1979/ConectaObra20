@@ -2,6 +2,8 @@ import { ConflictException, Injectable, NotFoundException } from "@nestjs/common
 import { Prisma } from "@prisma/client";
 import type { MaterialListItem } from "@conectaobra/types/material-lists";
 import type {
+  MaterialListComparison,
+  MaterialListComparisonItem,
   PurchaseQuotePublic,
   RespondPurchaseQuoteInput,
 } from "@conectaobra/types/purchase-quotes";
@@ -133,6 +135,57 @@ export class PurchaseQuotesService {
     });
 
     return toPublicPurchaseQuote(updated);
+  }
+
+  /**
+   * Comparador (E7-03): menor preço, menor frete, melhor avaliação, menor
+   * prazo. Só cotações `RESPONDIDA` entram — as pendentes não têm preço pra
+   * comparar. Dono OU membro da equipe (só leitura).
+   */
+  async getComparison(requesterId: string, materialListId: string): Promise<MaterialListComparison> {
+    const list = await this.getListOrThrow(materialListId);
+    await this.worksService.assertVisible(requesterId, list.obraId);
+
+    const quotes = await this.prisma.purchaseQuote.findMany({
+      where: { materialListId, status: "RESPONDIDA" },
+      include: QUOTE_INCLUDE,
+    });
+
+    if (quotes.length === 0) {
+      return { materialListId, cotacoes: [] };
+    }
+
+    const calculados = quotes.map((quote) => {
+      const itensPrecos = quote.itensPrecos as unknown as PurchaseQuotePublic["itensPrecos"];
+      const totalItensCentavos = itensPrecos.reduce(
+        (sum, item) => sum + Math.round(item.precoUnitarioCentavos * item.quantidade),
+        0,
+      );
+      return {
+        quote,
+        totalCentavos: totalItensCentavos + (quote.freteCentavos ?? 0),
+        notaMediaFornecedor: quote.fornecedor.notaMedia ? quote.fornecedor.notaMedia.toNumber() : null,
+      };
+    });
+
+    const menorPrecoValor = Math.min(...calculados.map((c) => c.totalCentavos));
+    const menorFreteValor = Math.min(...calculados.map((c) => c.quote.freteCentavos ?? Infinity));
+    const menorPrazoValor = Math.min(...calculados.map((c) => c.quote.prazoDias ?? Infinity));
+    const melhorAvaliacaoValor = Math.max(...calculados.map((c) => c.notaMediaFornecedor ?? -Infinity));
+
+    const cotacoes: MaterialListComparisonItem[] = calculados
+      .map(({ quote, totalCentavos, notaMediaFornecedor }) => ({
+        ...toPublicPurchaseQuote(quote),
+        notaMediaFornecedor,
+        totalCentavos,
+        menorPreco: totalCentavos === menorPrecoValor,
+        menorFrete: quote.freteCentavos === menorFreteValor,
+        melhorAvaliacao: (notaMediaFornecedor ?? -Infinity) === melhorAvaliacaoValor,
+        menorPrazo: quote.prazoDias === menorPrazoValor,
+      }))
+      .sort((a, b) => a.totalCentavos - b.totalCentavos);
+
+    return { materialListId, cotacoes };
   }
 
   private async listForMaterialListInternal(materialListId: string): Promise<PurchaseQuotePublic[]> {
