@@ -8,19 +8,19 @@ services:
       POSTGRES_USER: conectaobra
       POSTGRES_PASSWORD: conectaobra
       POSTGRES_DB: conectaobra
-    ports: ["5432:5432"]
+    ports: ["${POSTGRES_PORT:-5432}:5432"]
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./init-extensions.sql:/docker-entrypoint-initdb.d/01-extensions.sql
   redis:
     image: redis:7-alpine
-    ports: ["6379:6379"]
+    ports: ["${REDIS_PORT:-6379}:6379"]
   meilisearch:
     image: getmeili/meilisearch:v1.11
     environment:
       MEILI_MASTER_KEY: dev-master-key
       MEILI_ENV: development
-    ports: ["7700:7700"]
+    ports: ["${MEILI_PORT:-7700}:7700"]
     volumes: [meilidata:/meili_data]
 volumes:
   pgdata:

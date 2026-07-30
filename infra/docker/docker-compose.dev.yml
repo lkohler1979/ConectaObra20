@@ -1,0 +1,147 @@
+# Sobe o stack de dev inteiro em containers (infra + packages + api + web),
+# com hot-reload.
+# Uso:
+#   docker compose -f infra/docker/docker-compose.local.yml -f infra/docker/docker-compose.dev.yml up --build
+#
+# Healthchecks em postgres/redis são adicionados aqui (não no compose local)
+# para os `depends_on: condition: service_healthy` funcionarem — subir só a
+# infra (docker-compose.local.yml sozinho) continua igual, sem healthcheck.
+#
+# Portas do host são sobrescrevíveis via env var (útil em máquina com outros
+# projetos já usando 5432/6379/3000/3333): POSTGRES_PORT, REDIS_PORT,
+# MEILI_PORT, API_PORT, WEB_PORT.
+services:
+  postgres:
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U conectaobra -d conectaobra"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Dono exclusivo do build/watch de packages/{types,ui,config}. api e web
+  # rodam em containers separados montando o MESMO ./ do host — se cada um
+  # também buildasse esses pacotes (tsup --watch), os dois processos
+  # escreveriam concorrentemente no mesmo dist/ e um apagava o arquivo que o
+  # outro estava escrevendo (ENOENT: unlink dist/profile.js). Centralizando
+  # aqui, api/web só leem dist/ já pronto.
+  packages:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.dev
+    working_dir: /app
+    command: sh -c "pnpm --filter @conectaobra/types run build && pnpm --filter @conectaobra/config run build && pnpm --filter @conectaobra/ui run build && pnpm exec turbo run dev --filter=@conectaobra/types --filter=@conectaobra/config --filter=@conectaobra/ui --env-mode=loose"
+    # Bind mount no Docker Desktop (Windows/Mac) não repassa eventos nativos
+    # de filesystem pro container — sem polling, os watchers (chokidar aqui,
+    # tsc/webpack em api/web) nunca veem os saves feitos no host.
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+      CHOKIDAR_INTERVAL: "300"
+    healthcheck:
+      test: ["CMD", "test", "-f", "/app/packages/types/dist/index.js"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+    volumes:
+      - ../..:/app
+      - dev_node_modules_root:/app/node_modules
+      - dev_node_modules_ui:/app/packages/ui/node_modules
+      - dev_node_modules_types:/app/packages/types/node_modules
+      - dev_node_modules_config:/app/packages/config/node_modules
+
+  api:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.dev
+    working_dir: /app
+    # --env-mode=loose: turbo 2 filtra env por padrão (envMode "strict", só
+    # passa o que está em turbo.json `env`/`globalEnv` — vazio aqui), o que
+    # derrubava o boot com "DATABASE_URL/JWT_SECRET/... Required" mesmo com a
+    # env setada no compose. No host isso não aparece pq dotenv lê o .env do
+    # disco direto, sem depender do env herdado do processo pai.
+    # --filter=@conectaobra/api (sem "...") de propósito: não rebuildar
+    # types/config aqui, isso é responsabilidade do container `packages`.
+    command: sh -c "pnpm --filter @conectaobra/api run prisma:generate && pnpm --filter @conectaobra/api run prisma:deploy && pnpm exec turbo run dev --filter=@conectaobra/api --env-mode=loose"
+    environment:
+      DATABASE_URL: postgresql://conectaobra:conectaobra@postgres:5432/conectaobra?schema=public
+      REDIS_URL: redis://redis:6379
+      MEILI_HOST: http://meilisearch:7700
+      MEILI_API_KEY: dev-master-key
+      NODE_ENV: development
+      PORT: "3333"
+      LOG_LEVEL: debug
+      # Segredo só para dev local — nunca reutilizar fora do compose de dev.
+      JWT_SECRET: dev-only-secret-troque-antes-de-qualquer-deploy-real-0123456789
+      JWT_ACCESS_TTL_SECONDS: "900"
+      JWT_REFRESH_TTL_DAYS: "30"
+      OTP_TTL_MINUTES: "10"
+      OTP_MAX_ATTEMPTS: "5"
+      MFA_CHALLENGE_TTL_SECONDS: "300"
+      FREE_PLAN_MONTHLY_PROPOSAL_LIMIT: "5"
+      # ver comentário sobre polling no serviço `packages` acima — aqui é o
+      # equivalente para o tsc --watch usado pelo `nest start --watch`.
+      TSC_WATCHFILE: PriorityPollingInterval
+      TSC_WATCHDIRECTORY: DynamicPriorityPolling
+    ports: ["${API_PORT:-3333}:3333"]
+    depends_on:
+      packages:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      meilisearch:
+        condition: service_started
+    volumes:
+      - ../..:/app
+      - dev_node_modules_root:/app/node_modules
+      - dev_node_modules_api:/app/services/api/node_modules
+      # @conectaobra/api importa @conectaobra/types e @conectaobra/config;
+      # a resolução Node dos node_modules DESSES pacotes (zod etc.) parte do
+      # diretório real de packages/types|config/dist, não do node_modules
+      # raiz (pnpm isola dependências por pacote, sem hoist) — por isso
+      # precisam estar montados aqui também, mesmo sem o container `api`
+      # buildar esses pacotes.
+      - dev_node_modules_types:/app/packages/types/node_modules
+      - dev_node_modules_config:/app/packages/config/node_modules
+
+  web:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.dev
+    working_dir: /app
+    # --filter=@conectaobra/web (sem "...") pelo mesmo motivo do api acima.
+    command: sh -c "pnpm exec turbo run dev --filter=@conectaobra/web --env-mode=loose"
+    environment:
+      API_URL: http://api:3333
+      NODE_ENV: development
+      # ver comentário sobre polling no serviço `packages` acima — aqui é o
+      # equivalente pro webpack dev server do `next dev`.
+      WATCHPACK_POLLING: "true"
+    ports: ["${WEB_PORT:-3000}:3000"]
+    depends_on:
+      packages:
+        condition: service_healthy
+      api:
+        condition: service_started
+    volumes:
+      - ../..:/app
+      - dev_node_modules_root:/app/node_modules
+      - dev_node_modules_web:/app/apps/web/node_modules
+      # mesmo motivo do api acima, para @conectaobra/types e @conectaobra/ui.
+      - dev_node_modules_types:/app/packages/types/node_modules
+      - dev_node_modules_ui:/app/packages/ui/node_modules
+
+volumes:
+  dev_node_modules_root:
+  dev_node_modules_ui:
+  dev_node_modules_types:
+  dev_node_modules_config:
+  dev_node_modules_api:
+  dev_node_modules_web:
