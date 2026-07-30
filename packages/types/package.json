@@ -93,6 +93,11 @@
       "require": "./dist/public-profiles.js",
       "import": "./dist/public-profiles.mjs"
     },
+    "./purchase-orders": {
+      "types": "./dist/purchase-orders.d.ts",
+      "require": "./dist/purchase-orders.js",
+      "import": "./dist/purchase-orders.mjs"
+    },
     "./purchase-quotes": {
       "types": "./dist/purchase-quotes.d.ts",
       "require": "./dist/purchase-quotes.js",

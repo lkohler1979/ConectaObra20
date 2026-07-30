@@ -1,16 +1,20 @@
+import { randomUUID } from "node:crypto";
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 import type { MaterialListItem } from "@conectaobra/types/material-lists";
+import type { PurchaseOrderPublic } from "@conectaobra/types/purchase-orders";
 import type {
   MaterialListComparison,
   MaterialListComparisonItem,
   PurchaseQuotePublic,
   RespondPurchaseQuoteInput,
 } from "@conectaobra/types/purchase-quotes";
+import { env } from "../../config/env";
 import { PrismaService } from "../../common/prisma/prisma.service";
 import { AuditLogService } from "../../common/audit/audit-log.service";
 import { WorksService } from "../works/works.service";
 import { toPublicPurchaseQuote } from "./purchase-quote-public.mapper";
+import { toPublicPurchaseOrder } from "./purchase-order-public.mapper";
 
 /** Quantos fornecedores no máximo por rodada de cotação automática — mesmo tamanho do lote do matching de RFQ (E3-03). */
 const QUOTE_MATCH_LIMIT = 10;
@@ -135,6 +139,75 @@ export class PurchaseQuotesService {
     });
 
     return toPublicPurchaseQuote(updated);
+  }
+
+  /**
+   * Checkout (E7-04) — PSP **simulado**, sempre sucesso. Sem integração real
+   * (P-002, PSP/BaaS ainda não escolhido, ver PENDENCIAS.md): `pspRef` é só
+   * um valor sintético. Idempotente via `@unique` em `PurchaseOrder.purchaseQuoteId`
+   * — uma cotação só fecha uma compra (P2002 vira 409, mesmo padrão de RfqProposal).
+   */
+  async checkout(clienteId: string, quoteId: string): Promise<PurchaseOrderPublic> {
+    const quote = await this.prisma.purchaseQuote.findUnique({
+      where: { id: quoteId },
+      include: {
+        fornecedor: { include: { user: { select: { nome: true } } } },
+        materialList: { select: { obraId: true } },
+      },
+    });
+    if (!quote) {
+      throw new NotFoundException("Cotação não encontrada");
+    }
+
+    const obra = await this.prisma.work.findUnique({ where: { id: quote.materialList.obraId } });
+    if (!obra || obra.clienteId !== clienteId) {
+      throw new NotFoundException("Cotação não encontrada");
+    }
+    if (quote.status !== "RESPONDIDA") {
+      throw new ConflictException("Só é possível fechar compra com uma cotação respondida");
+    }
+
+    const itensPrecos = quote.itensPrecos as unknown as PurchaseQuotePublic["itensPrecos"];
+    const itensTotalCentavos = itensPrecos.reduce(
+      (sum, item) => sum + Math.round(item.precoUnitarioCentavos * item.quantidade),
+      0,
+    );
+    const freteCentavos = quote.freteCentavos ?? 0;
+    const comissaoCentavos = Math.round(
+      ((itensTotalCentavos + freteCentavos) * env.PROCUREMENT_COMMISSION_BPS) / 10_000,
+    );
+    const totalPagoCentavos = itensTotalCentavos + freteCentavos + comissaoCentavos;
+    const pspRef = `SIMULADO-${randomUUID()}`;
+
+    let order;
+    try {
+      order = await this.prisma.purchaseOrder.create({
+        data: {
+          purchaseQuoteId: quoteId,
+          itensTotalCentavos,
+          freteCentavos,
+          comissaoCentavos,
+          totalPagoCentavos,
+          pspRef,
+          status: "PAGO",
+        },
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        throw new ConflictException("Esta cotação já foi fechada em uma compra");
+      }
+      throw error;
+    }
+
+    await this.auditLog.record({
+      userId: clienteId,
+      obraId: quote.materialList.obraId,
+      acao: "purchase_order.created",
+      entidade: "purchase_order",
+      payload: { purchaseOrderId: order.id, quoteId, totalPagoCentavos, pspRef, simulado: true },
+    });
+
+    return toPublicPurchaseOrder(order, quote);
   }
 
   /**

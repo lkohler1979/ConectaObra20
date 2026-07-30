@@ -61,4 +61,15 @@ export class PurchaseQuotesController {
   ) {
     return this.purchaseQuotesService.respond(user.sub, quoteId, body);
   }
+
+  /** Checkout simulado (E7-04) — sempre sucesso, sem PSP real (P-002). */
+  @Post("purchase-quotes/:id/checkout")
+  @UseGuards(UserTypeGuard)
+  @AllowedUserTypes("CLIENTE_PF", "CLIENTE_PJ")
+  checkout(
+    @Param("id", new ZodValidationPipe(purchaseQuoteIdSchema)) quoteId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.purchaseQuotesService.checkout(user.sub, quoteId);
+  }
 }

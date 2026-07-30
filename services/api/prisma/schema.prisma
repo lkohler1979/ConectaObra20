@@ -533,10 +533,33 @@ model PurchaseQuote {
   status         String
   createdAt      DateTime @default(now()) @map("created_at")
 
-  materialList MaterialList      @relation(fields: [materialListId], references: [id], onDelete: Cascade)
-  fornecedor   ProfileFornecedor @relation(fields: [fornecedorId], references: [userId])
+  materialList  MaterialList      @relation(fields: [materialListId], references: [id], onDelete: Cascade)
+  fornecedor    ProfileFornecedor @relation(fields: [fornecedorId], references: [userId])
+  purchaseOrder PurchaseOrder?
 
   @@map("purchase_quotes")
+}
+
+/// Checkout de compra (E7-04) — PSP **simulado**, sempre sucesso (P-002,
+/// PSP/BaaS real ainda não escolhido — ver PENDENCIAS.md). Não confundir com
+/// `escrow_transactions` (E4): isso é comissão de marketplace de materiais,
+/// não custódia de milestone de contrato de serviço. `@unique` em
+/// `purchaseQuoteId` garante idempotência — uma cotação só fecha uma compra.
+model PurchaseOrder {
+  id                 String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  purchaseQuoteId    String   @unique @map("purchase_quote_id") @db.Uuid
+  itensTotalCentavos Int      @map("itens_total_centavos")
+  freteCentavos      Int      @map("frete_centavos")
+  comissaoCentavos   Int      @map("comissao_centavos")
+  totalPagoCentavos  Int      @map("total_pago_centavos")
+  /// Sempre "SIMULADO-<uuid>" até o PSP real existir.
+  pspRef             String   @map("psp_ref")
+  status             String   @default("PAGO")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  purchaseQuote PurchaseQuote @relation(fields: [purchaseQuoteId], references: [id], onDelete: Cascade)
+
+  @@map("purchase_orders")
 }
 
 // ─── Catálogo, Monetização e Conteúdo (E8/E9) ──────────────────────────────
