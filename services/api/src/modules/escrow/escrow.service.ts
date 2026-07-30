@@ -142,6 +142,133 @@ export class EscrowService {
     return milestoneAtualizado;
   }
 
+  /**
+   * Estorno total (E4-10) — chamado pela resolução de disputa (`DisputesService`)
+   * quando o mediador decide `ESTORNAR`. Devolve o valor depositado ao
+   * cliente e reabre a etapa em `PENDENTE` (o trabalho pode ser refeito do
+   * zero). Idempotente e silencioso se nunca houve depósito ou já foi
+   * estornado — a decisão de mediação ainda precisa fazer sentido nesses
+   * casos, só não move dinheiro.
+   */
+  async estornarDeposito(
+    contractId: string,
+    milestoneId: string,
+    requesterId: string,
+  ): Promise<Milestone> {
+    const deposito = await this.prisma.escrowTransaction.findFirst({
+      where: { milestoneId, tipo: "DEPOSITO" },
+    });
+    const jaEstornado = deposito
+      ? await this.prisma.escrowTransaction.findFirst({
+          where: { milestoneId, tipo: "ESTORNO" },
+        })
+      : null;
+
+    const milestoneAtualizado = await this.prisma.$transaction(async (tx) => {
+      if (deposito && !jaEstornado) {
+        await this.appendLedger(tx, {
+          milestoneId,
+          tipo: "ESTORNO",
+          valorCentavos: deposito.valorCentavos,
+          taxaPlataformaCentavos: null,
+          status: "CONFIRMADO",
+        });
+      }
+      return tx.milestone.update({ where: { id: milestoneId }, data: { status: "PENDENTE" } });
+    });
+
+    await this.auditLog.record({
+      userId: requesterId,
+      obraId: await this.getObraId(contractId),
+      acao: "escrow.estornado",
+      entidade: "escrow_transaction",
+      payload: { milestoneId, valorCentavos: deposito?.valorCentavos ?? 0, simulado: true },
+    });
+
+    return milestoneAtualizado;
+  }
+
+  /**
+   * Liberação parcial (E4-10) — chamada pela resolução de disputa quando o
+   * mediador decide `LIBERAR_PARCIAL`: libera parte do depósito pro
+   * contratado (com comissão proporcional) e estorna o restante pro
+   * cliente. Exige depósito confirmado e ainda não liberado.
+   */
+  async liberarParcial(
+    contractId: string,
+    milestoneId: string,
+    valorLiberadoCentavos: number,
+    requesterId: string,
+  ): Promise<Milestone> {
+    const deposito = await this.prisma.escrowTransaction.findFirst({
+      where: { milestoneId, tipo: "DEPOSITO" },
+    });
+    if (!deposito) {
+      throw new ConflictException("Esta etapa não tem depósito em custódia — não há valor pra liberar");
+    }
+    if (valorLiberadoCentavos > deposito.valorCentavos) {
+      throw new ConflictException(
+        "Valor de liberação parcial não pode ser maior que o valor depositado",
+      );
+    }
+
+    const jaLiberado = await this.prisma.escrowTransaction.findFirst({
+      where: { milestoneId, tipo: "LIBERACAO" },
+    });
+    if (jaLiberado) {
+      throw new ConflictException("Esta etapa já teve uma liberação registrada");
+    }
+
+    const comissaoCentavos = Math.round(
+      (valorLiberadoCentavos * env.ESCROW_COMMISSION_BPS) / 10_000,
+    );
+    const valorLiquidoCentavos = valorLiberadoCentavos - comissaoCentavos;
+    const valorEstornadoCentavos = deposito.valorCentavos - valorLiberadoCentavos;
+
+    const milestoneAtualizado = await this.prisma.$transaction(async (tx) => {
+      await this.appendLedger(tx, {
+        milestoneId,
+        tipo: "LIBERACAO",
+        valorCentavos: valorLiquidoCentavos,
+        taxaPlataformaCentavos: comissaoCentavos,
+        status: "CONFIRMADO",
+      });
+      await this.appendLedger(tx, {
+        milestoneId,
+        tipo: "COMISSAO",
+        valorCentavos: comissaoCentavos,
+        taxaPlataformaCentavos: null,
+        status: "CONFIRMADO",
+      });
+      if (valorEstornadoCentavos > 0) {
+        await this.appendLedger(tx, {
+          milestoneId,
+          tipo: "ESTORNO",
+          valorCentavos: valorEstornadoCentavos,
+          taxaPlataformaCentavos: null,
+          status: "CONFIRMADO",
+        });
+      }
+      return tx.milestone.update({ where: { id: milestoneId }, data: { status: "PAGO" } });
+    });
+
+    await this.auditLog.record({
+      userId: requesterId,
+      obraId: await this.getObraId(contractId),
+      acao: "escrow.liberado_parcial",
+      entidade: "escrow_transaction",
+      payload: {
+        milestoneId,
+        valorLiquidoCentavos,
+        comissaoCentavos,
+        valorEstornadoCentavos,
+        simulado: true,
+      },
+    });
+
+    return milestoneAtualizado;
+  }
+
   /** Extrato (E4-12, parcial) — parte do contrato OU membro da equipe (só leitura). */
   async getLedger(requesterId: string, contractId: string): Promise<EscrowTransactionPublic[]> {
     await this.requirePartyOrTeamMember(contractId, requesterId);

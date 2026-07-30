@@ -3,6 +3,7 @@ export * from "./auth";
 export * from "./catalog";
 export * from "./contracts";
 export * from "./diario";
+export * from "./disputes";
 export * from "./documents";
 export * from "./equipe";
 export * from "./escrow";

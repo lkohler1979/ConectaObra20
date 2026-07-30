@@ -33,6 +33,11 @@
       "require": "./dist/diario.js",
       "import": "./dist/diario.mjs"
     },
+    "./disputes": {
+      "types": "./dist/disputes.d.ts",
+      "require": "./dist/disputes.js",
+      "import": "./dist/disputes.mjs"
+    },
     "./documents": {
       "types": "./dist/documents.d.ts",
       "require": "./dist/documents.js",
