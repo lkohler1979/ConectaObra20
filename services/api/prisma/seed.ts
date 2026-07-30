@@ -1,6 +1,10 @@
 /**
- * Seed mínimo para desenvolvimento local (S0-05).
+ * Seed mínimo para desenvolvimento local (S0-05). Cobre as 5 personas
+ * principais pra testar o sistema ponta a ponta: admin (mediador de
+ * disputas, E4-09 — P-048), cliente, prestador, engenheiro (TECNICO,
+ * reaproveita ProfilePrestador — P-015) e fornecedor.
  * Dados fictícios — CPF/CNPJ abaixo não são reais.
+ * Senha de todos os usuários: "senha12345" — só para dev local.
  * Rodar com: pnpm --filter @conectaobra/api seed
  */
 import { PrismaClient } from "@prisma/client";
@@ -8,7 +12,6 @@ import { hashSync } from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-// Senha de todos os usuários do seed: "senha12345" — só para dev local.
 const SEED_SENHA_HASH = hashSync("senha12345", 10);
 
 async function main() {
@@ -45,6 +48,46 @@ async function main() {
           experienciaAnos: 8,
           certificados: [],
           raioAtendimentoKm: 30,
+          selo: "verificado",
+        },
+      },
+    },
+  });
+
+  const admin = await prisma.user.upsert({
+    where: { email: "admin@conectaobra.example.com" },
+    update: {},
+    create: {
+      tipo: "ADMIN",
+      nome: "Admin ConectaObra",
+      email: "admin@conectaobra.example.com",
+      telefone: "+5527999990099",
+      cpfCnpj: "00000000363",
+      senhaHash: SEED_SENHA_HASH,
+      telefoneVerificado: true,
+      kycStatus: "APROVADO",
+    },
+  });
+
+  // TECNICO reaproveita ProfilePrestador (doc 02 §3 não define profile próprio pra técnico — ver P-015).
+  const engenheiro = await prisma.user.upsert({
+    where: { email: "julia.engenheira@example.com" },
+    update: {},
+    create: {
+      tipo: "TECNICO",
+      nome: "Júlia Engenheira",
+      email: "julia.engenheira@example.com",
+      telefone: "+5527999990098",
+      cpfCnpj: "00000000444",
+      senhaHash: SEED_SENHA_HASH,
+      telefoneVerificado: true,
+      kycStatus: "APROVADO",
+      profilePrestador: {
+        create: {
+          categorias: ["estrutural", "projetos"],
+          experienciaAnos: 12,
+          certificados: ["CREA-ES 123456"],
+          raioAtendimentoKm: 50,
           selo: "verificado",
         },
       },
@@ -120,7 +163,13 @@ async function main() {
     },
   });
 
-  console.log("Seed concluído:", { cliente: cliente.email, prestador: prestador.email, fornecedor: fornecedor.email });
+  console.log("Seed concluído:", {
+    admin: admin.email,
+    cliente: cliente.email,
+    prestador: prestador.email,
+    engenheiro: engenheiro.email,
+    fornecedor: fornecedor.email,
+  });
 }
 
 main()
