@@ -14,6 +14,7 @@ export * from "./painel-financeiro";
 export * from "./portfolio";
 export * from "./profile";
 export * from "./public-profiles";
+export * from "./purchase-quotes";
 export * from "./rfq";
 export * from "./reviews";
 export * from "./rfq-proposals";

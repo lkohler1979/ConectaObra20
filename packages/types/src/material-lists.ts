@@ -10,6 +10,8 @@ export const materialListItemSchema = z.object({
   quantidade: z.number().positive("Quantidade deve ser maior que zero"),
   unidade: z.string().trim().min(1, "Unidade obrigatória"),
   produtoId: z.string().uuid().optional(),
+  /** Usada pela cotação automática (E7-02) pra casar com `ProfileFornecedor.categorias`. */
+  categoria: z.string().trim().min(1).optional(),
   observacao: z.string().trim().optional(),
 });
 export type MaterialListItem = z.infer<typeof materialListItemSchema>;
