@@ -6,8 +6,12 @@
 # instalados aqui para não serem sobrescritos pelo bind mount do host.
 FROM node:22-slim
 
+# procps (ps): o `nest start --watch` usa `ps --ppid` pra achar e matar o
+# processo filho ao reiniciar após uma recompilação — sem ele, o restart
+# lança ENOENT não tratado e derruba o container inteiro (visto ao testar
+# hot-reload: 1ª recompilação ok, morreu ao tentar reiniciar o processo).
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends openssl ca-certificates && \
+    apt-get install -y --no-install-recommends openssl ca-certificates procps && \
     rm -rf /var/lib/apt/lists/*
 
 RUN corepack enable

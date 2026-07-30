@@ -36,7 +36,11 @@ services:
       context: ../..
       dockerfile: infra/docker/Dockerfile.dev
     working_dir: /app
-    command: sh -c "pnpm --filter @conectaobra/types run build && pnpm --filter @conectaobra/config run build && pnpm --filter @conectaobra/ui run build && pnpm exec turbo run dev --filter=@conectaobra/types --filter=@conectaobra/config --filter=@conectaobra/ui --env-mode=loose"
+    # touch do marcador só depois que os 3 builds síncronos terminam de
+    # verdade — checar um dist/*.js específico não bastava: tsup gera JS e
+    # .d.ts em fases separadas (.d.ts é bem mais lento) e o nest/tsc do
+    # container `api` precisa dos .d.ts, não só do JS.
+    command: sh -c "pnpm --filter @conectaobra/types run build && pnpm --filter @conectaobra/config run build && pnpm --filter @conectaobra/ui run build && touch /tmp/packages-ready && pnpm exec turbo run dev --filter=@conectaobra/types --filter=@conectaobra/config --filter=@conectaobra/ui --env-mode=loose"
     # Bind mount no Docker Desktop (Windows/Mac) não repassa eventos nativos
     # de filesystem pro container — sem polling, os watchers (chokidar aqui,
     # tsc/webpack em api/web) nunca veem os saves feitos no host.
@@ -44,10 +48,10 @@ services:
       CHOKIDAR_USEPOLLING: "true"
       CHOKIDAR_INTERVAL: "300"
     healthcheck:
-      test: ["CMD", "test", "-f", "/app/packages/types/dist/index.js"]
+      test: ["CMD", "test", "-f", "/tmp/packages-ready"]
       interval: 3s
       timeout: 3s
-      retries: 40
+      retries: 60
     volumes:
       - ../..:/app
       - dev_node_modules_root:/app/node_modules
