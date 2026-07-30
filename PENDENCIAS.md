@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-30 · Branch: `feat/E7-04-checkout-simulado`
+> Última atualização: 2026-07-30 · Branch: `main`
 
 ---
 
@@ -137,6 +137,7 @@
 | 2026-07-30 | Comparador de cotações (E7-03, parcial): `PurchaseQuotesService.getComparison()` + `GET /material-lists/:id/comparison` (dono ou equipe) — considera só cotações `RESPONDIDA`, calcula `totalCentavos` (itens arredondados pra inteiro + frete) e marca 4 destaques booleanos (`menorPreco`/`menorFrete`/`melhorAvaliacao`/`menorPrazo`), permitindo empates múltiplos. Lógica de ranking validada fora do framework (`node -e` com dados sintéticos, 3 fornecedores). Sem pontuação combinada nem UI — ver P-045. `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
 | 2026-07-30 | **Merge de `feat/E7-03-comparador` em `main`** (fast-forward, sem conflito). `main` revalidado de ponta a ponta pós-merge (`pnpm build`/`lint`/`test` da raiz) — épico E7 com E7-01/E7-02/E7-03 completos, só falta E7-04 (checkout, bloqueado por P-002/PSP) |
 | 2026-07-30 | Checkout de compra com **PSP simulado** (E7-04, parcial, a pedido explícito do usuário pra não esperar P-002): novo model `PurchaseOrder` (1:1 com `PurchaseQuote` via `@unique`, idempotente) + `PurchaseQuotesService.checkout()` / `POST /purchase-quotes/:id/checkout` — calcula `itensTotalCentavos` + `freteCentavos` + comissão (`PROCUREMENT_COMMISSION_BPS`, placeholder 5% dentro da faixa 3–8% do backlog) e cria a ordem com `pspRef` sintético (`SIMULADO-<uuid>`), sempre sucesso, sem chamar nenhum provedor real. Matemática de centavos (inclusive quantidade fracionária) validada fora do framework (`node -e`). **Nenhum dinheiro real se move** — ver P-046 pro detalhamento completo do que isso não cobre (falha/estorno, NFS-e, extrato, UI). `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
+| 2026-07-30 | **Merge de `feat/E7-04-checkout-simulado` em `main`** (fast-forward, sem conflito). `main` revalidado de ponta a ponta pós-merge (`pnpm build`/`lint`/`test` da raiz) — épico E7 (Compras Inteligentes) completo: E7-01/E7-02/E7-03/E7-04. E7-04 usa PSP simulado (P-046) até P-002 ser resolvido |
 | 2026-07-29 | **Merge de `feat/E7-02-cotacao-automatica` em `main`** (fast-forward, sem conflito). `main` revalidado de ponta a ponta pós-merge (`pnpm build`/`lint`/`test` da raiz) — épico E7 com E7-01 e E7-02 completos, E7-03 (comparador) e E7-04 (checkout, bloqueado por P-002) restantes |
 
 ---
