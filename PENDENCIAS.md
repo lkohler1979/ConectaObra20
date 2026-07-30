@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-29 · Branch: `feat/E7-02-cotacao-automatica`
+> Última atualização: 2026-07-29 · Branch: `main`
 
 ---
 
@@ -132,6 +132,7 @@
 | 2026-07-29 | Lista de materiais (E7-01, parcial): novo `ProcurementModule` (`services/api/src/modules/procurement/`, nome já previsto em `CLAUDE.md` §4) — `MaterialListsService`/`MaterialListsController`, `POST/GET/GET:id/PATCH /material-lists`. Os models `MaterialList`/`PurchaseQuote`/`MaterialListOrigin` já existiam no schema desde S0-05, sem endpoints. Escrita exclusiva do cliente dono da obra; leitura reaproveita `WorksService.assertVisible()` (E6-04, dono OU membro da equipe) — por isso `WorksModule` passou a `export: [WorksService]`. Só `origem: MANUAL` implementado — ver P-043 pelo porquê de IA/cotação/comparador/checkout ficarem de fora. `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
 | 2026-07-29 | **Merge de `feat/E6-04-equipe` e `feat/E7-01-lista-materiais` em `main`** (fast-forward em sequência, sem conflito). `main` revalidado de ponta a ponta pós-merge (`pnpm build`/`lint`/`test` da raiz) — épico E6 (Planejamento e Gestão da Obra) completo (E6-01 a E6-04, E6-05 pulado por decisão do usuário) e épico E7 (Compras Inteligentes) iniciado (E7-01 de 4 tasks) |
 | 2026-07-29 | Cotação automática multi-fornecedor (E7-02, parcial): `PurchaseQuotesService`/`PurchaseQuotesController` novos em `ProcurementModule` — `POST /material-lists/:id/quote` (cliente dono, casa com até 10 fornecedores por `ProfileFornecedor.categorias`, sem duplicar cotação já existente pro mesmo fornecedor), `GET /material-lists/:id/quotes` (dono ou equipe, via `WorksService.assertVisible`), `GET /purchase-quotes` (fornecedor, próprias) e `PATCH /purchase-quotes/:id` (fornecedor responde: preço por item + frete + prazo, status `RESPONDIDA`). Item de lista ganhou `categoria` opcional (`packages/types/src/material-lists.ts`, sem migração — `itens` é Json) só pra alimentar esse matching. Sem geo/raio nem rodízio — ver P-044. `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
+| 2026-07-29 | **Merge de `feat/E7-02-cotacao-automatica` em `main`** (fast-forward, sem conflito). `main` revalidado de ponta a ponta pós-merge (`pnpm build`/`lint`/`test` da raiz) — épico E7 com E7-01 e E7-02 completos, E7-03 (comparador) e E7-04 (checkout, bloqueado por P-002) restantes |
 
 ---
 
