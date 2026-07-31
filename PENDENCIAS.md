@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-30 · Branch: `feat/E5-01-pipeline-rag`
+> Última atualização: 2026-07-30 · Branch: `main`
 
 ---
 
@@ -155,6 +155,7 @@
 | 2026-07-30 | Extrato financeiro do prestador/fornecedor (E4-12, parcial): `EscrowService.getExtrato()` + `GET /extrato-financeiro` (novo `ExtratoFinanceiroController` em `EscrowModule`) — soma todas as transações `LIBERACAO` dos contratos em que o usuário é `CONTRATADO`, com a descrição da etapa e `pspRef` como comprovante, mais o total recebido. Vazio pra quem nunca foi contratado de nada (cliente puro), sem exigir tipo de usuário específico. Agregação validada fora do framework (`node -e`). Sem paginação/filtro por período e sem PDF de comprovante — ver P-050. `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
 | 2026-07-30 | **Merge de `feat/E4-12-extrato-financeiro` em `main`** (fast-forward, sem conflito). `main` revalidado de ponta a ponta pós-merge (`pnpm build`/`lint`/`test` da raiz) — épico E4 com todas as tasks P0 desbloqueadas concluídas; só restam E4-01/02 (assinatura, P-006), E4-11 (webhook, N/A) e E4-13 (NFS-e, externo) |
 | 2026-07-30 | Pipeline RAG com embeddings **SIMULADOS** (E5-01, parcial, a pedido explícito do usuário — mesmo espírito do PSP simulado, pra não travar esperando a escolha de um provedor real): novo model `KnowledgeChunk` (coluna `vector(256)` via `Unsupported`, mesmo padrão de `geography`) + `KnowledgeService`/`KnowledgeController` em `AiModule` — `POST /ai/knowledge` (ingestão, exclusiva do ADMIN: chunking por parágrafo + embedding + insert via `$queryRaw`) e `GET /ai/knowledge/search` (retrieval por similaridade de cosseno, operador `<=>` do pgvector). `embedText()` é feature hashing determinístico (bag-of-words) — documentado como simulação sem qualidade semântica real; trocar por um provedor real (OpenAI/Voyage AI/Cohere) só exige reescrever essa função. Chunking (parágrafo maior que o limite vira chunk próprio) e embedding (determinismo, norma unitária, similaridade maior entre textos com palavras em comum) validados fora do framework (`node -e`). Sem índice vetorial, sem validação de conteúdo na ingestão e sem UI — ver P-051. `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
+| 2026-07-30 | **Merge de `feat/E5-01-pipeline-rag` em `main`** (fast-forward, sem conflito). `main` revalidado de ponta a ponta pós-merge (`pnpm build`/`lint`/`test` da raiz) — épico E5 iniciado: E5-04 (calculadoras) já existia, E5-01 (pipeline RAG, embeddings simulados) concluído agora |
 | 2026-07-29 | **Merge de `feat/E7-02-cotacao-automatica` em `main`** (fast-forward, sem conflito). `main` revalidado de ponta a ponta pós-merge (`pnpm build`/`lint`/`test` da raiz) — épico E7 com E7-01 e E7-02 completos, E7-03 (comparador) e E7-04 (checkout, bloqueado por P-002) restantes |
 
 ---
