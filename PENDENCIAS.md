@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-31 · Branch: `feat/fornecedor-promocoes`
+> Última atualização: 2026-07-31 · Branch: `main`
 
 ---
 
@@ -170,6 +170,7 @@
 | 2026-07-30 | Lojas/filiais do fornecedor (extensão de E1-06, parcial — 1ª de 3 rodadas pedidas pelo usuário: lojas → promoções → produtos+Excel): novo model `FornecedorLoja` (fornecedor pode ter várias lojas, cada uma com endereço/região/telefone/geo próprios, mesmo padrão de `PortfolioItem`) + `LojasService`/`Controller` em `ProfileModule` — `POST/GET/PATCH/DELETE /profile/fornecedor/lojas[/:id]`, restrito ao FORNECEDOR dono. Geo gravado via `$executeRaw` numa transação com o create/update (mesmo padrão de `WorksService.setGeo`, P-023). Sem geocoding automático e sem vínculo produto/cotação→loja específica — ver P-055. Backend apenas, sem tela em `apps/web` ainda (confirmado com o usuário: backend primeiro, telas depois). `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
 | 2026-07-30 | Merge de `feat/fornecedor-lojas` em `main` — lojas/filiais do fornecedor (1ª de 3 rodadas: lojas → promoções → produtos+Excel). Revalidado em `main`: `prisma validate`/`generate`, `tsc`/`nest build`, boot-test (só P1001 esperado), `pnpm build`/`lint`/`test` da raiz — todos verdes |
 | 2026-07-31 | Promoções do fornecedor (extensão de E1-06, parcial — 2ª de 3 rodadas: lojas → promoções → produtos+Excel): novo model `Promocao` (código, nome, descrição, valor original/promocional em centavos, imagem, validade início/fim, destaque, ativa; `@@unique([fornecedorId, codigo])`) + `PromocoesService`/`Controller` em `ProfileModule` (`POST/GET/PATCH/DELETE /profile/fornecedor/promocoes[/:id]`, restrito ao FORNECEDOR dono, mesmo padrão de `LojasService`). Novo `PromotionsModule` com `PublicPromocoesController` (`GET /public/promocoes`, sem guard — primeiro endpoint público desde `PublicProfilesModule`/E2-03) filtra só promoções `ativa=true` e dentro da validade, com `?destaque=true` pros destaques da home. Validações zod (validade futura, início antes do fim) e coerção de query booleano validadas fora do framework (`node -e`). Imagem é só uma URL (`imagemUrl`) — o front sobe o arquivo via `POST /media/presigned-upload` (E1-07) e manda a `publicUrl` de volta. Sem moderação de conteúdo, sem contagem de uso do código, sem limite de destaques por fornecedor e sem UI em `apps/web` — ver P-056. `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
+| 2026-07-31 | Merge de `feat/fornecedor-promocoes` em `main` — promoções do fornecedor (2ª de 3 rodadas: lojas → promoções → produtos+Excel). Revalidado em `main`: `prisma validate`/`generate`, `tsc`/`nest build`, boot-test (só P1001 esperado), `pnpm build`/`lint`/`test` da raiz — todos verdes |
 | 2026-07-29 | **Merge de `feat/E7-02-cotacao-automatica` em `main`** (fast-forward, sem conflito). `main` revalidado de ponta a ponta pós-merge (`pnpm build`/`lint`/`test` da raiz) — épico E7 com E7-01 e E7-02 completos, E7-03 (comparador) e E7-04 (checkout, bloqueado por P-002) restantes |
 
 ---
