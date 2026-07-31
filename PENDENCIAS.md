@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-30 · Branch: `feat/E4-12-extrato-financeiro`
+> Última atualização: 2026-07-30 · Branch: `main`
 
 ---
 
@@ -152,6 +152,7 @@
 | 2026-07-30 | Aprovação automática por timeout (E4-08, parcial): `Milestone.entregueEm` (nova migração) + `MilestoneTimeoutService`/`MilestoneTimeoutProcessor` (fila BullMQ `milestone-timeout` em `ContractsModule`) — `entregar()` agenda avisos D-3/D-1 (só logam) e auto-aprovação em D-0 (`MILESTONE_AUTO_APROVACAO_DIAS`, default 7 dias, confirmado com o usuário via checklist). Cada job relê o status atual da etapa antes de agir — se já saiu de `ENTREGUE` (aprovada manualmente ou disputada), é um no-op, sem precisar cancelar jobs pendentes. `MilestonesService.aprovar()` refatorado pra compartilhar `finalizarAprovacao()` com o novo `aprovarAutomaticamente()`, evitando duplicar a lógica de liberação de escrow. Lógica de agendamento (guardas D-3/D-1 pra prazos curtos, atalho `dias=0` pra testar em dev) validada fora do framework (`node -e`). Sem endpoint de consulta e sem mecanismo de reconciliação contra perda de job — ver P-049. `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
 | 2026-07-30 | **Merge de `feat/E4-08-timeout-aprovacao` em `main`** (fast-forward, sem conflito). `main` revalidado de ponta a ponta pós-merge (`pnpm build`/`lint`/`test` da raiz) — épico E4 com núcleo + disputa/estorno + timeout de aprovação rodando em PSP simulado, só faltam E4-01/02 (contrato/assinatura, P-006), E4-11 (webhook, N/A) e E4-13 (NFS-e) |
 | 2026-07-30 | Extrato financeiro do prestador/fornecedor (E4-12, parcial): `EscrowService.getExtrato()` + `GET /extrato-financeiro` (novo `ExtratoFinanceiroController` em `EscrowModule`) — soma todas as transações `LIBERACAO` dos contratos em que o usuário é `CONTRATADO`, com a descrição da etapa e `pspRef` como comprovante, mais o total recebido. Vazio pra quem nunca foi contratado de nada (cliente puro), sem exigir tipo de usuário específico. Agregação validada fora do framework (`node -e`). Sem paginação/filtro por período e sem PDF de comprovante — ver P-050. `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
+| 2026-07-30 | **Merge de `feat/E4-12-extrato-financeiro` em `main`** (fast-forward, sem conflito). `main` revalidado de ponta a ponta pós-merge (`pnpm build`/`lint`/`test` da raiz) — épico E4 com todas as tasks P0 desbloqueadas concluídas; só restam E4-01/02 (assinatura, P-006), E4-11 (webhook, N/A) e E4-13 (NFS-e, externo) |
 | 2026-07-29 | **Merge de `feat/E7-02-cotacao-automatica` em `main`** (fast-forward, sem conflito). `main` revalidado de ponta a ponta pós-merge (`pnpm build`/`lint`/`test` da raiz) — épico E7 com E7-01 e E7-02 completos, E7-03 (comparador) e E7-04 (checkout, bloqueado por P-002) restantes |
 
 ---
