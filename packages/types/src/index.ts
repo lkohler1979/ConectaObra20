@@ -1,4 +1,5 @@
 export * from "./ai-calc";
+export * from "./ai-chat";
 export * from "./ai-knowledge";
 export * from "./auth";
 export * from "./catalog";

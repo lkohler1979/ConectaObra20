@@ -13,6 +13,11 @@
       "require": "./dist/ai-calc.js",
       "import": "./dist/ai-calc.mjs"
     },
+    "./ai-chat": {
+      "types": "./dist/ai-chat.d.ts",
+      "require": "./dist/ai-chat.js",
+      "import": "./dist/ai-chat.mjs"
+    },
     "./ai-knowledge": {
       "types": "./dist/ai-knowledge.d.ts",
       "require": "./dist/ai-knowledge.js",

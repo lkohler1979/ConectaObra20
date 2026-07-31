@@ -4,6 +4,7 @@ export default defineConfig({
   entry: [
     "src/index.ts",
     "src/ai-calc.ts",
+    "src/ai-chat.ts",
     "src/ai-knowledge.ts",
     "src/auth.ts",
     "src/catalog.ts",
