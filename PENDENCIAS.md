@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-07-30 · Branch: `feat/fornecedor-lojas`
+> Última atualização: 2026-07-30 · Branch: `main`
 
 ---
 
@@ -167,6 +167,7 @@
 | 2026-07-30 | Guard-rails do chat de IA (E5-06, parcial): `AI_CHAT_FREE_PLAN_DAILY_LIMIT` (default 10/dia, mesmo padrão de `FREE_PLAN_MONTHLY_PROPOSAL_LIMIT`/P-025) + `AiChatService.enforceDailyLimit()` — conta mensagens de hoje pelo `createdAt` de cada mensagem dentro do Json (sem `Subscription` = plano gratuito = limite; qualquer `Subscription` = sem limite). Log de auditoria (`ai_chat.mensagem`) em toda troca, com `disclaimerAplicado` no payload — `AiModule` passou a importar `AuditLogModule`. Classificador de risco (`risk-classifier.util.ts`) ganhou mais termos (rachadura/trinca/fissura/recalque/escoramento, curto-circuito/choque elétrico, cheiro de gás). Contagem diária e keywords novas validadas fora do framework (`node -e`): filtra corretamente mensagens de outros dias, bloqueia exatamente no limite, e as novas palavras disparam disclaimer sem falso positivo em pergunta neutra. Ainda é lista de palavras-chave, não um classificador de intenção real — ver P-054. `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
 | 2026-07-30 | **Merge de `feat/E5-06-guard-rails` em `main`** (fast-forward, sem conflito). `main` revalidado de ponta a ponta pós-merge (`pnpm build`/`lint`/`test` da raiz) — épico E5 completo exceto E5-02 (curadoria da base, bloqueada por P-012 — contratação do engenheiro consultor, ação humana fora do escopo de código) |
 | 2026-07-30 | Lojas/filiais do fornecedor (extensão de E1-06, parcial — 1ª de 3 rodadas pedidas pelo usuário: lojas → promoções → produtos+Excel): novo model `FornecedorLoja` (fornecedor pode ter várias lojas, cada uma com endereço/região/telefone/geo próprios, mesmo padrão de `PortfolioItem`) + `LojasService`/`Controller` em `ProfileModule` — `POST/GET/PATCH/DELETE /profile/fornecedor/lojas[/:id]`, restrito ao FORNECEDOR dono. Geo gravado via `$executeRaw` numa transação com o create/update (mesmo padrão de `WorksService.setGeo`, P-023). Sem geocoding automático e sem vínculo produto/cotação→loja específica — ver P-055. Backend apenas, sem tela em `apps/web` ainda (confirmado com o usuário: backend primeiro, telas depois). `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
+| 2026-07-30 | Merge de `feat/fornecedor-lojas` em `main` — lojas/filiais do fornecedor (1ª de 3 rodadas: lojas → promoções → produtos+Excel). Revalidado em `main`: `prisma validate`/`generate`, `tsc`/`nest build`, boot-test (só P1001 esperado), `pnpm build`/`lint`/`test` da raiz — todos verdes |
 | 2026-07-29 | **Merge de `feat/E7-02-cotacao-automatica` em `main`** (fast-forward, sem conflito). `main` revalidado de ponta a ponta pós-merge (`pnpm build`/`lint`/`test` da raiz) — épico E7 com E7-01 e E7-02 completos, E7-03 (comparador) e E7-04 (checkout, bloqueado por P-002) restantes |
 
 ---
