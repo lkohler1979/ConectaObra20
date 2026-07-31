@@ -8,6 +8,11 @@
       "require": "./dist/index.js",
       "import": "./dist/index.mjs"
     },
+    "./ai-budget": {
+      "types": "./dist/ai-budget.d.ts",
+      "require": "./dist/ai-budget.js",
+      "import": "./dist/ai-budget.mjs"
+    },
     "./ai-calc": {
       "types": "./dist/ai-calc.d.ts",
       "require": "./dist/ai-calc.js",

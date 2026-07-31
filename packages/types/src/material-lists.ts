@@ -29,6 +29,18 @@ export const updateMaterialListInputSchema = z.object({
 });
 export type UpdateMaterialListInput = z.infer<typeof updateMaterialListInputSchema>;
 
+/**
+ * Geração via IA (E5-07) — SIMULADA (regras por palavra-chave, não um LLM
+ * real). `areaM2` habilita as categorias com calculadora determinística
+ * (E5-04: tinta, blocos, argamassa); sem área, só entram itens qualitativos.
+ */
+export const gerarListaMateriaisInputSchema = z.object({
+  obraId: z.string().uuid(),
+  descricao: z.string().trim().min(10, "Descreva a obra com pelo menos 10 caracteres").max(2000),
+  areaM2: z.number().positive().max(100_000).optional(),
+});
+export type GerarListaMateriaisInput = z.infer<typeof gerarListaMateriaisInputSchema>;
+
 export const listMaterialListsQuerySchema = z.object({
   obraId: z.string().uuid(),
 });

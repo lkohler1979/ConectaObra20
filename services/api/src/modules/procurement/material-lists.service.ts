@@ -1,19 +1,20 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma, type MaterialList, type Work } from "@prisma/client";
 import type {
   CreateMaterialListInput,
+  GerarListaMateriaisInput,
   MaterialListPublic,
   UpdateMaterialListInput,
 } from "@conectaobra/types/material-lists";
 import { PrismaService } from "../../common/prisma/prisma.service";
 import { AuditLogService } from "../../common/audit/audit-log.service";
 import { WorksService } from "../works/works.service";
+import { MaterialGeneratorService } from "../ai/material-generator.service";
 import { toPublicMaterialList } from "./material-list-public.mapper";
 
 /**
- * Lista de materiais (E7-01) — só criação manual por enquanto.
- * `origem: IA` (schema desde S0-05) fica pra quando o "Engenheiro Virtual"
- * existir (E5, RAG), ver PENDENCIAS.md.
+ * Lista de materiais (E7-01) — criação manual ou via IA (E5-07,
+ * `origem: IA`, SIMULADA — ver `MaterialGeneratorService`).
  */
 @Injectable()
 export class MaterialListsService {
@@ -21,6 +22,7 @@ export class MaterialListsService {
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
     private readonly worksService: WorksService,
+    private readonly materialGenerator: MaterialGeneratorService,
   ) {}
 
   async create(clienteId: string, input: CreateMaterialListInput): Promise<MaterialListPublic> {
@@ -40,6 +42,42 @@ export class MaterialListsService {
       acao: "material_list.created",
       entidade: "material_list",
       payload: { materialListId: list.id, quantidadeItens: input.itens.length },
+    });
+
+    return toPublicMaterialList(list);
+  }
+
+  /**
+   * Geração via IA (E5-07) — SIMULADA, ver `MaterialGeneratorService`. 409
+   * se nenhuma regra bateu com a descrição (nenhum item fabricado do nada).
+   */
+  async gerarComIA(
+    clienteId: string,
+    input: GerarListaMateriaisInput,
+  ): Promise<MaterialListPublic> {
+    await this.getOwnedObraOrThrow(clienteId, input.obraId);
+
+    const itens = this.materialGenerator.gerar(input.descricao, input.areaM2);
+    if (itens.length === 0) {
+      throw new ConflictException(
+        "Não consegui identificar nenhum material a partir dessa descrição — tente detalhar mais (ex.: cite pintura, piso, elétrica, hidráulica ou alvenaria)",
+      );
+    }
+
+    const list = await this.prisma.materialList.create({
+      data: {
+        obraId: input.obraId,
+        itens: itens as unknown as Prisma.InputJsonValue,
+        origem: "IA",
+      },
+    });
+
+    await this.auditLog.record({
+      userId: clienteId,
+      obraId: input.obraId,
+      acao: "material_list.created_ia",
+      entidade: "material_list",
+      payload: { materialListId: list.id, quantidadeItens: itens.length, simulado: true },
     });
 
     return toPublicMaterialList(list);

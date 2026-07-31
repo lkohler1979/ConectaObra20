@@ -1,10 +1,12 @@
 import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import {
   createMaterialListInputSchema,
+  gerarListaMateriaisInputSchema,
   listMaterialListsQuerySchema,
   materialListIdSchema,
   updateMaterialListInputSchema,
   type CreateMaterialListInput,
+  type GerarListaMateriaisInput,
   type ListMaterialListsQuery,
   type UpdateMaterialListInput,
 } from "@conectaobra/types/material-lists";
@@ -29,6 +31,17 @@ export class MaterialListsController {
     @CurrentUser() user: JwtPayload,
   ) {
     return this.materialListsService.create(user.sub, body);
+  }
+
+  /** Geração via IA SIMULADA (E5-07) — ver MaterialGeneratorService. */
+  @Post("gerar-ia")
+  @UseGuards(UserTypeGuard)
+  @AllowedUserTypes("CLIENTE_PF", "CLIENTE_PJ")
+  gerarComIA(
+    @Body(new ZodValidationPipe(gerarListaMateriaisInputSchema)) body: GerarListaMateriaisInput,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.materialListsService.gerarComIA(user.sub, body);
   }
 
   @Get()

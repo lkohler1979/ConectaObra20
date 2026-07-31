@@ -3,6 +3,7 @@ import { defineConfig } from "tsup";
 export default defineConfig({
   entry: [
     "src/index.ts",
+    "src/ai-budget.ts",
     "src/ai-calc.ts",
     "src/ai-chat.ts",
     "src/ai-knowledge.ts",
