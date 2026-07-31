@@ -16,6 +16,7 @@ export default defineConfig({
     "src/equipe.ts",
     "src/escrow.ts",
     "src/fornecedor-lojas.ts",
+    "src/promocoes.ts",
     "src/geo.ts",
     "src/legal.ts",
     "src/material-lists.ts",

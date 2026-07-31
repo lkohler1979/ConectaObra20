@@ -142,6 +142,7 @@ model ProfileFornecedor {
   products       Product[]
   purchaseQuotes PurchaseQuote[]
   lojas          FornecedorLoja[]
+  promocoes      Promocao[]
 
   @@map("profiles_fornecedor")
 }
@@ -162,6 +163,30 @@ model FornecedorLoja {
   fornecedor ProfileFornecedor @relation(fields: [fornecedorId], references: [userId], onDelete: Cascade)
 
   @@map("fornecedor_lojas")
+}
+
+/// Promoções do fornecedor (código, validade, valores, imagem) — divulgadas
+/// numa página pública sem login, com destaque opcional na home.
+model Promocao {
+  id                       String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  fornecedorId             String    @map("fornecedor_id") @db.Uuid
+  codigo                   String
+  nome                     String
+  descricao                String
+  valorOriginalCentavos    Int?      @map("valor_original_centavos")
+  valorPromocionalCentavos Int       @map("valor_promocional_centavos")
+  imagemUrl                String?   @map("imagem_url")
+  validadeInicio           DateTime? @map("validade_inicio")
+  validadeFim              DateTime  @map("validade_fim")
+  destaque                 Boolean   @default(false)
+  ativa                    Boolean   @default(true)
+  createdAt                DateTime  @default(now()) @map("created_at")
+  updatedAt                DateTime  @updatedAt @map("updated_at")
+
+  fornecedor ProfileFornecedor @relation(fields: [fornecedorId], references: [userId], onDelete: Cascade)
+
+  @@unique([fornecedorId, codigo])
+  @@map("promocoes")
 }
 
 model Product {

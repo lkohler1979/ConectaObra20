@@ -73,6 +73,11 @@
       "require": "./dist/fornecedor-lojas.js",
       "import": "./dist/fornecedor-lojas.mjs"
     },
+    "./promocoes": {
+      "types": "./dist/promocoes.d.ts",
+      "require": "./dist/promocoes.js",
+      "import": "./dist/promocoes.mjs"
+    },
     "./geo": {
       "types": "./dist/geo.d.ts",
       "require": "./dist/geo.js",

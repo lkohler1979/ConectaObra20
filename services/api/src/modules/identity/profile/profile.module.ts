@@ -7,10 +7,12 @@ import { PortfolioController } from "./portfolio.controller";
 import { PortfolioService } from "./portfolio.service";
 import { LojasController } from "./lojas.controller";
 import { LojasService } from "./lojas.service";
+import { PromocoesController } from "./promocoes.controller";
+import { PromocoesService } from "./promocoes.service";
 
 @Module({
   imports: [AuditLogModule, SearchModule],
-  controllers: [ProfileController, PortfolioController, LojasController],
-  providers: [ProfileService, PortfolioService, LojasService],
+  controllers: [ProfileController, PortfolioController, LojasController, PromocoesController],
+  providers: [ProfileService, PortfolioService, LojasService, PromocoesService],
 })
 export class ProfileModule {}
