@@ -13,6 +13,11 @@
       "require": "./dist/ai-calc.js",
       "import": "./dist/ai-calc.mjs"
     },
+    "./ai-knowledge": {
+      "types": "./dist/ai-knowledge.d.ts",
+      "require": "./dist/ai-knowledge.js",
+      "import": "./dist/ai-knowledge.mjs"
+    },
     "./auth": {
       "types": "./dist/auth.d.ts",
       "require": "./dist/auth.js",

@@ -622,6 +622,25 @@ model AiConversation {
   @@map("ai_conversations")
 }
 
+/// Base de conhecimento do "Engenheiro Virtual" (E5-01/E5-02) — resumos
+/// autorais (nunca texto integral de NBR, direitos ABNT — CLAUDE.md §5
+/// regra 3), SINAPI/CUB, guias internos. `embedding` usa embeddings
+/// SIMULADOS (feature hashing determinístico, sem custo/API externa) até
+/// um provedor real (OpenAI/Voyage/Cohere) ser escolhido — decisão
+/// confirmada com o usuário nesta sessão, ver PENDENCIAS.md.
+model KnowledgeChunk {
+  id        String                      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  fonte     String
+  titulo    String
+  conteudo  String                      @db.Text
+  categoria String?
+  url       String?
+  embedding Unsupported("vector(256)")?
+  createdAt DateTime                    @default(now()) @map("created_at")
+
+  @@map("knowledge_chunks")
+}
+
 enum IndicatorType {
   CUB
   INCC
