@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma, type AiConversation } from "@prisma/client";
 import type {
   AiConversationPublic,
@@ -8,6 +8,8 @@ import type {
 } from "@conectaobra/types/ai-chat";
 import type { KnowledgeSearchResult } from "@conectaobra/types/ai-knowledge";
 import { PrismaService } from "../../common/prisma/prisma.service";
+import { AuditLogService } from "../../common/audit/audit-log.service";
+import { env } from "../../config/env";
 import { KnowledgeService } from "./knowledge.service";
 import { getDisclaimer, precisaDisclaimer } from "./risk-classifier.util";
 
@@ -20,15 +22,20 @@ const TOP_K_FONTES = 3;
  * fontes recuperadas pelo pipeline RAG (E5-01, `KnowledgeService`) e aplica
  * o disclaimer obrigatório (CLAUDE.md §5 regra 3) quando a pergunta ou as
  * fontes tocam em tema estrutural/elétrico/gás. Sem streaming real ainda.
+ * Guard-rails (E5-06): rate-limit diário por plano e log de auditoria de
+ * cada mensagem.
  */
 @Injectable()
 export class AiChatService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly auditLog: AuditLogService,
     private readonly knowledgeService: KnowledgeService,
   ) {}
 
   async chat(userId: string, input: ChatInput): Promise<ChatResponse> {
+    await this.enforceDailyLimit(userId);
+
     const resultados = await this.knowledgeService.search(input.mensagem, TOP_K_FONTES);
 
     const categorias = resultados.map((r) => r.categoria);
@@ -52,6 +59,14 @@ export class AiChatService {
       ? await this.continuarConversa(userId, input.conversaId, mensagemUsuario, mensagemAssistente)
       : await this.criarConversa(userId, input.obraId, mensagemUsuario, mensagemAssistente);
 
+    await this.auditLog.record({
+      userId,
+      obraId: conversa.obraId ?? undefined,
+      acao: "ai_chat.mensagem",
+      entidade: "ai_conversation",
+      payload: { conversaId: conversa.id, disclaimerAplicado: disclaimer !== null, simulado: true },
+    });
+
     return {
       conversaId: conversa.id,
       resposta,
@@ -72,6 +87,47 @@ export class AiChatService {
   async getOne(userId: string, conversaId: string): Promise<AiConversationPublic> {
     const conversa = await this.getOwnedOrThrow(userId, conversaId);
     return toPublicConversation(conversa);
+  }
+
+  /**
+   * Rate-limit por plano (E5-06) — mesmo padrão de
+   * `FREE_PLAN_MONTHLY_PROPOSAL_LIMIT` (P-025): sem `Subscription`, plano
+   * gratuito, teto diário de mensagens. Conta pelo `createdAt` de cada
+   * mensagem dentro de `mensagens` (Json), não pela linha de
+   * `AiConversation` — ela não tem `updatedAt`, então uma conversa
+   * continuada de dias atrás não teria como ser filtrada só por hoje de
+   * outra forma. Carrega todas as conversas do usuário pra isso — aceitável
+   * na escala de demo/simulação de hoje, não escalaria indefinidamente.
+   */
+  private async enforceDailyLimit(userId: string): Promise<void> {
+    const hasSubscription = await this.prisma.subscription.findFirst({ where: { userId } });
+    if (hasSubscription) {
+      return;
+    }
+
+    const inicioDoDia = new Date();
+    inicioDoDia.setUTCHours(0, 0, 0, 0);
+
+    const conversas = await this.prisma.aiConversation.findMany({
+      where: { userId },
+      select: { mensagens: true },
+    });
+
+    const mensagensHoje = conversas.reduce((total, conversa) => {
+      const mensagens = Array.isArray(conversa.mensagens)
+        ? (conversa.mensagens as unknown as ChatMensagem[])
+        : [];
+      const doUsuarioHoje = mensagens.filter(
+        (m) => m.role === "user" && new Date(m.createdAt) >= inicioDoDia,
+      ).length;
+      return total + doUsuarioHoje;
+    }, 0);
+
+    if (mensagensHoje >= env.AI_CHAT_FREE_PLAN_DAILY_LIMIT) {
+      throw new ForbiddenException(
+        `Limite de ${env.AI_CHAT_FREE_PLAN_DAILY_LIMIT} mensagens por dia do plano gratuito atingido — assine um plano pago pra continuar`,
+      );
+    }
   }
 
   /** Sem chunks: resposta honesta de que não achou nada, não inventa conteúdo. */

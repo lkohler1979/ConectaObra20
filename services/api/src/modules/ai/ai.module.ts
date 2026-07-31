@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { AuditLogModule } from "../../common/audit/audit-log.module";
 import { CalculatorsController } from "./calculators.controller";
 import { CalculatorsService } from "./calculators.service";
 import { KnowledgeController } from "./knowledge.controller";
@@ -10,6 +11,7 @@ import { BudgetAnalyzerService } from "./budget-analyzer.service";
 import { MaterialGeneratorService } from "./material-generator.service";
 
 @Module({
+  imports: [AuditLogModule],
   controllers: [
     CalculatorsController,
     KnowledgeController,

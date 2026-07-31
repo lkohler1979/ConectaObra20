@@ -33,6 +33,11 @@ export const envSchema = baseEnvSchema.extend({
   /// usuário nesta sessão. Setar 0 em dev serve pra testar sem esperar
   /// dias de verdade (o job de auto-aprovação dispara quase na hora).
   MILESTONE_AUTO_APROVACAO_DIAS: z.coerce.number().int().min(0).default(7),
+  /// Guard-rail de rate-limit por plano do chat de IA (E5-06) — mesmo
+  /// padrão de FREE_PLAN_MONTHLY_PROPOSAL_LIMIT (P-025): sem Subscription =
+  /// plano gratuito = limite diário de mensagens; qualquer Subscription =
+  /// sem limite. Placeholder até E8-01 definir os planos de verdade.
+  AI_CHAT_FREE_PLAN_DAILY_LIMIT: z.coerce.number().int().positive().default(10),
   /// Redis já é infra decidida (docker-compose.local.yml, CLAUDE.md §3) —
   /// diferente de S3/SMS (fornecedor em aberto), por isso é obrigatório
   /// como DATABASE_URL, não opcional (E3-04).

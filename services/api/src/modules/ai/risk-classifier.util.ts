@@ -1,10 +1,10 @@
 /**
- * Classificador de risco (CLAUDE.md §5 regra 3) — versão simples por
- * palavra-chave. Temas estrutural/elétrico/gás exigem disclaimer +
- * recomendação de profissional habilitado (ART/RRT), regra inegociável do
- * projeto. Um classificador mais robusto (ex.: modelo de intenção) fica
- * pro E5-06 — isto aqui é o mínimo pra não violar a regra enquanto o chat
- * (E5-03) não tinha nenhum guard-rail.
+ * Classificador de risco (CLAUDE.md §5 regra 3 / E5-06) — palavra-chave,
+ * não um modelo de intenção real. Temas estrutural/elétrico/gás exigem
+ * disclaimer + recomendação de profissional habilitado (ART/RRT), regra
+ * inegociável do projeto. Lista ampliada nesta rodada (rachadura/trinca,
+ * curto-circuito, cheiro de gás etc.) mas falsos negativos continuam
+ * possíveis — ver PENDENCIAS.md.
  */
 const PALAVRAS_RISCO = [
   "estrutural",
@@ -16,6 +16,14 @@ const PALAVRAS_RISCO = [
   "pilar",
   "laje",
   "concreto armado",
+  "rachadura",
+  "trinca",
+  "fissura",
+  "recalque",
+  "escoramento",
+  "demolir",
+  "demolição",
+  "parede estrutural",
   "eletrica",
   "elétrica",
   "eletrico",
@@ -25,12 +33,21 @@ const PALAVRAS_RISCO = [
   "disjuntor",
   "quadro de distribuicao",
   "quadro de distribuição",
+  "curto-circuito",
+  "curto circuito",
+  "choque eletrico",
+  "choque elétrico",
+  "fio desencapado",
   "gas",
   "gás",
   "botijao",
   "botijão",
   "vazamento de gas",
   "vazamento de gás",
+  "cheiro de gas",
+  "cheiro de gás",
+  "botijao de gas",
+  "botijão de gás",
 ];
 
 const CATEGORIAS_RISCO = ["estrutural", "eletrica", "elétrica", "gas", "gás"];
