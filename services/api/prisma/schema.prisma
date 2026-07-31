@@ -138,11 +138,30 @@ model ProfileFornecedor {
   selo             String?
   notaMedia        Decimal? @map("nota_media") @db.Decimal(3, 2)
 
-  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   products       Product[]
   purchaseQuotes PurchaseQuote[]
+  lojas          FornecedorLoja[]
 
   @@map("profiles_fornecedor")
+}
+
+/// Lojas/filiais físicas do fornecedor — um fornecedor pode ter várias
+/// unidades, cada uma com endereço e geo próprios (mesmo padrão de
+/// Work/ProfilePrestador).
+model FornecedorLoja {
+  id           String                                 @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  fornecedorId String                                 @map("fornecedor_id") @db.Uuid
+  nome         String
+  endereco     String
+  regiao       String?
+  telefone     String?
+  geo          Unsupported("geography(Point, 4326)")?
+  createdAt    DateTime                               @default(now()) @map("created_at")
+
+  fornecedor ProfileFornecedor @relation(fields: [fornecedorId], references: [userId], onDelete: Cascade)
+
+  @@map("fornecedor_lojas")
 }
 
 model Product {

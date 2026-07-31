@@ -10,6 +10,7 @@ export * from "./disputes";
 export * from "./documents";
 export * from "./equipe";
 export * from "./escrow";
+export * from "./fornecedor-lojas";
 export * from "./geo";
 export * from "./legal";
 export * from "./material-lists";
