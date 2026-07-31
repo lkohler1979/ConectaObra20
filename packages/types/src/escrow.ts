@@ -22,3 +22,25 @@ export const escrowTransactionPublicSchema = z.object({
   createdAt: z.string(),
 });
 export type EscrowTransactionPublic = z.infer<typeof escrowTransactionPublicSchema>;
+
+/**
+ * Extrato financeiro do prestador/fornecedor (E4-12) — só transações
+ * `LIBERACAO` dos contratos em que o usuário é `CONTRATADO` (o que ele de
+ * fato recebeu). `pspRef` funciona como comprovante da transação simulada.
+ */
+export const extratoFinanceiroItemSchema = z.object({
+  id: z.string().uuid(),
+  contractId: z.string().uuid(),
+  milestoneId: z.string().uuid(),
+  milestoneDescricao: z.string(),
+  valorCentavos: z.number().int(),
+  pspRef: z.string(),
+  createdAt: z.string(),
+});
+export type ExtratoFinanceiroItem = z.infer<typeof extratoFinanceiroItemSchema>;
+
+export const extratoFinanceiroSchema = z.object({
+  totalRecebidoCentavos: z.number().int(),
+  itens: z.array(extratoFinanceiroItemSchema),
+});
+export type ExtratoFinanceiro = z.infer<typeof extratoFinanceiroSchema>;

@@ -1,7 +1,11 @@
 import { createHash, randomUUID } from "node:crypto";
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma, type ContractPartyRole, type EscrowTransaction, type Milestone } from "@prisma/client";
-import type { EscrowTransactionPublic } from "@conectaobra/types/escrow";
+import type {
+  EscrowTransactionPublic,
+  ExtratoFinanceiro,
+  ExtratoFinanceiroItem,
+} from "@conectaobra/types/escrow";
 import { PrismaService } from "../../common/prisma/prisma.service";
 import { AuditLogService } from "../../common/audit/audit-log.service";
 import { env } from "../../config/env";
@@ -269,7 +273,7 @@ export class EscrowService {
     return milestoneAtualizado;
   }
 
-  /** Extrato (E4-12, parcial) — parte do contrato OU membro da equipe (só leitura). */
+  /** Ledger cru de um contrato — parte do contrato OU membro da equipe (só leitura). */
   async getLedger(requesterId: string, contractId: string): Promise<EscrowTransactionPublic[]> {
     await this.requirePartyOrTeamMember(contractId, requesterId);
 
@@ -278,6 +282,44 @@ export class EscrowService {
       orderBy: { createdAt: "asc" },
     });
     return transacoes.map(toPublicEscrowTransaction);
+  }
+
+  /**
+   * Extrato financeiro (E4-12) — todas as transações `LIBERACAO` dos
+   * contratos em que o usuário é `CONTRATADO` (o que ele de fato recebeu),
+   * com o contexto da etapa e `pspRef` como comprovante. Vazio pra quem
+   * nunca foi contratado de nada (ex.: cliente puro) — sem exigir tipo de
+   * usuário específico.
+   */
+  async getExtrato(userId: string): Promise<ExtratoFinanceiro> {
+    const contratos = await this.prisma.contractParty.findMany({
+      where: { userId, papel: "CONTRATADO" },
+      select: { contractId: true },
+    });
+    const contractIds = contratos.map((c) => c.contractId);
+    if (contractIds.length === 0) {
+      return { totalRecebidoCentavos: 0, itens: [] };
+    }
+
+    const transacoes = await this.prisma.escrowTransaction.findMany({
+      where: { tipo: "LIBERACAO", milestone: { contractId: { in: contractIds } } },
+      include: { milestone: { select: { contractId: true, descricao: true } } },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const itens: ExtratoFinanceiroItem[] = transacoes.map((t) => ({
+      id: t.id,
+      contractId: t.milestone.contractId,
+      milestoneId: t.milestoneId,
+      milestoneDescricao: t.milestone.descricao,
+      valorCentavos: t.valorCentavos,
+      pspRef: t.pspRef,
+      createdAt: t.createdAt.toISOString(),
+    }));
+
+    const totalRecebidoCentavos = itens.reduce((sum, i) => sum + i.valorCentavos, 0);
+
+    return { totalRecebidoCentavos, itens };
   }
 
   /**
