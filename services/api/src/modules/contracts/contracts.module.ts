@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { BullModule } from "@nestjs/bullmq";
 import { AuditLogModule } from "../../common/audit/audit-log.module";
 import { SearchModule } from "../search/search.module";
 import { EscrowModule } from "../escrow/escrow.module";
@@ -9,15 +10,28 @@ import { MyReviewsController } from "./my-reviews.controller";
 import { ReviewsService } from "./reviews.service";
 import { MilestonesController } from "./milestones.controller";
 import { MilestonesService } from "./milestones.service";
+import { MILESTONE_TIMEOUT_QUEUE, MilestoneTimeoutService } from "./milestone-timeout.service";
+import { MilestoneTimeoutProcessor } from "./milestone-timeout.processor";
 
 @Module({
-  imports: [AuditLogModule, SearchModule, EscrowModule],
+  imports: [
+    AuditLogModule,
+    SearchModule,
+    EscrowModule,
+    BullModule.registerQueue({ name: MILESTONE_TIMEOUT_QUEUE }),
+  ],
   controllers: [
     ContractsController,
     ContractReviewsController,
     MyReviewsController,
     MilestonesController,
   ],
-  providers: [ContractsService, ReviewsService, MilestonesService],
+  providers: [
+    ContractsService,
+    ReviewsService,
+    MilestonesService,
+    MilestoneTimeoutService,
+    MilestoneTimeoutProcessor,
+  ],
 })
 export class ContractsModule {}

@@ -11,6 +11,7 @@ export function toPublicMilestone(milestone: Milestone): MilestonePublic {
     checklist: Array.isArray(milestone.checklist) ? (milestone.checklist as string[]) : [],
     fotos: milestone.fotos,
     status: milestone.status,
+    entregueEm: milestone.entregueEm ? milestone.entregueEm.toISOString() : null,
     aprovadoEm: milestone.aprovadoEm ? milestone.aprovadoEm.toISOString() : null,
     aprovadoPorId: milestone.aprovadoPorId,
     createdAt: milestone.createdAt.toISOString(),

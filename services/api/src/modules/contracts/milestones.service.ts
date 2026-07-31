@@ -8,6 +8,7 @@ import type {
 import { PrismaService } from "../../common/prisma/prisma.service";
 import { AuditLogService } from "../../common/audit/audit-log.service";
 import { EscrowService } from "../escrow/escrow.service";
+import { MilestoneTimeoutService } from "./milestone-timeout.service";
 import { toPublicMilestone } from "./milestone-public.mapper";
 
 /**
@@ -25,6 +26,7 @@ export class MilestonesService {
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
     private readonly escrowService: EscrowService,
+    private readonly milestoneTimeoutService: MilestoneTimeoutService,
   ) {}
 
   async create(
@@ -116,7 +118,7 @@ export class MilestonesService {
 
     const updated = await this.prisma.milestone.update({
       where: { id: milestoneId },
-      data: { status: "ENTREGUE", fotos: input.fotos },
+      data: { status: "ENTREGUE", fotos: input.fotos, entregueEm: new Date() },
     });
 
     await this.auditLog.record({
@@ -126,6 +128,8 @@ export class MilestonesService {
       entidade: "milestone",
       payload: { milestoneId, quantidadeFotos: input.fotos.length },
     });
+
+    await this.milestoneTimeoutService.scheduleTimeout(contractId, milestoneId);
 
     return toPublicMilestone(updated);
   }
@@ -142,15 +146,61 @@ export class MilestonesService {
       throw new ConflictException("Etapa precisa estar entregue pra ser aprovada");
     }
 
+    const updated = await this.finalizarAprovacao(
+      contractId,
+      milestoneId,
+      requesterId,
+      "milestone.aprovado",
+    );
+
+    return toPublicMilestone(updated);
+  }
+
+  /**
+   * Aprovação automática (E4-08) — chamada pelo job de timeout quando o
+   * cliente não responde em `MILESTONE_AUTO_APROVACAO_DIAS`. Relê o status
+   * atual antes de agir: se a etapa já saiu de `ENTREGUE` (aprovada
+   * manualmente, disputada), é um no-op — o job não precisa ser cancelado
+   * explicitamente. `aprovadoPorId` registra o CONTRATANTE mesmo sem ação
+   * dele, já que a aprovação automática age em nome dele por omissão.
+   */
+  async aprovarAutomaticamente(contractId: string, milestoneId: string): Promise<void> {
+    const milestone = await this.getOwnedOrThrow(contractId, milestoneId);
+    if (milestone.status !== "ENTREGUE") {
+      return;
+    }
+
+    const contratante = await this.prisma.contractParty.findFirst({
+      where: { contractId, papel: "CONTRATANTE" },
+    });
+    if (!contratante) {
+      return;
+    }
+
+    await this.finalizarAprovacao(
+      contractId,
+      milestoneId,
+      contratante.userId,
+      "milestone.aprovado_automaticamente",
+    );
+  }
+
+  /** Compartilhado por `aprovar()` e `aprovarAutomaticamente()` — marca APROVADO e libera o escrow se houver depósito. */
+  private async finalizarAprovacao(
+    contractId: string,
+    milestoneId: string,
+    aprovadoPorId: string,
+    acao: string,
+  ): Promise<Milestone> {
     let updated = await this.prisma.milestone.update({
       where: { id: milestoneId },
-      data: { status: "APROVADO", aprovadoEm: new Date(), aprovadoPorId: requesterId },
+      data: { status: "APROVADO", aprovadoEm: new Date(), aprovadoPorId },
     });
 
     await this.auditLog.record({
-      userId: requesterId,
+      userId: aprovadoPorId,
       obraId: await this.getObraId(contractId),
-      acao: "milestone.aprovado",
+      acao,
       entidade: "milestone",
       payload: { milestoneId },
     });
@@ -158,13 +208,13 @@ export class MilestonesService {
     const liberado = await this.escrowService.liberarSeDepositado(
       contractId,
       milestoneId,
-      requesterId,
+      aprovadoPorId,
     );
     if (liberado) {
       updated = liberado;
     }
 
-    return toPublicMilestone(updated);
+    return updated;
   }
 
   /** Não vaza se o contrato existe e eu não sou parte dele — 404 nos dois casos. */

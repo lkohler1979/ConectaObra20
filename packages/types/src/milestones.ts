@@ -40,6 +40,7 @@ export const milestonePublicSchema = z.object({
   checklist: z.array(z.string()),
   fotos: z.array(z.string()),
   status: milestoneStatusSchema,
+  entregueEm: z.string().nullable(),
   aprovadoEm: z.string().nullable(),
   aprovadoPorId: z.string().uuid().nullable(),
   createdAt: z.string(),

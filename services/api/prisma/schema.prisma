@@ -417,6 +417,8 @@ model Milestone {
   checklist     Json
   fotos         String[]
   status        MilestoneStatus @default(PENDENTE)
+  /// Marca quando a etapa virou ENTREGUE — base do cálculo de aprovação automática (E4-08).
+  entregueEm    DateTime?       @map("entregue_em")
   aprovadoEm    DateTime?       @map("aprovado_em")
   aprovadoPorId String?         @map("aprovado_por") @db.Uuid
   createdAt     DateTime        @default(now()) @map("created_at")

@@ -28,6 +28,11 @@ export const envSchema = baseEnvSchema.extend({
   /// é decisão de negócio fechada, só um valor razoável pro escrow simulado
   /// funcionar enquanto o PSP real (P-002) não existe. Basis points (300 = 3%).
   ESCROW_COMMISSION_BPS: z.coerce.number().int().min(0).max(10_000).default(300),
+  /// Dias sem resposta do cliente até a etapa `ENTREGUE` ser aprovada
+  /// automaticamente (E4-08), com avisos em D-3/D-1 — confirmado com o
+  /// usuário nesta sessão. Setar 0 em dev serve pra testar sem esperar
+  /// dias de verdade (o job de auto-aprovação dispara quase na hora).
+  MILESTONE_AUTO_APROVACAO_DIAS: z.coerce.number().int().min(0).default(7),
   /// Redis já é infra decidida (docker-compose.local.yml, CLAUDE.md §3) —
   /// diferente de S3/SMS (fornecedor em aberto), por isso é obrigatório
   /// como DATABASE_URL, não opcional (E3-04).
