@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-08-03 · Branch: `feat/content-articles`
+> Última atualização: 2026-08-03 · Branch: `main`
 
 ---
 
@@ -194,6 +194,7 @@
 | 2026-08-02 | Telas de anúncios em `apps/web`: componente compartilhado `AdsPanel` (novo, em `components/`) usado como aba "Anúncios" em ambos os painéis (fornecedor e prestador) — CRUD completo (tipo/criativo/budget informativo/ativo), novos Route Handlers de proxy `app/api/ads[/[id]]` (únicos, não duplicados por tipo de usuário, já que o backend é genérico). Seção "Anúncios de fornecedores e prestadores" na home (`GET /public/ads?limit=3`, fail open) — cada card linka pro `linkUrl` do anúncio (nova aba) ou, sem link configurado, pro perfil público do anunciante (`/fornecedores/:id`/`/prestadores/:id`). Sem Docker/Postgres neste ambiente: validado até onde dá (`tsc`/`next build`, home e as duas abas carregam sem erro de console, tratamento de indisponibilidade da API) — CRUD real nunca rodou contra dados de verdade. Ver P-064 |
 | 2026-08-02 | Merge de `feat/web-ads` em `main` — telas de anúncios de fornecedor/prestador na home (E9-06, escopo reduzido). Revalidado em `main`: `tsc`/`next build`, `pnpm build`/`lint`/`test` da raiz — todos verdes |
 | 2026-08-03 | Backend de notícias + biblioteca (E9-01/E9-04, 1ª de várias rodadas do épico E9 — confirmado com o usuário via `AskUserQuestion`: indicadores por cadastro manual ADMIN, marca d'água implementada de verdade nas próximas rodadas do catálogo de plantas). `Article` (existia desde S0-05, zero endpoints) ganhou `arquivoUrl` opcional. Novo módulo `ContentModule`: `ArticlesService`/`Controller` (`POST/GET/PATCH/DELETE /articles`, ADMIN-only, mesmo padrão de `KnowledgeChunk`/`AvgCost`) com slug auto-gerado do título (`slugify.util.ts`, tolerante a acento, desambiguado com sufixo -2/-3 em colisão — validado fora do framework via `tsx` standalone) ou explícito (unicidade exigida, sem desambiguação silenciosa). `PublicArticlesService`/`Controller` (`GET /public/articles?categoria=&limit=`, `GET /public/articles/:slug`, sem login) só devolve artigos com `publicadoEm` preenchido e no passado. Notícias e biblioteca compartilham o mesmo model/endpoints, diferenciados só por `categoria` (convenção, não enum) — ver P-065. Sem UI em `apps/web` ainda. `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
+| 2026-08-03 | Merge de `feat/content-articles` em `main` — notícias + biblioteca (E9-01/E9-04, 1ª rodada do épico E9). Revalidado em `main`: `prisma validate`/`generate`, `tsc`/`nest build`, boot-test (só P1001 esperado), `pnpm build`/`lint`/`test` da raiz — todos verdes. Próxima rodada: indicadores (E9-02) + tabela de custos por cidade (E9-03) |
 | 2026-07-29 | **Merge de `feat/E7-02-cotacao-automatica` em `main`** (fast-forward, sem conflito). `main` revalidado de ponta a ponta pós-merge (`pnpm build`/`lint`/`test` da raiz) — épico E7 com E7-01 e E7-02 completos, E7-03 (comparador) e E7-04 (checkout, bloqueado por P-002) restantes |
 
 ---
