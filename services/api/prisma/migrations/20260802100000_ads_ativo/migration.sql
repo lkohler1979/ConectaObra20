@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "ads" ADD COLUMN "ativo" BOOLEAN NOT NULL DEFAULT true;

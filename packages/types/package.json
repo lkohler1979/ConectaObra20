@@ -78,6 +78,11 @@
       "require": "./dist/promocoes.js",
       "import": "./dist/promocoes.mjs"
     },
+    "./ads": {
+      "types": "./dist/ads.d.ts",
+      "require": "./dist/ads.js",
+      "import": "./dist/ads.mjs"
+    },
     "./geo": {
       "types": "./dist/geo.d.ts",
       "require": "./dist/geo.js",

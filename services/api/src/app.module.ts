@@ -25,6 +25,7 @@ import { PublicProfilesModule } from "./modules/public-profiles/public-profiles.
 import { ProcurementModule } from "./modules/procurement/procurement.module";
 import { EscrowModule } from "./modules/escrow/escrow.module";
 import { PromotionsModule } from "./modules/promotions/promotions.module";
+import { AdsModule } from "./modules/ads/ads.module";
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { PromotionsModule } from "./modules/promotions/promotions.module";
     ProcurementModule,
     EscrowModule,
     PromotionsModule,
+    AdsModule,
   ],
   controllers: [HealthController],
   providers: [

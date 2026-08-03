@@ -754,6 +754,9 @@ model Ad {
   tipo           AdType
   criativo       Json
   budgetCentavos Int      @map("budget_centavos")
+  /// Sem cobrança/billing real ainda (E9-06) — controla só a visibilidade
+  /// na página pública/home, não desconta do budget nem conta clique/impressão.
+  ativo          Boolean  @default(true)
   metricas       Json?
   createdAt      DateTime @default(now()) @map("created_at")
 

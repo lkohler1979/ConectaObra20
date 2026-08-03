@@ -17,6 +17,7 @@ export default defineConfig({
     "src/escrow.ts",
     "src/fornecedor-lojas.ts",
     "src/promocoes.ts",
+    "src/ads.ts",
     "src/geo.ts",
     "src/legal.ts",
     "src/material-lists.ts",
