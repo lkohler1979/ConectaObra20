@@ -153,6 +153,11 @@
       "require": "./dist/purchase-quotes.js",
       "import": "./dist/purchase-quotes.mjs"
     },
+    "./projects-catalog": {
+      "types": "./dist/projects-catalog.d.ts",
+      "require": "./dist/projects-catalog.js",
+      "import": "./dist/projects-catalog.mjs"
+    },
     "./reviews": {
       "types": "./dist/reviews.d.ts",
       "require": "./dist/reviews.js",

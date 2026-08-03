@@ -631,6 +631,10 @@ model ProjectCatalog {
   titulo        String
   categoria     ProjectCategory
   precoCentavos Int             @map("preco_centavos")
+  descricao     String?         @db.Text
+  /// Imagem de capa pública (vitrine) — distinta de `arquivos`, que só
+  /// libera após a compra (E9-05, entrega com marca d'água).
+  imagemCapaUrl String?         @map("imagem_capa_url")
   arquivos      String[]
   licenca       String?
   vendasCount   Int             @default(0) @map("vendas_count")

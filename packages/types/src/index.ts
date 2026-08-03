@@ -26,6 +26,7 @@ export * from "./profile";
 export * from "./public-profiles";
 export * from "./purchase-orders";
 export * from "./purchase-quotes";
+export * from "./projects-catalog";
 export * from "./rfq";
 export * from "./reviews";
 export * from "./rfq-proposals";

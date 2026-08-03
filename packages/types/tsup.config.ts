@@ -31,6 +31,7 @@ export default defineConfig({
     "src/public-profiles.ts",
     "src/purchase-orders.ts",
     "src/purchase-quotes.ts",
+    "src/projects-catalog.ts",
     "src/rfq.ts",
     "src/reviews.ts",
     "src/rfq-proposals.ts",
