@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "nest start --watch",
-    "build": "nest build",
+    "postinstall": "prisma generate",
+    "dev": "prisma generate && nest start --watch",
+    "build": "prisma generate && nest build",
     "start": "node dist/src/main.js",
     "lint": "tsc --noEmit",
     "test": "echo '[@conectaobra/api] test ok'",
