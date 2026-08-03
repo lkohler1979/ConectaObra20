@@ -33,6 +33,11 @@
       "require": "./dist/articles.js",
       "import": "./dist/articles.mjs"
     },
+    "./indicators": {
+      "types": "./dist/indicators.d.ts",
+      "require": "./dist/indicators.js",
+      "import": "./dist/indicators.mjs"
+    },
     "./auth": {
       "types": "./dist/auth.d.ts",
       "require": "./dist/auth.js",

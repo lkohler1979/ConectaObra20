@@ -29,6 +29,14 @@ export const avgCostPublicSchema = z.object({
 });
 export type AvgCostPublic = z.infer<typeof avgCostPublicSchema>;
 
+/** Tabela dinâmica de custos médios por cidade (E9-03) — sem login. */
+export const listPublicAvgCostsQuerySchema = z.object({
+  cidade: z.string().trim().min(1).max(150).optional(),
+  servico: z.string().trim().min(1).max(150).optional(),
+  limit: z.coerce.number().int().positive().max(100).default(20),
+});
+export type ListPublicAvgCostsQuery = z.infer<typeof listPublicAvgCostsQuerySchema>;
+
 export const analisarOrcamentoInputSchema = z.object({
   servico: z.string().trim().min(1).max(150),
   cidade: z.string().trim().min(1).max(150),
