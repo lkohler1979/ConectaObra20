@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-08-02 · Branch: `feat/web-ads`
+> Última atualização: 2026-08-02 · Branch: `main`
 
 ---
 
@@ -191,6 +191,7 @@
 | 2026-08-02 | Backend de anúncios de fornecedor/prestador (E9-06, escopo reduzido — confirmado com o usuário via `AskUserQuestion`: CRUD completo, sem cobrança/billing real nesta rodada). `Ad` (existia desde S0-05) ganhou `ativo Boolean` pra controlar visibilidade. Novo módulo `AdsModule`: `AdsService`/`Controller` (`POST/GET/PATCH/DELETE /ads`, restrito a FORNECEDOR/PRESTADOR/TECNICO) + `PublicAdsService`/`Controller` (`GET /public/ads`, sem login, pra exibição na home) — mesmo padrão de `PromocoesService`/`PublicPromocoesController`. `criativo` (Json livre) ganhou uma forma validada (`adCriativoSchema`: título/descrição/imagemUrl/linkUrl). Sem moderação de conteúdo, sem leilão/ranking de anúncios, sem contagem de clique/impressão nem desconto de budget (`metricas` nunca escrito) — ver P-063. Validações zod checadas fora do framework (`node -e`). `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
 | 2026-08-02 | Merge de `feat/ads-backend` em `main` — backend de anúncios de fornecedor/prestador (E9-06, escopo reduzido). Revalidado em `main`: `prisma validate`/`generate`, `tsc`/`nest build`, boot-test (só P1001 esperado), `pnpm build`/`lint`/`test` da raiz — todos verdes. Próxima rodada (não iniciada): aba Anúncios nos painéis de fornecedor e prestador + seção de anúncios na home |
 | 2026-08-02 | Telas de anúncios em `apps/web`: componente compartilhado `AdsPanel` (novo, em `components/`) usado como aba "Anúncios" em ambos os painéis (fornecedor e prestador) — CRUD completo (tipo/criativo/budget informativo/ativo), novos Route Handlers de proxy `app/api/ads[/[id]]` (únicos, não duplicados por tipo de usuário, já que o backend é genérico). Seção "Anúncios de fornecedores e prestadores" na home (`GET /public/ads?limit=3`, fail open) — cada card linka pro `linkUrl` do anúncio (nova aba) ou, sem link configurado, pro perfil público do anunciante (`/fornecedores/:id`/`/prestadores/:id`). Sem Docker/Postgres neste ambiente: validado até onde dá (`tsc`/`next build`, home e as duas abas carregam sem erro de console, tratamento de indisponibilidade da API) — CRUD real nunca rodou contra dados de verdade. Ver P-064 |
+| 2026-08-02 | Merge de `feat/web-ads` em `main` — telas de anúncios de fornecedor/prestador na home (E9-06, escopo reduzido). Revalidado em `main`: `tsc`/`next build`, `pnpm build`/`lint`/`test` da raiz — todos verdes |
 | 2026-07-29 | **Merge de `feat/E7-02-cotacao-automatica` em `main`** (fast-forward, sem conflito). `main` revalidado de ponta a ponta pós-merge (`pnpm build`/`lint`/`test` da raiz) — épico E7 com E7-01 e E7-02 completos, E7-03 (comparador) e E7-04 (checkout, bloqueado por P-002) restantes |
 
 ---
