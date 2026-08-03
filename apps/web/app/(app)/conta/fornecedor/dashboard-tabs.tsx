@@ -4,6 +4,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@conectaobra/ui";
 import type { FornecedorLojaPublic } from "@conectaobra/types/fornecedor-lojas";
 import type { PromocaoPrivate } from "@conectaobra/types/promocoes";
 import type { ProductPublic } from "@conectaobra/types/catalog";
+import type { AdPrivate } from "@conectaobra/types/ads";
+import { AdsPanel } from "@/components/ads-panel";
 import { PerfilForm } from "./perfil-form";
 import { LojasPanel } from "./lojas-panel";
 import { PromocoesPanel } from "./promocoes-panel";
@@ -22,11 +24,13 @@ export function FornecedorDashboardTabs({
   lojasIniciais,
   promocoesIniciais,
   produtosIniciais,
+  adsIniciais,
 }: {
   perfilAtual: PerfilFornecedorAtual | null;
   lojasIniciais: FornecedorLojaPublic[];
   promocoesIniciais: PromocaoPrivate[];
   produtosIniciais: ProductPublic[];
+  adsIniciais: AdPrivate[];
 }) {
   return (
     <Tabs defaultValue="perfil">
@@ -35,6 +39,7 @@ export function FornecedorDashboardTabs({
         <TabsTrigger value="lojas">Lojas</TabsTrigger>
         <TabsTrigger value="promocoes">Promoções</TabsTrigger>
         <TabsTrigger value="produtos">Produtos</TabsTrigger>
+        <TabsTrigger value="anuncios">Anúncios</TabsTrigger>
       </TabsList>
 
       <TabsContent value="perfil">
@@ -51,6 +56,10 @@ export function FornecedorDashboardTabs({
 
       <TabsContent value="produtos">
         <ProdutosPanel produtosIniciais={produtosIniciais} />
+      </TabsContent>
+
+      <TabsContent value="anuncios">
+        <AdsPanel adsIniciais={adsIniciais} />
       </TabsContent>
     </Tabs>
   );

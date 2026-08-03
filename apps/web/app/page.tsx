@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { PromocaoPublic } from "@conectaobra/types/promocoes";
+import type { AdPublic } from "@conectaobra/types/ads";
 import { Badge, Button, Card, CardContent, CardTitle } from "@conectaobra/ui";
 import { apiFetchOrThrow } from "@/lib/api-client";
 
@@ -19,6 +20,23 @@ async function fetchPromocoesDestaque(): Promise<PromocaoPublic[]> {
   } catch {
     return [];
   }
+}
+
+/** Decorativo, mesmo critério "fail open" da seção de promoções acima. */
+async function fetchAdsDestaque(): Promise<AdPublic[]> {
+  try {
+    const res = await apiFetchOrThrow("/public/ads?limit=3", { cache: "no-store" });
+    if (!res.ok) return [];
+    return await res.json();
+  } catch {
+    return [];
+  }
+}
+
+function anuncianteProfileHref(ad: AdPublic): string {
+  return ad.anuncianteTipo === "FORNECEDOR"
+    ? `/fornecedores/${ad.anuncianteId}`
+    : `/prestadores/${ad.anuncianteId}`;
 }
 
 const DIFERENCIAIS = [
@@ -40,7 +58,10 @@ const DIFERENCIAIS = [
 ];
 
 export default async function LandingPage() {
-  const promocoesDestaque = await fetchPromocoesDestaque();
+  const [promocoesDestaque, adsDestaque] = await Promise.all([
+    fetchPromocoesDestaque(),
+    fetchAdsDestaque(),
+  ]);
 
   return (
     <main className="min-h-screen bg-areia">
@@ -96,6 +117,49 @@ export default async function LandingPage() {
           </ol>
         </div>
       </section>
+
+      {adsDestaque.length > 0 && (
+        <section className="px-5 pb-10">
+          <h2 className="text-lg font-bold text-grafite">Anúncios de fornecedores e prestadores</h2>
+          <div className="mt-3 grid gap-4 sm:grid-cols-3">
+            {adsDestaque.map((ad) => {
+              const external = Boolean(ad.linkUrl);
+              return (
+                <Link
+                  key={ad.id}
+                  href={ad.linkUrl ?? anuncianteProfileHref(ad)}
+                  target={external ? "_blank" : undefined}
+                  rel={external ? "noopener noreferrer" : undefined}
+                >
+                  <Card className="h-full transition-colors hover:border-azul-planta">
+                    {ad.imagemUrl && (
+                      <div className="relative h-28 w-full overflow-hidden rounded-t-lg">
+                        <Image
+                          src={ad.imagemUrl}
+                          alt={ad.titulo}
+                          fill
+                          className="object-cover"
+                          unoptimized
+                        />
+                      </div>
+                    )}
+                    <CardContent className="pt-4">
+                      <div className="flex items-center gap-2">
+                        <CardTitle>{ad.titulo}</CardTitle>
+                        <Badge>Anúncio</Badge>
+                      </div>
+                      <p className="mt-1 text-xs text-[#7A828C]">{ad.anuncianteNome}</p>
+                      {ad.descricao && (
+                        <p className="mt-1 text-sm text-grafite/80">{ad.descricao}</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {promocoesDestaque.length > 0 && (
         <section className="px-5 pb-10">
