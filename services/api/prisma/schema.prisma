@@ -728,6 +728,9 @@ model AvgCost {
   @@map("avg_costs")
 }
 
+/// Portal de notícias (E9-01) e biblioteca (E9-04, guias/checklists/modelos
+/// de contrato) reaproveitam este mesmo model — diferenciados só por
+/// `categoria` (convenção, não enum: cada área usa seus próprios valores).
 model Article {
   id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   titulo      String
@@ -735,6 +738,9 @@ model Article {
   categoria   String
   corpo       String    @db.Text
   autor       String
+  /// Link do arquivo (PDF de guia/checklist/modelo de contrato, E9-04) — nulo
+  /// pra notícias comuns, que só têm `corpo`.
+  arquivoUrl  String?   @map("arquivo_url")
   publicadoEm DateTime? @map("publicado_em")
 
   @@map("articles")

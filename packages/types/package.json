@@ -28,6 +28,11 @@
       "require": "./dist/ai-knowledge.js",
       "import": "./dist/ai-knowledge.mjs"
     },
+    "./articles": {
+      "types": "./dist/articles.d.ts",
+      "require": "./dist/articles.js",
+      "import": "./dist/articles.mjs"
+    },
     "./auth": {
       "types": "./dist/auth.d.ts",
       "require": "./dist/auth.js",

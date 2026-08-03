@@ -26,6 +26,7 @@ import { ProcurementModule } from "./modules/procurement/procurement.module";
 import { EscrowModule } from "./modules/escrow/escrow.module";
 import { PromotionsModule } from "./modules/promotions/promotions.module";
 import { AdsModule } from "./modules/ads/ads.module";
+import { ContentModule } from "./modules/content/content.module";
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { AdsModule } from "./modules/ads/ads.module";
     EscrowModule,
     PromotionsModule,
     AdsModule,
+    ContentModule,
   ],
   controllers: [HealthController],
   providers: [

@@ -7,6 +7,7 @@ export default defineConfig({
     "src/ai-calc.ts",
     "src/ai-chat.ts",
     "src/ai-knowledge.ts",
+    "src/articles.ts",
     "src/auth.ts",
     "src/catalog.ts",
     "src/contracts.ts",
