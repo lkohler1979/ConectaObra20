@@ -1,5 +1,25 @@
+import Image from "next/image";
 import Link from "next/link";
-import { Button, Card, CardContent, CardTitle } from "@conectaobra/ui";
+import type { PromocaoPublic } from "@conectaobra/types/promocoes";
+import { Badge, Button, Card, CardContent, CardTitle } from "@conectaobra/ui";
+import { apiFetchOrThrow } from "@/lib/api-client";
+
+function formatMoney(centavos: number): string {
+  return (centavos / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+/** Decorativo — se a API estiver fora do ar, a home simplesmente não mostra a seção. */
+async function fetchPromocoesDestaque(): Promise<PromocaoPublic[]> {
+  try {
+    const res = await apiFetchOrThrow("/public/promocoes?destaque=true&limit=3", {
+      cache: "no-store",
+    });
+    if (!res.ok) return [];
+    return await res.json();
+  } catch {
+    return [];
+  }
+}
 
 const DIFERENCIAIS = [
   {
@@ -19,7 +39,9 @@ const DIFERENCIAIS = [
   },
 ];
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const promocoesDestaque = await fetchPromocoesDestaque();
+
   return (
     <main className="min-h-screen bg-areia">
       <div className="hazard" />
@@ -74,6 +96,50 @@ export default function LandingPage() {
           </ol>
         </div>
       </section>
+
+      {promocoesDestaque.length > 0 && (
+        <section className="px-5 pb-10">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-grafite">Promoções em destaque</h2>
+            <Link href="/promocoes" className="text-sm font-semibold text-azul-planta">
+              Ver todas →
+            </Link>
+          </div>
+          <div className="mt-3 grid gap-4 sm:grid-cols-3">
+            {promocoesDestaque.map((promo) => (
+              <Link key={promo.id} href="/promocoes">
+                <Card className="h-full transition-colors hover:border-azul-planta">
+                  {promo.imagemUrl && (
+                    <div className="relative h-28 w-full overflow-hidden rounded-t-lg">
+                      <Image
+                        src={promo.imagemUrl}
+                        alt={promo.nome}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                    </div>
+                  )}
+                  <CardContent className="pt-4">
+                    <CardTitle>{promo.nome}</CardTitle>
+                    <p className="mt-1 text-xs text-[#7A828C]">{promo.fornecedorNome}</p>
+                    <div className="mt-2 flex items-center gap-2">
+                      {promo.valorOriginalCentavos != null && (
+                        <span className="text-xs text-[#7A828C] line-through">
+                          {formatMoney(promo.valorOriginalCentavos)}
+                        </span>
+                      )}
+                      <Badge variant="verified">
+                        {formatMoney(promo.valorPromocionalCentavos)}
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="grid gap-4 px-5 pb-16 md:grid-cols-3">
         {DIFERENCIAIS.map((item) => (

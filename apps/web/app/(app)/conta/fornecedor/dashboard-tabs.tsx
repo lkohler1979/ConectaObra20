@@ -2,8 +2,10 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@conectaobra/ui";
 import type { FornecedorLojaPublic } from "@conectaobra/types/fornecedor-lojas";
+import type { PromocaoPrivate } from "@conectaobra/types/promocoes";
 import { PerfilForm } from "./perfil-form";
 import { LojasPanel } from "./lojas-panel";
+import { PromocoesPanel } from "./promocoes-panel";
 
 interface PerfilFornecedorAtual {
   razaoSocial: string;
@@ -16,9 +18,11 @@ interface PerfilFornecedorAtual {
 export function FornecedorDashboardTabs({
   perfilAtual,
   lojasIniciais,
+  promocoesIniciais,
 }: {
   perfilAtual: PerfilFornecedorAtual | null;
   lojasIniciais: FornecedorLojaPublic[];
+  promocoesIniciais: PromocaoPrivate[];
 }) {
   return (
     <Tabs defaultValue="perfil">
@@ -38,10 +42,7 @@ export function FornecedorDashboardTabs({
       </TabsContent>
 
       <TabsContent value="promocoes">
-        <p className="text-sm text-[#5B6875]">
-          Cadastro de promoções chega em breve nesta tela — a API já está disponível em{" "}
-          <code className="text-xs">POST /profile/fornecedor/promocoes</code>.
-        </p>
+        <PromocoesPanel promocoesIniciais={promocoesIniciais} />
       </TabsContent>
 
       <TabsContent value="produtos">
