@@ -88,6 +88,14 @@ services:
       OTP_MAX_ATTEMPTS: "5"
       MFA_CHALLENGE_TTL_SECONDS: "300"
       FREE_PLAN_MONTHLY_PROPOSAL_LIMIT: "5"
+      # Placeholders de negócio (todos com default no código, ver env.ts —
+      # explícitos aqui só pra facilitar ajuste manual ao testar). Setar
+      # MILESTONE_AUTO_APROVACAO_DIAS=0 testa a aprovação automática (E4-08)
+      # sem esperar dias de verdade.
+      PROCUREMENT_COMMISSION_BPS: "500"
+      ESCROW_COMMISSION_BPS: "300"
+      MILESTONE_AUTO_APROVACAO_DIAS: "7"
+      AI_CHAT_FREE_PLAN_DAILY_LIMIT: "10"
       # ver comentário sobre polling no serviço `packages` acima — aqui é o
       # equivalente para o tsc --watch usado pelo `nest start --watch`.
       TSC_WATCHFILE: PriorityPollingInterval
