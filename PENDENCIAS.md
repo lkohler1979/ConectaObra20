@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-08-02 · Branch: `feat/ads-backend`
+> Última atualização: 2026-08-02 · Branch: `main`
 
 ---
 
@@ -188,6 +188,7 @@
 | 2026-08-01 | Painel do prestador em `apps/web` (`/conta/prestador`): abas Perfil (categorias/experiência/certificados/raio de atendimento, texto separado por vírgula igual ao perfil do fornecedor) e Portfólio (CRUD de itens — título/descrição — mesmo padrão de lojas/promoções/produtos). Novos Route Handlers `app/api/profile/prestador` (PUT) e `app/api/prestador/portfolio[/[id]]` (POST/PATCH/DELETE). Link condicional `/conta` → `/conta/prestador` quando `tipo` é `PRESTADOR` ou `TECNICO`. `/conta/prestador` já cai sob o matcher `/conta/:path*` do `middleware.ts` — nenhuma mudança de middleware necessária. Sem Docker/Postgres neste ambiente: validado até onde dá (`tsc`/`next build`, middleware confirmado bloqueando sem sessão, tratamento de indisponibilidade da API) — CRUD real nunca rodou contra dados de verdade. Ver P-062. **Com isso, as 4 rodadas de telas do frontend pedidas nesta sessão (fornecedor: lojas/promoções/produtos + prestador) estão completas** |
 | 2026-08-01 | Merge de `feat/web-prestador` em `main` — painel do prestador, abas Perfil e Portfólio (última rodada de telas do frontend). Revalidado em `main`: `tsc`/`next build`, `pnpm build`/`lint`/`test` da raiz — todos verdes. **Todo o pedido original do usuário (backend + frontend de lojas/promoções/produtos+Excel do fornecedor, mais a tela do prestador) está completo** |
 | 2026-08-02 | Backend de anúncios de fornecedor/prestador (E9-06, escopo reduzido — confirmado com o usuário via `AskUserQuestion`: CRUD completo, sem cobrança/billing real nesta rodada). `Ad` (existia desde S0-05) ganhou `ativo Boolean` pra controlar visibilidade. Novo módulo `AdsModule`: `AdsService`/`Controller` (`POST/GET/PATCH/DELETE /ads`, restrito a FORNECEDOR/PRESTADOR/TECNICO) + `PublicAdsService`/`Controller` (`GET /public/ads`, sem login, pra exibição na home) — mesmo padrão de `PromocoesService`/`PublicPromocoesController`. `criativo` (Json livre) ganhou uma forma validada (`adCriativoSchema`: título/descrição/imagemUrl/linkUrl). Sem moderação de conteúdo, sem leilão/ranking de anúncios, sem contagem de clique/impressão nem desconto de budget (`metricas` nunca escrito) — ver P-063. Validações zod checadas fora do framework (`node -e`). `tsc`/`nest build`/`pnpm build`/`pnpm lint`/`pnpm test` da raiz passam |
+| 2026-08-02 | Merge de `feat/ads-backend` em `main` — backend de anúncios de fornecedor/prestador (E9-06, escopo reduzido). Revalidado em `main`: `prisma validate`/`generate`, `tsc`/`nest build`, boot-test (só P1001 esperado), `pnpm build`/`lint`/`test` da raiz — todos verdes. Próxima rodada (não iniciada): aba Anúncios nos painéis de fornecedor e prestador + seção de anúncios na home |
 | 2026-07-29 | **Merge de `feat/E7-02-cotacao-automatica` em `main`** (fast-forward, sem conflito). `main` revalidado de ponta a ponta pós-merge (`pnpm build`/`lint`/`test` da raiz) — épico E7 com E7-01 e E7-02 completos, E7-03 (comparador) e E7-04 (checkout, bloqueado por P-002) restantes |
 
 ---
