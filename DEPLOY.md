@@ -14,11 +14,11 @@
   E4 (pagamentos reais) em produção antes disso** — o que existe hoje
   (E1, E3) não movimenta dinheiro de verdade.
 - **Dois domínios públicos**, ambos atrás do Nginx (porta 80/443):
-  `conectaon.unifyhub.com.br` → `apps/web` (porta 3099) e
-  `apiconectaon.unifyhub.com.br` → `services/api` (porta 3333). Mesmo com
+  `conectaon.unifyhub.com.br` → `apps/web` (porta 3399) e
+  `apiconectaon.unifyhub.com.br` → `services/api` (porta 3355). Mesmo com
   a API pública no próprio domínio, as Route Handlers de `apps/web`
   continuam chamando `services/api` **internamente** via
-  `127.0.0.1:3333` (ver `apps/web/lib/api-client.ts`) — mais rápido e sem
+  `127.0.0.1:3355` (ver `apps/web/lib/api-client.ts`) — mais rápido e sem
   depender de DNS/TLS pra tráfego que nunca sai da VPS. O domínio público
   da API é pra consumidores externos (apps mobile futuros, integrações,
   teste manual da API) — sem CORS habilitado hoje
@@ -43,8 +43,8 @@ Além disso:
   do certificado TLS (seção 9) depende disso:
   - `conectaon.unifyhub.com.br` (frontend)
   - `apiconectaon.unifyhub.com.br` (backend)
-- Uma porta livre pra API interna (este guia usa `3333`) e outra pro
-  Next.js (`3099`).
+- Uma porta livre pra API interna (este guia usa `3355`) e outra pro
+  Next.js (`3399`).
 
 ## 2. Instalar Node.js 22 + pnpm + PM2
 
@@ -136,7 +136,7 @@ Editar `services/api/.env`:
   `postgresql://conectaobra:SUA_SENHA@localhost:5432/conectaobra?schema=public`
 - `REDIS_URL="redis://localhost:6379"`
 - `NODE_ENV=production`
-- `PORT=3333`
+- `PORT=3355`
 - `JWT_SECRET` — **gerar um valor novo e forte**, nunca reaproveitar o
   do `.env.example`: `openssl rand -base64 48`
 - `SENTRY_DSN` — opcional, mas recomendado em produção (sem ele, erros
@@ -145,7 +145,7 @@ Editar `services/api/.env`:
   503 em vez de quebrar o boot (ver P-018)
 
 Editar `apps/web/.env.local`:
-- `API_URL="http://127.0.0.1:3333"` — `services/api` só é chamado
+- `API_URL="http://127.0.0.1:3355"` — `services/api` só é chamado
   internamente, nunca precisa de domínio público próprio
 
 ## 7. Instalar dependências, buildar e migrar
@@ -174,8 +174,8 @@ pm2 startup   # siga as instruções impressas na tela pra sobreviver a reboot
 ```
 
 Isso sobe dois processos (definidos em `infra/deploy/ecosystem.config.cjs`):
-- `conectaobra-api` — `node services/api/dist/src/main.js`, porta 3333
-- `conectaobra-web` — `next start` em `apps/web`, porta 3099
+- `conectaobra-api` — `node services/api/dist/src/main.js`, porta 3355
+- `conectaobra-web` — `next start` em `apps/web`, porta 3399
 
 Conferir:
 
@@ -217,7 +217,7 @@ sudo ufw status
 Importante: por padrão, tanto `next start` quanto `app.listen(PORT)` do
 NestJS (`services/api/src/main.ts`) escutam em **todas as interfaces**
 (`0.0.0.0`), não só localhost — o firewall acima é a barreira real que
-impede acesso direto às portas 3099/3333 de fora da VPS. Confirme com
+impede acesso direto às portas 3399/3355 de fora da VPS. Confirme com
 `sudo ufw status` que só `OpenSSH` e `Nginx Full` estão liberados. Como
 endurecimento opcional (fora do escopo deste guia, exigiria alterar
 código): bindar explicitamente em `127.0.0.1` (`next start -H
@@ -228,7 +228,7 @@ código): bindar explicitamente em `127.0.0.1` (`next start -H
 ```bash
 curl -I https://conectaon.unifyhub.com.br
 curl -I https://apiconectaon.unifyhub.com.br/health
-curl http://127.0.0.1:3333/health
+curl http://127.0.0.1:3355/health
 pm2 logs --lines 20
 ```
 
@@ -277,7 +277,7 @@ Em ordem, o script:
    migração nova, só aplica as já commitadas).
 6. **Recarrega os processos no PM2** (`conectaobra-api`/`conectaobra-web`)
    — reload se já existirem, `pm2 start` na primeira vez.
-7. **Checa saúde**: `curl http://127.0.0.1:3333/health` — se falhar, o
+7. **Checa saúde**: `curl http://127.0.0.1:3355/health` — se falhar, o
    script avisa mas não desfaz o deploy (ver `pm2 logs` pra investigar).
 
 Se qualquer passo falhar, o script para na hora (`set -euo pipefail`) —

@@ -33,7 +33,7 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BRANCH="${DEPLOY_BRANCH:-main}"
 API_PROCESS="conectaobra-api"
 WEB_PROCESS="conectaobra-web"
-API_PORT="${API_PORT:-3333}"
+API_PORT="${API_PORT:-3355}"
 ECOSYSTEM_FILE="infra/deploy/ecosystem.config.cjs"
 
 cd "$REPO_DIR"

@@ -8,9 +8,9 @@
 # infra (docker-compose.local.yml sozinho) continua igual, sem healthcheck.
 #
 # Portas do host são sobrescrevíveis via env var (útil em máquina com outros
-# projetos já usando 5432/6379/3333): POSTGRES_PORT, REDIS_PORT,
-# MEILI_PORT, API_PORT, WEB_PORT. Default do WEB_PORT é 3099 (3000 já é
-# usado por outro projeto nesta máquina).
+# projetos já usando 5432/6379): POSTGRES_PORT, REDIS_PORT, MEILI_PORT,
+# API_PORT, WEB_PORT. Defaults API_PORT=3355/WEB_PORT=3399 (3333/3000/3099
+# já estavam em uso por outros projetos, tanto aqui quanto na VPS).
 services:
   postgres:
     healthcheck:
@@ -79,7 +79,7 @@ services:
       MEILI_HOST: http://meilisearch:7700
       MEILI_API_KEY: dev-master-key
       NODE_ENV: development
-      PORT: "3333"
+      PORT: "3355"
       LOG_LEVEL: debug
       # Segredo só para dev local — nunca reutilizar fora do compose de dev.
       JWT_SECRET: dev-only-secret-troque-antes-de-qualquer-deploy-real-0123456789
@@ -101,7 +101,7 @@ services:
       # equivalente para o tsc --watch usado pelo `nest start --watch`.
       TSC_WATCHFILE: PriorityPollingInterval
       TSC_WATCHDIRECTORY: DynamicPriorityPolling
-    ports: ["${API_PORT:-3333}:3333"]
+    ports: ["${API_PORT:-3355}:3355"]
     depends_on:
       packages:
         condition: service_healthy
@@ -132,12 +132,12 @@ services:
     # --filter=@conectaobra/web (sem "...") pelo mesmo motivo do api acima.
     command: sh -c "pnpm exec turbo run dev --filter=@conectaobra/web --env-mode=loose"
     environment:
-      API_URL: http://api:3333
+      API_URL: http://api:3355
       NODE_ENV: development
       # ver comentário sobre polling no serviço `packages` acima — aqui é o
       # equivalente pro webpack dev server do `next dev`.
       WATCHPACK_POLLING: "true"
-    ports: ["${WEB_PORT:-3099}:3000"]
+    ports: ["${WEB_PORT:-3399}:3000"]
     depends_on:
       packages:
         condition: service_healthy

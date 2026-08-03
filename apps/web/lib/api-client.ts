@@ -5,7 +5,7 @@
  * httpOnly (ver lib/session.ts).
  */
 export function apiUrl(): string {
-  return process.env.API_URL ?? "http://localhost:3333";
+  return process.env.API_URL ?? "http://localhost:3355";
 }
 
 export interface ApiError {

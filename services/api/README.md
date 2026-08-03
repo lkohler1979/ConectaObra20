@@ -154,54 +154,54 @@ pnpm --filter @conectaobra/api prisma:generate
 pnpm --filter @conectaobra/api prisma:deploy   # aplica prisma/migrations/*
 pnpm --filter @conectaobra/api seed            # opcional — senha "senha12345"
 pnpm --filter @conectaobra/api dev
-curl localhost:3333/health
+curl localhost:3355/health
 
-curl localhost:3333/legal/versions
+curl localhost:3355/legal/versions
 
-curl -X POST localhost:3333/auth/register -H 'content-type: application/json' -d '{
+curl -X POST localhost:3355/auth/register -H 'content-type: application/json' -d '{
   "tipo":"PRESTADOR","nome":"Teste","email":"teste@example.com",
   "telefone":"+5527999998888","cpfCnpj":"52998224725","senha":"senha12345",
   "aceitouTermos":true,"aceitouPolitica":true
 }'
 
 # com o accessToken retornado acima:
-curl -X PUT localhost:3333/profile/prestador \
+curl -X PUT localhost:3355/profile/prestador \
   -H 'content-type: application/json' -H 'authorization: Bearer <accessToken>' -d '{
   "categorias":["eletrica"],"experienciaAnos":5,"raioAtendimentoKm":20
 }'
 
-curl -X DELETE localhost:3333/account \
+curl -X DELETE localhost:3355/account \
   -H 'content-type: application/json' -H 'authorization: Bearer <accessToken>' -d '{
   "senha":"senha12345"
 }'
 
 # POST /works e POST /rfq exigem tipo CLIENTE_PF/CLIENTE_PJ — registre uma conta desse tipo primeiro
-curl -X POST localhost:3333/works \
+curl -X POST localhost:3355/works \
   -H 'content-type: application/json' -H 'authorization: Bearer <accessTokenDeCliente>' -d '{
   "titulo":"Reforma cozinha","tipo":"REFORMA","endereco":"Rua Exemplo, 123 — Vitória/ES",
   "areaM2":12.5,"orcamentoPrevistoCentavos":800000
 }'
 
 # com o id da obra retornado acima — publicar já roda o matching automaticamente:
-curl -X POST localhost:3333/rfq \
+curl -X POST localhost:3355/rfq \
   -H 'content-type: application/json' -H 'authorization: Bearer <accessTokenDeCliente>' -d '{
   "obraId":"<workId>","categoria":"eletrica",
   "descricao":"Troca completa do quadro elétrico e pontos de luz da cozinha."
 }'
 
 # prestador com categorias:["eletrica"] no perfil (PUT /profile/prestador) descobre o RFQ acima:
-curl localhost:3333/rfq/discover -H 'authorization: Bearer <accessTokenDePrestador>'
+curl localhost:3355/rfq/discover -H 'authorization: Bearer <accessTokenDePrestador>'
 
 # com o id do RFQ acima:
-curl -X POST localhost:3333/rfq/<rfqId>/proposals \
+curl -X POST localhost:3355/rfq/<rfqId>/proposals \
   -H 'content-type: application/json' -H 'authorization: Bearer <accessTokenDePrestador>' -d '{
   "precoCentavos":120000,"prazoDias":5,"observacoes":"Inclui material básico."
 }'
 
-curl localhost:3333/rfq/<rfqId>/proposals -H 'authorization: Bearer <accessTokenDeCliente>'
+curl localhost:3355/rfq/<rfqId>/proposals -H 'authorization: Bearer <accessTokenDeCliente>'
 
 # com o id da proposta retornada acima — aceitar já gera o rascunho de contrato:
-curl -X POST localhost:3333/proposals/<proposalId>/accept \
+curl -X POST localhost:3355/proposals/<proposalId>/accept \
   -H 'authorization: Bearer <accessTokenDeCliente>'
 ```
 

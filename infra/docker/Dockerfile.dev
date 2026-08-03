@@ -24,6 +24,11 @@ COPY services/api/package.json ./services/api/package.json
 COPY packages/ui/package.json ./packages/ui/package.json
 COPY packages/types/package.json ./packages/types/package.json
 COPY packages/config/package.json ./packages/config/package.json
+# services/api tem "postinstall": "prisma generate" (garante o client
+# sempre gerado — ver services/api/package.json). Sem o schema aqui, esse
+# postinstall falha em build time com "schema.prisma: file not found",
+# já que o resto do código só chega via bind mount em runtime.
+COPY services/api/prisma ./services/api/prisma
 
 RUN pnpm install --frozen-lockfile
 

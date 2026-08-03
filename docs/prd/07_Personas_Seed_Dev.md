@@ -16,7 +16,7 @@ Todos os usuários abaixo compartilham a mesma senha de teste: **`senha12345`**.
 ## Como testar
 
 ```bash
-curl -X POST http://localhost:3333/auth/login \
+curl -X POST http://localhost:3355/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@conectaobra.example.com","senha":"senha12345"}'
 ```

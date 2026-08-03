@@ -1,11 +1,11 @@
 # Server blocks do Nginx pro ConectaObra 2.0 — dois domínios públicos:
-#   - conectaon.unifyhub.com.br     -> apps/web (Next.js, porta 3099)
-#   - apiconectaon.unifyhub.com.br  -> services/api (NestJS, porta 3333)
+#   - conectaon.unifyhub.com.br     -> apps/web (Next.js, porta 3399)
+#   - apiconectaon.unifyhub.com.br  -> services/api (NestJS, porta 3355)
 #
 # Copiar pra /etc/nginx/sites-available/conectaobra e habilitar com um
 # symlink em sites-enabled (ver DEPLOY.md §9). Diferente de uma versão
 # anterior deste guia, a API agora é pública no próprio domínio — mas
-# apps/web continua chamando a API só internamente via 127.0.0.1:3333
+# apps/web continua chamando a API só internamente via 127.0.0.1:3355
 # (Route Handlers em apps/web/lib/api-client.ts), nunca pelo domínio
 # público. O domínio público da API existe pra consumidores externos
 # (apps mobile futuros, integrações, teste manual) — sem CORS habilitado
@@ -26,7 +26,7 @@ server {
     server_name conectaon.unifyhub.com.br;
 
     location / {
-        proxy_pass http://127.0.0.1:3099;
+        proxy_pass http://127.0.0.1:3399;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -43,7 +43,7 @@ server {
     server_name apiconectaon.unifyhub.com.br;
 
     location / {
-        proxy_pass http://127.0.0.1:3333;
+        proxy_pass http://127.0.0.1:3355;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
