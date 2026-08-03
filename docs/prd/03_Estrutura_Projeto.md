@@ -91,5 +91,5 @@ conectaobra/
 pnpm install
 docker compose -f infra/docker/docker-compose.local.yml up -d
 pnpm --filter api prisma migrate dev && pnpm --filter api seed
-pnpm dev          # web:3000 · api:3333 · admin:3001
+pnpm dev          # web:3099 · api:3333 · admin:3001
 ```

@@ -14,7 +14,7 @@
   E4 (pagamentos reais) em produção antes disso** — o que existe hoje
   (E1, E3) não movimenta dinheiro de verdade.
 - **Dois domínios públicos**, ambos atrás do Nginx (porta 80/443):
-  `conectaon.unifyhub.com.br` → `apps/web` (porta 3000) e
+  `conectaon.unifyhub.com.br` → `apps/web` (porta 3099) e
   `apiconectaon.unifyhub.com.br` → `services/api` (porta 3333). Mesmo com
   a API pública no próprio domínio, as Route Handlers de `apps/web`
   continuam chamando `services/api` **internamente** via
@@ -44,7 +44,7 @@ Além disso:
   - `conectaon.unifyhub.com.br` (frontend)
   - `apiconectaon.unifyhub.com.br` (backend)
 - Uma porta livre pra API interna (este guia usa `3333`) e outra pro
-  Next.js (`3000`).
+  Next.js (`3099`).
 
 ## 2. Instalar Node.js 22 + pnpm + PM2
 
@@ -175,7 +175,7 @@ pm2 startup   # siga as instruções impressas na tela pra sobreviver a reboot
 
 Isso sobe dois processos (definidos em `infra/deploy/ecosystem.config.cjs`):
 - `conectaobra-api` — `node services/api/dist/src/main.js`, porta 3333
-- `conectaobra-web` — `next start` em `apps/web`, porta 3000
+- `conectaobra-web` — `next start` em `apps/web`, porta 3099
 
 Conferir:
 
@@ -217,7 +217,7 @@ sudo ufw status
 Importante: por padrão, tanto `next start` quanto `app.listen(PORT)` do
 NestJS (`services/api/src/main.ts`) escutam em **todas as interfaces**
 (`0.0.0.0`), não só localhost — o firewall acima é a barreira real que
-impede acesso direto às portas 3000/3333 de fora da VPS. Confirme com
+impede acesso direto às portas 3099/3333 de fora da VPS. Confirme com
 `sudo ufw status` que só `OpenSSH` e `Nginx Full` estão liberados. Como
 endurecimento opcional (fora do escopo deste guia, exigiria alterar
 código): bindar explicitamente em `127.0.0.1` (`next start -H

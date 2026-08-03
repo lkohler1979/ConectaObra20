@@ -8,8 +8,9 @@
 # infra (docker-compose.local.yml sozinho) continua igual, sem healthcheck.
 #
 # Portas do host são sobrescrevíveis via env var (útil em máquina com outros
-# projetos já usando 5432/6379/3000/3333): POSTGRES_PORT, REDIS_PORT,
-# MEILI_PORT, API_PORT, WEB_PORT.
+# projetos já usando 5432/6379/3333): POSTGRES_PORT, REDIS_PORT,
+# MEILI_PORT, API_PORT, WEB_PORT. Default do WEB_PORT é 3099 (3000 já é
+# usado por outro projeto nesta máquina).
 services:
   postgres:
     healthcheck:
@@ -136,7 +137,7 @@ services:
       # ver comentário sobre polling no serviço `packages` acima — aqui é o
       # equivalente pro webpack dev server do `next dev`.
       WATCHPACK_POLLING: "true"
-    ports: ["${WEB_PORT:-3000}:3000"]
+    ports: ["${WEB_PORT:-3099}:3000"]
     depends_on:
       packages:
         condition: service_healthy
