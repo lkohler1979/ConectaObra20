@@ -263,8 +263,26 @@ cd /var/www/conectaobra
 ./deploy.sh
 ```
 
-Ver o que ele faz e como reverter em `deploy.sh` (comentários no topo do
-arquivo).
+Em ordem, o script:
+1. **Recusa rodar** se houver alterações não commitadas em `/var/www/conectaobra`
+   (`git status --porcelain` não vazio) — resolva (commit, stash ou
+   descarte) antes de tentar de novo.
+2. **Atualiza o código**: `git fetch` + `git checkout <branch>` + `git pull --ff-only`
+   (default `main`; use `DEPLOY_BRANCH=outra ./deploy.sh` pra outra branch).
+3. **Instala dependências**: `pnpm install --frozen-lockfile` (o
+   `postinstall` de `services/api` já roda `prisma generate` sozinho).
+4. **Builda** todos os workspaces via Turborepo (`pnpm build`), na ordem
+   de dependência certa (`packages/*` antes de `services/api`/`apps/web`).
+5. **Aplica migrações pendentes**: `prisma migrate deploy` (nunca gera
+   migração nova, só aplica as já commitadas).
+6. **Recarrega os processos no PM2** (`conectaobra-api`/`conectaobra-web`)
+   — reload se já existirem, `pm2 start` na primeira vez.
+7. **Checa saúde**: `curl http://127.0.0.1:3333/health` — se falhar, o
+   script avisa mas não desfaz o deploy (ver `pm2 logs` pra investigar).
+
+Se qualquer passo falhar, o script para na hora (`set -euo pipefail`) —
+não continua num estado parcial. Ver como reverter manualmente nos
+comentários do topo de `deploy.sh`.
 
 ## 15. Pendências conhecidas deste guia
 
