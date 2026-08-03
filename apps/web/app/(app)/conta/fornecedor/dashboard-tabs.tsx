@@ -3,9 +3,11 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@conectaobra/ui";
 import type { FornecedorLojaPublic } from "@conectaobra/types/fornecedor-lojas";
 import type { PromocaoPrivate } from "@conectaobra/types/promocoes";
+import type { ProductPublic } from "@conectaobra/types/catalog";
 import { PerfilForm } from "./perfil-form";
 import { LojasPanel } from "./lojas-panel";
 import { PromocoesPanel } from "./promocoes-panel";
+import { ProdutosPanel } from "./produtos-panel";
 
 interface PerfilFornecedorAtual {
   razaoSocial: string;
@@ -19,10 +21,12 @@ export function FornecedorDashboardTabs({
   perfilAtual,
   lojasIniciais,
   promocoesIniciais,
+  produtosIniciais,
 }: {
   perfilAtual: PerfilFornecedorAtual | null;
   lojasIniciais: FornecedorLojaPublic[];
   promocoesIniciais: PromocaoPrivate[];
+  produtosIniciais: ProductPublic[];
 }) {
   return (
     <Tabs defaultValue="perfil">
@@ -46,11 +50,7 @@ export function FornecedorDashboardTabs({
       </TabsContent>
 
       <TabsContent value="produtos">
-        <p className="text-sm text-[#5B6875]">
-          Cadastro de produtos e import de planilha chegam em breve nesta tela — a API já está
-          disponível em <code className="text-xs">POST /products</code> e{" "}
-          <code className="text-xs">POST /products/import</code>.
-        </p>
+        <ProdutosPanel produtosIniciais={produtosIniciais} />
       </TabsContent>
     </Tabs>
   );
