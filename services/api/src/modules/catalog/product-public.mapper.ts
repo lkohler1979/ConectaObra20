@@ -11,6 +11,8 @@ export function toPublicProduct(product: Product): ProductPublic {
     unidade: product.unidade,
     estoque: product.estoque,
     fotos: product.fotos,
+    codigo: product.codigo,
+    descricao: product.descricao,
     createdAt: product.createdAt.toISOString(),
   };
 }

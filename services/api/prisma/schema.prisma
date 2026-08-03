@@ -198,10 +198,15 @@ model Product {
   unidade       String
   estoque       Int?
   fotos         String[]
+  /// Código do fornecedor pro produto (SKU) — único por fornecedor, usado
+  /// como chave de import/export da planilha e em cotações futuras (E7).
+  codigo        String?
+  descricao     String?  @db.Text
   createdAt     DateTime @default(now()) @map("created_at")
 
   fornecedor ProfileFornecedor @relation(fields: [fornecedorId], references: [userId], onDelete: Cascade)
 
+  @@unique([fornecedorId, codigo])
   @@map("products")
 }
 

@@ -43,12 +43,14 @@
     "pino-http": "^10.3.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "xlsx": "0.18.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.4.9",
     "@types/bcryptjs": "^2.4.6",
     "@types/express": "^5.0.0",
+    "@types/multer": "^2.2.0",
     "@types/node": "^22.9.0",
     "@types/passport-jwt": "^4.0.1",
     "pino-pretty": "^11.3.0",

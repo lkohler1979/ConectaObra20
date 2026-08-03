@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -8,8 +9,12 @@ import {
   Param,
   Patch,
   Post,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { Throttle } from "@nestjs/throttler";
 import {
   createProductInputSchema,
   productIdSchema,
@@ -25,6 +30,12 @@ import { JwtAuthGuard } from "../identity/auth/guards/jwt-auth.guard";
 import type { JwtPayload } from "../identity/auth/strategies/jwt.strategy";
 import { ProductsService } from "./products.service";
 
+const ALLOWED_SPREADSHEET_MIME_TYPES = [
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
+  "application/vnd.ms-excel", // .xls
+];
+const MAX_IMPORT_BYTES = 5 * 1024 * 1024;
+
 @Controller("products")
 @UseGuards(JwtAuthGuard)
 export class ProductsController {
@@ -38,6 +49,24 @@ export class ProductsController {
     @CurrentUser() user: JwtPayload,
   ) {
     return this.productsService.create(user.sub, body);
+  }
+
+  @Post("import")
+  @UseGuards(UserTypeGuard)
+  @AllowedUserTypes("FORNECEDOR")
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @UseInterceptors(FileInterceptor("file", { limits: { fileSize: MAX_IMPORT_BYTES } }))
+  importFromExcel(
+    @UploadedFile() file: Express.Multer.File | undefined,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    if (!file) {
+      throw new BadRequestException("Nenhum arquivo enviado (campo \"file\")");
+    }
+    if (!ALLOWED_SPREADSHEET_MIME_TYPES.includes(file.mimetype)) {
+      throw new BadRequestException("Arquivo precisa ser uma planilha Excel (.xlsx ou .xls)");
+    }
+    return this.productsService.importFromExcel(user.sub, file.buffer);
   }
 
   @Get()

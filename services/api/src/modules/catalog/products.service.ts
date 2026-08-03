@@ -1,7 +1,8 @@
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
-import type { Product } from "@prisma/client";
+import { Prisma, type Product } from "@prisma/client";
 import type {
   CreateProductInput,
+  ImportProductsResult,
   ProductPublic,
   UpdateProductInput,
 } from "@conectaobra/types/catalog";
@@ -9,6 +10,10 @@ import { PrismaService } from "../../common/prisma/prisma.service";
 import { AuditLogService } from "../../common/audit/audit-log.service";
 import { MeilisearchService } from "../search/meilisearch.service";
 import { toPublicProduct } from "./product-public.mapper";
+import { parseProductsSpreadsheet } from "./xlsx-import.util";
+
+/** Categoria padrão pra produtos vindos do import de planilha (sem coluna de categoria). */
+const IMPORT_DEFAULT_CATEGORIA = "Geral";
 
 @Injectable()
 export class ProductsService {
@@ -30,17 +35,27 @@ export class ProductsService {
       );
     }
 
-    const product = await this.prisma.product.create({
-      data: {
-        fornecedorId,
-        nome: input.nome,
-        categoria: input.categoria,
-        precoCentavos: input.precoCentavos,
-        unidade: input.unidade,
-        estoque: input.estoque,
-        fotos: input.fotos,
-      },
-    });
+    let product: Product;
+    try {
+      product = await this.prisma.product.create({
+        data: {
+          fornecedorId,
+          nome: input.nome,
+          categoria: input.categoria,
+          precoCentavos: input.precoCentavos,
+          unidade: input.unidade,
+          estoque: input.estoque,
+          fotos: input.fotos,
+          codigo: input.codigo,
+          descricao: input.descricao,
+        },
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        throw new ConflictException("Você já tem um produto com este código");
+      }
+      throw error;
+    }
 
     await this.auditLog.record({
       userId: fornecedorId,
@@ -81,17 +96,27 @@ export class ProductsService {
   ): Promise<ProductPublic> {
     await this.getOwnedOrThrow(fornecedorId, productId);
 
-    const product = await this.prisma.product.update({
-      where: { id: productId },
-      data: {
-        nome: input.nome,
-        categoria: input.categoria,
-        precoCentavos: input.precoCentavos,
-        unidade: input.unidade,
-        estoque: input.estoque,
-        fotos: input.fotos,
-      },
-    });
+    let product: Product;
+    try {
+      product = await this.prisma.product.update({
+        where: { id: productId },
+        data: {
+          nome: input.nome,
+          categoria: input.categoria,
+          precoCentavos: input.precoCentavos,
+          unidade: input.unidade,
+          estoque: input.estoque,
+          fotos: input.fotos,
+          codigo: input.codigo,
+          descricao: input.descricao,
+        },
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        throw new ConflictException("Você já tem um produto com este código");
+      }
+      throw error;
+    }
 
     await this.auditLog.record({
       userId: fornecedorId,
@@ -125,6 +150,96 @@ export class ProductsService {
     });
 
     await this.meilisearch.removeProduto(productId);
+  }
+
+  /**
+   * Import em massa via planilha Excel (E1-06, extensão) — upsert por
+   * (fornecedorId, codigo): linha nova cria produto, código já existente
+   * atualiza. Categoria não vem da planilha — usa IMPORT_DEFAULT_CATEGORIA,
+   * ajustável depois pelo fornecedor via PATCH. Processamento é por linha
+   * (não é uma transação única): uma falha isolada não derruba o resto do
+   * import, só entra na lista de erros.
+   */
+  async importFromExcel(fornecedorId: string, buffer: Buffer): Promise<ImportProductsResult> {
+    const perfil = await this.prisma.profileFornecedor.findUnique({
+      where: { userId: fornecedorId },
+    });
+    if (!perfil) {
+      throw new ConflictException(
+        "Complete seu perfil de fornecedor (PUT /profile/fornecedor) antes de importar produtos",
+      );
+    }
+
+    const { rows, erros } = parseProductsSpreadsheet(buffer);
+
+    let criados = 0;
+    let atualizados = 0;
+
+    for (const row of rows) {
+      const nome = row.descricao.length > 160 ? row.descricao.slice(0, 160) : row.descricao;
+
+      try {
+        const existing = await this.prisma.product.findUnique({
+          where: { fornecedorId_codigo: { fornecedorId, codigo: row.codigo } },
+        });
+
+        let product: Product;
+        if (existing) {
+          product = await this.prisma.product.update({
+            where: { id: existing.id },
+            data: {
+              nome,
+              descricao: row.descricao,
+              unidade: row.unidade,
+              precoCentavos: row.precoCentavos,
+            },
+          });
+          atualizados += 1;
+        } else {
+          product = await this.prisma.product.create({
+            data: {
+              fornecedorId,
+              codigo: row.codigo,
+              nome,
+              descricao: row.descricao,
+              unidade: row.unidade,
+              precoCentavos: row.precoCentavos,
+              categoria: IMPORT_DEFAULT_CATEGORIA,
+              fotos: [],
+            },
+          });
+          criados += 1;
+        }
+
+        await this.meilisearch.indexProduto({
+          id: product.id,
+          fornecedorId: product.fornecedorId,
+          nome: product.nome,
+          categoria: product.categoria,
+          precoCentavos: product.precoCentavos,
+          unidade: product.unidade,
+        });
+      } catch (error) {
+        erros.push({
+          linha: row.linha,
+          motivo: error instanceof Error ? error.message : "Erro desconhecido ao salvar produto",
+        });
+      }
+    }
+
+    await this.auditLog.record({
+      userId: fornecedorId,
+      acao: "product.imported",
+      entidade: "product",
+      payload: { criados, atualizados, erros: erros.length },
+    });
+
+    return {
+      totalLinhas: rows.length + erros.length,
+      criados,
+      atualizados,
+      erros,
+    };
   }
 
   /** Não vaza se o produto existe e é de outro fornecedor — 404 nos dois casos. */
