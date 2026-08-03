@@ -13,10 +13,18 @@
 - O PSP de escrow (P-002) ainda não foi escolhido. **Não coloque o épico
   E4 (pagamentos reais) em produção antes disso** — o que existe hoje
   (E1, E3) não movimenta dinheiro de verdade.
-- `services/api` **nunca fica exposto direto à internet**. Só o Nginx
-  (porta 80/443) é público; `apps/web` roda atrás dele, e as Route
-  Handlers de `apps/web` chamam `services/api` internamente via
-  `127.0.0.1:3333` (ver `apps/web/lib/api-client.ts`).
+- **Dois domínios públicos**, ambos atrás do Nginx (porta 80/443):
+  `conectaon.unifyhub.com.br` → `apps/web` (porta 3000) e
+  `apiconectaon.unifyhub.com.br` → `services/api` (porta 3333). Mesmo com
+  a API pública no próprio domínio, as Route Handlers de `apps/web`
+  continuam chamando `services/api` **internamente** via
+  `127.0.0.1:3333` (ver `apps/web/lib/api-client.ts`) — mais rápido e sem
+  depender de DNS/TLS pra tráfego que nunca sai da VPS. O domínio público
+  da API é pra consumidores externos (apps mobile futuros, integrações,
+  teste manual da API) — sem CORS habilitado hoje
+  (`services/api/src/main.ts` não chama `app.enableCors()`), então uma
+  chamada via browser de um domínio pro outro falharia até isso ser
+  adicionado; não bloqueia o funcionamento do site em si.
 - Este guia assume que você já tem a VPS provisionada e acesso SSH
   com sudo. Não cobre a criação da VPS em si.
 
@@ -31,8 +39,10 @@ git --version
 ```
 
 Além disso:
-- Domínio (ou subdomínio) com o registro DNS tipo A já apontando pro IP
-  da VPS — a emissão do certificado TLS (seção 9) depende disso.
+- **Dois registros DNS tipo A** já apontando pro IP da VPS — a emissão
+  do certificado TLS (seção 9) depende disso:
+  - `conectaon.unifyhub.com.br` (frontend)
+  - `apiconectaon.unifyhub.com.br` (backend)
 - Uma porta livre pra API interna (este guia usa `3333`) e outra pro
   Next.js (`3000`).
 
@@ -176,19 +186,23 @@ pm2 logs --lines 50
 
 ## 9. Configurar o Nginx (reverse proxy + TLS)
 
+O arquivo de exemplo já vem com os dois domínios certos (`conectaon.unifyhub.com.br`
+pro frontend, `apiconectaon.unifyhub.com.br` pro backend) — não precisa
+editar nada, só copiar e habilitar:
+
 ```bash
 sudo cp infra/deploy/nginx.conf.example /etc/nginx/sites-available/conectaobra
-sudo sed -i 's/SEU_DOMINIO_AQUI/app.seudominio.com.br/' /etc/nginx/sites-available/conectaobra
 sudo ln -s /etc/nginx/sites-available/conectaobra /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
 TLS com Let's Encrypt (o certbot edita o arquivo acima automaticamente
-pra adicionar o bloco 443 e o redirect HTTP→HTTPS):
+pra adicionar o bloco 443 e o redirect HTTP→HTTPS **nos dois** server
+blocks, um cert cobrindo os dois domínios):
 
 ```bash
 sudo apt install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d app.seudominio.com.br
+sudo certbot --nginx -d conectaon.unifyhub.com.br -d apiconectaon.unifyhub.com.br
 ```
 
 ## 10. Firewall
@@ -212,7 +226,8 @@ código): bindar explicitamente em `127.0.0.1` (`next start -H
 ## 11. Testar
 
 ```bash
-curl -I https://app.seudominio.com.br
+curl -I https://conectaon.unifyhub.com.br
+curl -I https://apiconectaon.unifyhub.com.br/health
 curl http://127.0.0.1:3333/health
 pm2 logs --lines 20
 ```
@@ -261,3 +276,14 @@ Registradas em `PENDENCIAS.md`:
   recursos (sem containers/cgroups) — um processo com vazamento de
   memória pode afetar o outro. `max_memory_restart` no PM2 é uma rede de
   segurança parcial, não isolamento de verdade.
+- `services/api` agora é público no próprio domínio
+  (`apiconectaon.unifyhub.com.br`), diferente de uma versão anterior
+  deste guia (API só interna). Proteção hoje é só o `ThrottlerGuard`
+  global (rate-limit por instância, não distribuído — mesma limitação
+  de P-027) e os guards de autenticação/tipo de usuário existentes; não
+  há CORS configurado (`app.enableCors()` não é chamado em
+  `services/api/src/main.ts`), então chamadas diretas via browser a
+  partir de outro domínio falhariam até isso ser adicionado — só
+  relevante se algum dia um cliente browser precisar chamar a API
+  cross-origin diretamente, o que não acontece hoje (`apps/web` só fala
+  com a API internamente).

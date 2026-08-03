@@ -1,22 +1,49 @@
-# Exemplo de server block do Nginx pro ConectaObra 2.0.
-# Copiar pra /etc/nginx/sites-available/conectaobra e trocar
-# SEU_DOMINIO_AQUI pelo domínio real (ver DEPLOY.md §9).
+# Server blocks do Nginx pro ConectaObra 2.0 — dois domínios públicos:
+#   - conectaon.unifyhub.com.br     -> apps/web (Next.js, porta 3000)
+#   - apiconectaon.unifyhub.com.br  -> services/api (NestJS, porta 3333)
 #
-# De propósito NÃO existe server block pro services/api aqui: a API só é
-# acessada internamente por apps/web (Route Handlers em 127.0.0.1:3333),
-# nunca diretamente pela internet — ver CLAUDE.md/lib/api-client.ts.
+# Copiar pra /etc/nginx/sites-available/conectaobra e habilitar com um
+# symlink em sites-enabled (ver DEPLOY.md §9). Diferente de uma versão
+# anterior deste guia, a API agora é pública no próprio domínio — mas
+# apps/web continua chamando a API só internamente via 127.0.0.1:3333
+# (Route Handlers em apps/web/lib/api-client.ts), nunca pelo domínio
+# público. O domínio público da API existe pra consumidores externos
+# (apps mobile futuros, integrações, teste manual) — sem CORS habilitado
+# hoje (services/api/src/main.ts não chama app.enableCors()), então
+# chamadas via browser a partir de outro domínio (ex.: JS rodando em
+# conectaon.unifyhub.com.br chamando apiconectaon.unifyhub.com.br) vão
+# falhar por CORS até isso ser adicionado — não é necessário pro
+# funcionamento do site em si, só pra integrações client-side diretas.
 #
-# Depois de habilitar este arquivo, rodar `certbot --nginx -d SEU_DOMINIO`
-# (ver DEPLOY.md §9) — o certbot edita este arquivo automaticamente pra
-# adicionar o bloco HTTPS (443) e o redirect HTTP->HTTPS.
+# Depois de habilitar este arquivo, rodar (ver DEPLOY.md §9):
+#   sudo certbot --nginx -d conectaon.unifyhub.com.br -d apiconectaon.unifyhub.com.br
+# — o certbot edita os dois server blocks abaixo automaticamente pra
+# adicionar o bloco HTTPS (443) e o redirect HTTP->HTTPS em cada um.
 
 server {
     listen 80;
     listen [::]:80;
-    server_name SEU_DOMINIO_AQUI;
+    server_name conectaon.unifyhub.com.br;
 
     location / {
         proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name apiconectaon.unifyhub.com.br;
+
+    location / {
+        proxy_pass http://127.0.0.1:3333;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
