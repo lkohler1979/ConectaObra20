@@ -1,0 +1,154 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  fornecedorProfileInputSchema,
+  type FornecedorProfileInput,
+} from "@conectaobra/types/profile";
+import { Alert, AlertDescription, Button, Input } from "@conectaobra/ui";
+import { FormField } from "@/components/form-field";
+
+interface PerfilFornecedorAtual {
+  razaoSocial: string;
+  categorias: string[];
+  regioes: string[];
+  tempoMercadoAnos: number | null;
+  certificacoes: string[];
+}
+
+/** Campos de lista (categorias/regiões/certificações) usam texto separado por vírgula — sem tag-input dedicado, mesmo espírito minimalista do resto do app. */
+function toCsv(values: string[]): string {
+  return values.join(", ");
+}
+
+function fromCsv(value: string): string[] {
+  return value
+    .split(",")
+    .map((v) => v.trim())
+    .filter(Boolean);
+}
+
+export function PerfilForm({ perfilAtual }: { perfilAtual: PerfilFornecedorAtual | null }) {
+  const router = useRouter();
+  const [erro, setErro] = useState<string | null>(null);
+  const [sucesso, setSucesso] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<FornecedorProfileInput>({
+    resolver: zodResolver(fornecedorProfileInputSchema),
+    defaultValues: {
+      razaoSocial: perfilAtual?.razaoSocial ?? "",
+      categorias: perfilAtual?.categorias ?? [],
+      regioes: perfilAtual?.regioes ?? [],
+      tempoMercadoAnos: perfilAtual?.tempoMercadoAnos ?? undefined,
+      certificacoes: perfilAtual?.certificacoes ?? [],
+    },
+  });
+
+  async function onSubmit(values: FornecedorProfileInput) {
+    setErro(null);
+    setSucesso(false);
+    const res = await fetch("/api/profile/fornecedor", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(values),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => null);
+      setErro(
+        typeof data?.message === "string" ? data.message : "Não foi possível salvar o perfil.",
+      );
+      return;
+    }
+
+    setSucesso(true);
+    router.refresh();
+  }
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
+      {erro && (
+        <Alert variant="danger">
+          <AlertDescription>{erro}</AlertDescription>
+        </Alert>
+      )}
+      {sucesso && (
+        <Alert variant="success">
+          <AlertDescription>Perfil salvo com sucesso.</AlertDescription>
+        </Alert>
+      )}
+
+      <FormField label="Razão social" htmlFor="razaoSocial" error={errors.razaoSocial?.message}>
+        <Input id="razaoSocial" {...register("razaoSocial")} />
+      </FormField>
+
+      <FormField
+        label="Categorias (separadas por vírgula)"
+        htmlFor="categorias"
+        error={errors.categorias?.message}
+      >
+        <Input
+          id="categorias"
+          placeholder="cimento, tintas, elétrica"
+          defaultValue={toCsv(perfilAtual?.categorias ?? [])}
+          {...register("categorias", {
+            setValueAs: (v: string) => fromCsv(v),
+          })}
+        />
+      </FormField>
+
+      <FormField
+        label="Regiões atendidas (separadas por vírgula)"
+        htmlFor="regioes"
+        error={errors.regioes?.message}
+      >
+        <Input
+          id="regioes"
+          placeholder="Vitória, Vila Velha"
+          defaultValue={toCsv(perfilAtual?.regioes ?? [])}
+          {...register("regioes", {
+            setValueAs: (v: string) => fromCsv(v),
+          })}
+        />
+      </FormField>
+
+      <FormField
+        label="Tempo de mercado (anos)"
+        htmlFor="tempoMercadoAnos"
+        error={errors.tempoMercadoAnos?.message}
+      >
+        <Input
+          id="tempoMercadoAnos"
+          type="number"
+          min={0}
+          {...register("tempoMercadoAnos", { setValueAs: (v) => (v === "" ? undefined : Number(v)) })}
+        />
+      </FormField>
+
+      <FormField
+        label="Certificações (separadas por vírgula)"
+        htmlFor="certificacoes"
+        error={errors.certificacoes?.message}
+      >
+        <Input
+          id="certificacoes"
+          placeholder="ISO 9001"
+          defaultValue={toCsv(perfilAtual?.certificacoes ?? [])}
+          {...register("certificacoes", {
+            setValueAs: (v: string) => fromCsv(v),
+          })}
+        />
+      </FormField>
+
+      <Button type="submit" disabled={isSubmitting} className="self-start">
+        {isSubmitting ? "Salvando…" : "Salvar perfil"}
+      </Button>
+    </form>
+  );
+}

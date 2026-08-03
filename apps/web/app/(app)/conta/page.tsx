@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Alert, AlertDescription, Badge, Card, CardContent, CardTitle } from "@conectaobra/ui";
 import { ApiUnavailableError, apiFetchOrThrow } from "@/lib/api-client";
@@ -75,6 +76,12 @@ export default async function ContaPage() {
           {me.telefone && <p className="text-sm text-grafite">{me.telefone}</p>}
         </CardContent>
       </Card>
+
+      {me.tipo === "FORNECEDOR" && (
+        <Link href="/conta/fornecedor" className="text-sm font-semibold text-azul-planta">
+          Ir pro painel do fornecedor →
+        </Link>
+      )}
     </main>
   );
 }

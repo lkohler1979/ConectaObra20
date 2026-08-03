@@ -1,0 +1,71 @@
+import { NextResponse, type NextRequest } from "next/server";
+import { updateFornecedorLojaInputSchema } from "@conectaobra/types/fornecedor-lojas";
+import { ApiUnavailableError, apiFetchOrThrow } from "@/lib/api-client";
+import { ACCESS_COOKIE } from "@/lib/session";
+
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const accessToken = req.cookies.get(ACCESS_COOKIE)?.value;
+  if (!accessToken) {
+    return NextResponse.json({ message: "Sem sessão" }, { status: 401 });
+  }
+
+  const body = await req.json();
+  const parsed = updateFornecedorLojaInputSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { message: "Dados inválidos", issues: parsed.error.flatten() },
+      { status: 400 },
+    );
+  }
+
+  let apiRes: Response;
+  try {
+    apiRes = await apiFetchOrThrow(`/profile/fornecedor/lojas/${id}`, {
+      method: "PATCH",
+      headers: { authorization: `Bearer ${accessToken}` },
+      body: JSON.stringify(parsed.data),
+    });
+  } catch (err) {
+    if (err instanceof ApiUnavailableError) {
+      return NextResponse.json(
+        { message: "Serviço indisponível no momento. Tente novamente em instantes." },
+        { status: 502 },
+      );
+    }
+    throw err;
+  }
+
+  const data = await apiRes.json();
+  return NextResponse.json(data, { status: apiRes.status });
+}
+
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const accessToken = req.cookies.get(ACCESS_COOKIE)?.value;
+  if (!accessToken) {
+    return NextResponse.json({ message: "Sem sessão" }, { status: 401 });
+  }
+
+  let apiRes: Response;
+  try {
+    apiRes = await apiFetchOrThrow(`/profile/fornecedor/lojas/${id}`, {
+      method: "DELETE",
+      headers: { authorization: `Bearer ${accessToken}` },
+    });
+  } catch (err) {
+    if (err instanceof ApiUnavailableError) {
+      return NextResponse.json(
+        { message: "Serviço indisponível no momento. Tente novamente em instantes." },
+        { status: 502 },
+      );
+    }
+    throw err;
+  }
+
+  if (apiRes.status === 204) {
+    return new NextResponse(null, { status: 204 });
+  }
+  const data = await apiRes.json();
+  return NextResponse.json(data, { status: apiRes.status });
+}
