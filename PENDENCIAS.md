@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-08-04 · Branch: `feat/admin-content`
+> Última atualização: 2026-08-04 · Branch: `main`
 
 ---
 
@@ -234,6 +234,7 @@
 | 2026-08-04 | Fila de disputas no `apps/admin` (E10-01, 4ª rodada do épico E10, completa E4-09/E4-10 com UI). `DisputesService.listAbertas()` enriquecido com contexto (obra/etapa/valor/quem abriu, novo tipo `AdminDispute`) — necessário pra mediação de verdade. Nova página `/disputas` + `ResolveForm` + Route Handler `/api/disputas/:id/resolver`. Card "Disputas" linkado no dashboard. `tsc`/`nest build`/boot-test/`next build`/`pnpm build`/`lint`/`test` da raiz passam — ver P-075. Próxima rodada: CRUD de conteúdo (notícias/biblioteca/indicadores/custos médios) |
 | 2026-08-04 | Merge de `feat/admin-disputes` em `main` (fast-forward) — fila de disputas com mediação no admin (E10-01, 4ª rodada do épico E10). Revalidado em `main`: `prisma generate`, `pnpm build`/`lint`/`test` da raiz — todos verdes. Próxima rodada: CRUD de conteúdo (notícias/biblioteca/indicadores/custos médios) no admin |
 | 2026-08-04 | CRUD de conteúdo no `apps/admin` (E10-01, 5ª e última rodada do épico E10 — **completa o painel admin**). `/conteudo` (landing) + `/conteudo/artigos` (CRUD completo) + `/conteudo/indicadores` e `/conteudo/custos-medios` (lista + upsert, sem exclusão — backend nunca teve DELETE pra nenhum dos dois). Sem backend novo — tudo já existia desde E9-01/02/03. Card "Conteúdo" linkado no dashboard. Validado no browser: 4 páginas redirecionam pro login sem sessão, sem erro de console. `tsc`/`next build`/`pnpm build`/`lint`/`test` da raiz passam — ver P-076 |
+| 2026-08-04 | Merge de `feat/admin-content` em `main` (fast-forward) — CRUD de conteúdo no admin (E10-01, 5ª e última rodada do épico E10). Revalidado em `main`: `pnpm build`/`lint`/`test` da raiz — todos verdes. **Épico E10-01 completo**: moderação de perfis, fila de disputas e CRUD de conteúdo no `apps/admin` |
 
 ---
 
