@@ -4,7 +4,7 @@
     {
       "name": "web",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "@conectaobra/web", "dev", "--", "-p", "3399"],
+      "runtimeArgs": ["--filter", "@conectaobra/web", "dev"],
       "port": 3399
     }
   ]
