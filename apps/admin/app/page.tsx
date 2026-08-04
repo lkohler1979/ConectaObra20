@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Alert, AlertDescription, Card, CardContent, CardTitle } from "@conectaobra/ui";
 import { ApiUnavailableError, apiFetchOrThrow } from "@/lib/api-client";
@@ -11,9 +12,21 @@ interface MeResponse {
 }
 
 const SECOES = [
-  { titulo: "Usuários", descricao: "Buscar contas, ver detalhes, suspender/reativar." },
-  { titulo: "Disputas", descricao: "Fila de mediação — aprovar, estornar ou liberar parcial." },
-  { titulo: "Conteúdo", descricao: "Notícias, biblioteca, indicadores e custos médios." },
+  {
+    titulo: "Usuários",
+    descricao: "Buscar contas, ver detalhes, suspender/reativar.",
+    href: "/usuarios",
+  },
+  {
+    titulo: "Disputas",
+    descricao: "Fila de mediação — aprovar, estornar ou liberar parcial.",
+    href: null,
+  },
+  {
+    titulo: "Conteúdo",
+    descricao: "Notícias, biblioteca, indicadores e custos médios.",
+    href: null,
+  },
 ];
 
 export default async function AdminHomePage() {
@@ -66,15 +79,24 @@ export default async function AdminHomePage() {
       </div>
 
       <div className="flex flex-col gap-3">
-        {SECOES.map((secao) => (
-          <Card key={secao.titulo}>
+        {SECOES.map((secao) => {
+          const conteudo = (
             <CardContent className="pt-4">
               <CardTitle>{secao.titulo}</CardTitle>
               <p className="mt-1 text-sm text-[#5B6875]">{secao.descricao}</p>
-              <p className="mt-2 text-xs text-[#7A828C]">Em breve nesta próxima rodada.</p>
+              {!secao.href && (
+                <p className="mt-2 text-xs text-[#7A828C]">Em breve nesta próxima rodada.</p>
+              )}
             </CardContent>
-          </Card>
-        ))}
+          );
+          return secao.href ? (
+            <Link key={secao.titulo} href={secao.href}>
+              <Card className="transition-colors hover:border-azul-planta">{conteudo}</Card>
+            </Link>
+          ) : (
+            <Card key={secao.titulo}>{conteudo}</Card>
+          );
+        })}
       </div>
     </main>
   );
