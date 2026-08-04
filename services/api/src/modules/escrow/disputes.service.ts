@@ -1,10 +1,15 @@
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import type { Milestone } from "@prisma/client";
-import type { AbrirDisputeInput, DisputePublic, ResolverDisputeInput } from "@conectaobra/types/disputes";
+import type {
+  AbrirDisputeInput,
+  AdminDispute,
+  DisputePublic,
+  ResolverDisputeInput,
+} from "@conectaobra/types/disputes";
 import { PrismaService } from "../../common/prisma/prisma.service";
 import { AuditLogService } from "../../common/audit/audit-log.service";
 import { EscrowService } from "./escrow.service";
-import { toPublicDispute } from "./dispute-public.mapper";
+import { toAdminDispute, toPublicDispute } from "./dispute-public.mapper";
 
 /**
  * Fluxo de disputa (E4-09) — abertura por qualquer parte do contrato,
@@ -79,13 +84,20 @@ export class DisputesService {
     return disputes.map(toPublicDispute);
   }
 
-  /** Fila de mediação (ADMIN) — todas as disputas ainda abertas. */
-  async listAbertas(): Promise<DisputePublic[]> {
+  /**
+   * Fila de mediação (ADMIN) — todas as disputas ainda abertas, com o
+   * contexto necessário pra decidir (obra, etapa, valor, quem abriu).
+   */
+  async listAbertas(): Promise<AdminDispute[]> {
     const disputes = await this.prisma.dispute.findMany({
       where: { status: "ABERTA" },
       orderBy: { createdAt: "asc" },
+      include: {
+        milestone: { include: { contract: { include: { obra: true } } } },
+        abertoPor: true,
+      },
     });
-    return disputes.map(toPublicDispute);
+    return disputes.map(toAdminDispute);
   }
 
   async resolver(

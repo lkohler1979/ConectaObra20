@@ -51,3 +51,18 @@ export const disputePublicSchema = z.object({
   createdAt: z.string(),
 });
 export type DisputePublic = z.infer<typeof disputePublicSchema>;
+
+/**
+ * Fila de mediação do ADMIN (E10-01) — mesma disputa, com o contexto
+ * mínimo pra decidir com segurança (de qual obra/etapa, quanto dinheiro
+ * está em jogo, quem abriu). Só usada em `GET /disputas` (já exclusivo do
+ * ADMIN) — `listForMilestone` (partes do contrato) continua em `DisputePublic`.
+ */
+export const adminDisputeSchema = disputePublicSchema.extend({
+  obraId: z.string().uuid(),
+  obraTitulo: z.string(),
+  milestoneDescricao: z.string(),
+  milestoneValorCentavos: z.number().int(),
+  abertoPorNome: z.string(),
+});
+export type AdminDispute = z.infer<typeof adminDisputeSchema>;

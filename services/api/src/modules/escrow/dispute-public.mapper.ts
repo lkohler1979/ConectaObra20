@@ -1,5 +1,5 @@
-import type { Dispute } from "@prisma/client";
-import type { DisputePublic, DisputeStatus } from "@conectaobra/types/disputes";
+import type { Dispute, Milestone, User, Work } from "@prisma/client";
+import type { AdminDispute, DisputePublic, DisputeStatus } from "@conectaobra/types/disputes";
 
 export function toPublicDispute(dispute: Dispute): DisputePublic {
   return {
@@ -12,5 +12,21 @@ export function toPublicDispute(dispute: Dispute): DisputePublic {
     resolucao: dispute.resolucao,
     status: dispute.status as DisputeStatus,
     createdAt: dispute.createdAt.toISOString(),
+  };
+}
+
+type DisputeWithContext = Dispute & {
+  milestone: Milestone & { contract: { obra: Work } };
+  abertoPor: User;
+};
+
+export function toAdminDispute(dispute: DisputeWithContext): AdminDispute {
+  return {
+    ...toPublicDispute(dispute),
+    obraId: dispute.milestone.contract.obra.id,
+    obraTitulo: dispute.milestone.contract.obra.titulo,
+    milestoneDescricao: dispute.milestone.descricao,
+    milestoneValorCentavos: dispute.milestone.valorCentavos,
+    abertoPorNome: dispute.abertoPor.nome,
   };
 }

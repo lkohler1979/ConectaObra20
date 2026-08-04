@@ -20,7 +20,7 @@ const SECOES = [
   {
     titulo: "Disputas",
     descricao: "Fila de mediação — aprovar, estornar ou liberar parcial.",
-    href: null,
+    href: "/disputas",
   },
   {
     titulo: "Conteúdo",
