@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-08-04 · Branch: `feat/web-catalog`
+> Última atualização: 2026-08-04 · Branch: `main`
 
 ---
 
@@ -214,6 +214,7 @@
 | 2026-08-04 | Telas de indicadores + custos médios em `apps/web` (E9-02/E9-03, 2ª rodada de telas do épico E9): `/indicadores` (filtro GET por tipo/região, sem client JS) e `/custos-medios` (filtro GET por cidade/serviço, tabela com mín/médio/máx formatado em R$) — mesmo padrão de `/noticias` (Server Component, `ApiUnavailableError` tratado). Validado no browser: as 2 páginas carregam sem erro de console, tratam indisponibilidade da API corretamente (sem backend neste ambiente). `tsc`/`next build`/`pnpm build`/`lint`/`test` da raiz passam. Mesma lacuna de P-069: sem UI ADMIN pra cadastrar indicadores/custos, as tabelas ficam vazias em qualquer ambiente novo — ver P-070 |
 | 2026-08-04 | Merge de `feat/web-indicators` em `main` (fast-forward) — indicadores + custos médios (E9-02/E9-03, 2ª rodada de telas do épico E9). Revalidado em `main`: `pnpm build`/`lint`/`test` da raiz — todos verdes. Próxima rodada: catálogo de plantas — vitrine pública + aba no painel do prestador (E9-05, frontend) |
 | 2026-08-04 | Telas de catálogo de plantas em `apps/web` (E9-05, 3ª e última rodada de telas do épico E9 — **completa o épico E9 no frontend**). Vitrine pública `/catalogo` + `/catalogo/[id]` (com `ComprarButton`, redireciona pro login se não houver sessão), aba "Catálogo" no painel do prestador (`CatalogoPanel`, CRUD completo, mesmo padrão de `AdsPanel`), nova página `/compras` (qualquer usuário autenticado, adicionada ao matcher do `middleware.ts`). Novos route handlers `app/api/catalog/projects[/[id]][/buy]`. Sem upload de arquivo wired (mesmo padrão de `fotos` em portfólio/produtos — P-018): `arquivos`/`imagemCapaUrl` entram como URLs de texto puro. Validado no browser: vitrine e detalhe tratam indisponibilidade da API corretamente, `/compras` e `/conta/prestador` redirecionam pro login sem sessão (middleware funcionando), sem erro de console em nenhuma tela. `tsc`/`next build`/`pnpm build`/`lint`/`test` da raiz passam — ver P-071 |
+| 2026-08-04 | Merge de `feat/web-catalog` em `main` (fast-forward) — catálogo de plantas (E9-05, 3ª e última rodada de telas do épico E9). Revalidado em `main`: `pnpm build`/`lint`/`test` da raiz — todos verdes. **Épico E9 completo de ponta a ponta (backend + frontend)**: notícias, biblioteca, indicadores, custos médios, anúncios, catálogo de plantas com checkout simulado e marca d'água real |
 
 ---
 
