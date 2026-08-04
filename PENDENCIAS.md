@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-08-04 · Branch: `feat/admin-users-frontend`
+> Última atualização: 2026-08-04 · Branch: `main`
 
 ---
 
@@ -226,6 +226,7 @@
 | 2026-08-04 | `apps/admin` deixou de ser scaffold vazio — app Next.js real (E10-01, 2ª rodada do épico E10). Login restrito a `ADMIN` (rejeitado no Route Handler antes de emitir cookie, checado de novo no dashboard), cookies de sessão com nomes distintos de `apps/web` (evita colisão em dev, mesmo `localhost`), `middleware.ts` protegendo tudo por padrão (inverso do padrão de `apps/web`). Dashboard é só um shell com 3 cards placeholder — nenhuma tela funcional ainda. `.claude/launch.json` ganhou entrada `admin` (porta 3001). Validado no browser: redirect sem sessão, erro de indisponibilidade tratado corretamente, sem erro de console. `tsc`/`next build`/`pnpm build`/`lint`/`test` da raiz passam — ver P-073. Próximas rodadas: telas de usuários, disputas e conteúdo (todo backend já existe) |
 | 2026-08-04 | Merge de `feat/admin-app-scaffold` em `main` (fast-forward) — scaffold real do `apps/admin` (E10-01, 2ª rodada do épico E10). Revalidado em `main`: `pnpm build`/`lint`/`test` da raiz — todos verdes. Próxima rodada: tela de usuários (busca/detalhe/suspender/reativar) |
 | 2026-08-04 | Tela de usuários no `apps/admin` (E10-01, 3ª rodada do épico E10): `/usuarios` (busca/filtro) + `/usuarios/:id` (detalhe + suspender/reativar). Porta do admin trocada de 3001 para 3096 (pedido do usuário) — atualizada em todos os arquivos de config/docs que a citavam. Card "Usuários" no dashboard agora linka de verdade. Validado no browser (redirects de sessão corretos, sem erro de console). `tsc`/`next build`/`pnpm build`/`lint`/`test` da raiz passam — ver P-074. Próxima rodada: disputas ou conteúdo |
+| 2026-08-04 | Merge de `feat/admin-users-frontend` em `main` (fast-forward) — tela de usuários no admin + troca de porta 3001→3096 (E10-01, 3ª rodada do épico E10). Revalidado em `main`: `pnpm build`/`lint`/`test` da raiz — todos verdes. Próxima rodada: fila de disputas ou CRUD de conteúdo no admin |
 
 ---
 
