@@ -25,7 +25,7 @@ const SECOES = [
   {
     titulo: "Conteúdo",
     descricao: "Notícias, biblioteca, indicadores e custos médios.",
-    href: null,
+    href: "/conteudo",
   },
 ];
 
