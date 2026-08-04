@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-08-04 · Branch: `feat/admin-app-scaffold`
+> Última atualização: 2026-08-04 · Branch: `main`
 
 ---
 
@@ -222,6 +222,7 @@
 | 2026-08-04 | Moderação de perfis — backend (E10-01, 1ª rodada do épico E10, painel admin — confirmado com o usuário via `AskUserQuestion`: suspender/reativar conta sem histórico dedicado, `apps/admin` espelhando o padrão de sessão de `apps/web`). Novo `User.suspenso`/`suspensoMotivo`/`suspensoEm` + `AdminModule` (`GET/PATCH /admin/users...`, ADMIN-only) — suspender revoga todas as sessões e bloqueia login/refresh, sem revogar um access token já emitido (mesmo trade-off de P-020). Disputas e conteúdo já tinham endpoint ADMIN pronto — não precisou de backend novo pra essas partes. Schemas zod validados isoladamente (`node -e`). `prisma validate`/`generate`, `tsc`/`nest build`, boot-test (só P1001 esperado), `pnpm build`/`lint`/`test` da raiz passam — ver P-072. Próxima rodada: scaffold real do `apps/admin` (Next.js, login, middleware) |
 | 2026-08-04 | Merge de `feat/admin-users-backend` em `main` (fast-forward) — moderação de perfis, backend (E10-01, 1ª rodada do épico E10). Revalidado em `main`: `prisma validate`/`generate`, `pnpm build`/`lint`/`test` da raiz — todos verdes. Próxima rodada: scaffold do `apps/admin` (Next.js, login ADMIN, middleware de sessão) |
 | 2026-08-04 | `apps/admin` deixou de ser scaffold vazio — app Next.js real (E10-01, 2ª rodada do épico E10). Login restrito a `ADMIN` (rejeitado no Route Handler antes de emitir cookie, checado de novo no dashboard), cookies de sessão com nomes distintos de `apps/web` (evita colisão em dev, mesmo `localhost`), `middleware.ts` protegendo tudo por padrão (inverso do padrão de `apps/web`). Dashboard é só um shell com 3 cards placeholder — nenhuma tela funcional ainda. `.claude/launch.json` ganhou entrada `admin` (porta 3001). Validado no browser: redirect sem sessão, erro de indisponibilidade tratado corretamente, sem erro de console. `tsc`/`next build`/`pnpm build`/`lint`/`test` da raiz passam — ver P-073. Próximas rodadas: telas de usuários, disputas e conteúdo (todo backend já existe) |
+| 2026-08-04 | Merge de `feat/admin-app-scaffold` em `main` (fast-forward) — scaffold real do `apps/admin` (E10-01, 2ª rodada do épico E10). Revalidado em `main`: `pnpm build`/`lint`/`test` da raiz — todos verdes. Próxima rodada: tela de usuários (busca/detalhe/suspender/reativar) |
 
 ---
 
