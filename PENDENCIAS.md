@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-08-04 · Branch: `feat/web-indicators`
+> Última atualização: 2026-08-04 · Branch: `main`
 
 ---
 
@@ -211,6 +211,7 @@
 | 2026-08-03 | `DEPLOY.md`/`infra/deploy/nginx.conf.example` atualizados pra dois domínios públicos: `conectaon.unifyhub.com.br` (`apps/web`) e `apiconectaon.unifyhub.com.br` (`services/api`) — dois server blocks no Nginx, um cert Let's Encrypt cobrindo os dois via `certbot -d` duplo. `services/api` deixa de ser só interno (era a arquitetura documentada antes), mas `apps/web` continua chamando a API via `127.0.0.1:3333` internamente — o domínio público da API é pra consumidores externos, sem CORS configurado ainda (não bloqueia nada hoje). `deploy.sh`/`ecosystem.config.cjs` não mudaram (já cobriam "baixar do main e atualizar" sem depender de domínio). Merge direto em `main` (mudança só de documentação/infra, sem código de aplicação) — ver P-031 |
 | 2026-07-29 | **Merge de `feat/E7-02-cotacao-automatica` em `main`** (fast-forward, sem conflito). `main` revalidado de ponta a ponta pós-merge (`pnpm build`/`lint`/`test` da raiz) — épico E7 com E7-01 e E7-02 completos, E7-03 (comparador) e E7-04 (checkout, bloqueado por P-002) restantes |
 | 2026-08-04 | Telas de indicadores + custos médios em `apps/web` (E9-02/E9-03, 2ª rodada de telas do épico E9): `/indicadores` (filtro GET por tipo/região, sem client JS) e `/custos-medios` (filtro GET por cidade/serviço, tabela com mín/médio/máx formatado em R$) — mesmo padrão de `/noticias` (Server Component, `ApiUnavailableError` tratado). Validado no browser: as 2 páginas carregam sem erro de console, tratam indisponibilidade da API corretamente (sem backend neste ambiente). `tsc`/`next build`/`pnpm build`/`lint`/`test` da raiz passam. Mesma lacuna de P-069: sem UI ADMIN pra cadastrar indicadores/custos, as tabelas ficam vazias em qualquer ambiente novo — ver P-070 |
+| 2026-08-04 | Merge de `feat/web-indicators` em `main` (fast-forward) — indicadores + custos médios (E9-02/E9-03, 2ª rodada de telas do épico E9). Revalidado em `main`: `pnpm build`/`lint`/`test` da raiz — todos verdes. Próxima rodada: catálogo de plantas — vitrine pública + aba no painel do prestador (E9-05, frontend) |
 
 ---
 
