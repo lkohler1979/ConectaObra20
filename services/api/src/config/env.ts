@@ -38,6 +38,11 @@ export const envSchema = baseEnvSchema.extend({
   /// plano gratuito = limite diário de mensagens; qualquer Subscription =
   /// sem limite. Placeholder até E8-01 definir os planos de verdade.
   AI_CHAT_FREE_PLAN_DAILY_LIMIT: z.coerce.number().int().positive().default(10),
+  /// Placeholder dentro da faixa "15–25%" do catálogo de plantas (`01_PRD`
+  /// M8, E9-05) — não é decisão de negócio fechada. Checkout usa PSP
+  /// SIMULADO (mesmo padrão de E4/E7-04) até o real existir (P-002). Em
+  /// basis points (2000 = 20%).
+  CATALOG_COMMISSION_BPS: z.coerce.number().int().min(0).max(10_000).default(2000),
   /// Redis já é infra decidida (docker-compose.local.yml, CLAUDE.md §3) —
   /// diferente de S3/SMS (fornecedor em aberto), por isso é obrigatório
   /// como DATABASE_URL, não opcional (E3-04).

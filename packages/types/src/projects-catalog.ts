@@ -70,3 +70,23 @@ export const listPublicProjectsQuerySchema = z.object({
   limit: z.coerce.number().int().positive().max(50).default(20),
 });
 export type ListPublicProjectsQuery = z.infer<typeof listPublicProjectsQuerySchema>;
+
+/**
+ * Compra de uma planta (E9-05 parte 2) — PSP SIMULADO, mesmo padrão de
+ * PurchaseOrder (E7-04). `arquivosEntregues` tem marca d'água quando o S3
+ * está configurado; sem S3, cai pros arquivos originais sem marca d'água
+ * (`marcaDaguaAplicada: false`) — não bloqueia a compra.
+ */
+export const projectPurchasePublicSchema = z.object({
+  id: z.string().uuid(),
+  projectId: z.string().uuid(),
+  compradorId: z.string().uuid(),
+  precoCentavos: z.number().int(),
+  comissaoCentavos: z.number().int(),
+  pspRef: z.string(),
+  status: z.string(),
+  arquivosEntregues: z.array(z.string()),
+  marcaDaguaAplicada: z.boolean(),
+  createdAt: z.string(),
+});
+export type ProjectPurchasePublic = z.infer<typeof projectPurchasePublicSchema>;

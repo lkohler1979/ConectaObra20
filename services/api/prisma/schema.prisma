@@ -75,16 +75,17 @@ model User {
   rfqs                  Rfq[]
   rfqProposals          RfqProposal[]
   contractParties       ContractParty[]
-  milestonesAprovados   Milestone[]      @relation("milestone_aprovado_por")
-  disputesAbertas       Dispute[]        @relation("dispute_aberto_por")
-  disputesMediadas      Dispute[]        @relation("dispute_mediador")
-  reviewsFeitas         Review[]         @relation("review_avaliador")
-  reviewsRecebidas      Review[]         @relation("review_avaliado")
+  milestonesAprovados   Milestone[]       @relation("milestone_aprovado_por")
+  disputesAbertas       Dispute[]         @relation("dispute_aberto_por")
+  disputesMediadas      Dispute[]         @relation("dispute_mediador")
+  reviewsFeitas         Review[]          @relation("review_avaliador")
+  reviewsRecebidas      Review[]          @relation("review_avaliado")
   projetosCatalogo      ProjectCatalog[]
+  projectPurchases      ProjectPurchase[]
   subscriptions         Subscription[]
   aiConversations       AiConversation[]
-  workTeamMemberships   WorkTeamMember[] @relation("work_team_member")
-  workTeamInvitesFeitos WorkTeamMember[] @relation("work_team_added_by")
+  workTeamMemberships   WorkTeamMember[]  @relation("work_team_member")
+  workTeamInvitesFeitos WorkTeamMember[]  @relation("work_team_added_by")
   ads                   Ad[]
   auditLogs             AuditLog[]
 
@@ -640,9 +641,35 @@ model ProjectCatalog {
   vendasCount   Int             @default(0) @map("vendas_count")
   createdAt     DateTime        @default(now()) @map("created_at")
 
-  arquiteto User @relation(fields: [arquitetoId], references: [id])
+  arquiteto User              @relation(fields: [arquitetoId], references: [id])
+  compras   ProjectPurchase[]
 
   @@map("projects_catalog")
+}
+
+/// Compra de uma planta do catálogo (E9-05 parte 2) — PSP SIMULADO, mesmo
+/// padrão de PurchaseOrder (E7-04). `arquivosEntregues` tem marca d'água
+/// quando o S3 está configurado (P-018); sem S3, cai pros arquivos
+/// originais sem marca d'água (`marcaDaguaAplicada = false`) — não bloqueia
+/// a compra, só documenta a limitação (ver PENDENCIAS.md).
+model ProjectPurchase {
+  id                 String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  projectId          String   @map("project_id") @db.Uuid
+  compradorId        String   @map("comprador_id") @db.Uuid
+  precoCentavos      Int      @map("preco_centavos")
+  comissaoCentavos   Int      @map("comissao_centavos")
+  /// Sempre "SIMULADO-<uuid>" até o PSP real existir (P-002).
+  pspRef             String   @map("psp_ref")
+  status             String   @default("PAGO")
+  arquivosEntregues  String[] @map("arquivos_entregues")
+  marcaDaguaAplicada Boolean  @default(false) @map("marca_dagua_aplicada")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  project   ProjectCatalog @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  comprador User           @relation(fields: [compradorId], references: [id])
+
+  @@unique([projectId, compradorId])
+  @@map("project_purchases")
 }
 
 model Subscription {
