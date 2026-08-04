@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-08-04 · Branch: `feat/admin-disputes`
+> Última atualização: 2026-08-04 · Branch: `main`
 
 ---
 
@@ -230,6 +230,7 @@
 | 2026-08-04 | Tela de usuários no `apps/admin` (E10-01, 3ª rodada do épico E10): `/usuarios` (busca/filtro) + `/usuarios/:id` (detalhe + suspender/reativar). Porta do admin trocada de 3001 para 3096 (pedido do usuário) — atualizada em todos os arquivos de config/docs que a citavam. Card "Usuários" no dashboard agora linka de verdade. Validado no browser (redirects de sessão corretos, sem erro de console). `tsc`/`next build`/`pnpm build`/`lint`/`test` da raiz passam — ver P-074. Próxima rodada: disputas ou conteúdo |
 | 2026-08-04 | Merge de `feat/admin-users-frontend` em `main` (fast-forward) — tela de usuários no admin + troca de porta 3001→3096 (E10-01, 3ª rodada do épico E10). Revalidado em `main`: `pnpm build`/`lint`/`test` da raiz — todos verdes. Próxima rodada: fila de disputas ou CRUD de conteúdo no admin |
 | 2026-08-04 | Fila de disputas no `apps/admin` (E10-01, 4ª rodada do épico E10, completa E4-09/E4-10 com UI). `DisputesService.listAbertas()` enriquecido com contexto (obra/etapa/valor/quem abriu, novo tipo `AdminDispute`) — necessário pra mediação de verdade. Nova página `/disputas` + `ResolveForm` + Route Handler `/api/disputas/:id/resolver`. Card "Disputas" linkado no dashboard. `tsc`/`nest build`/boot-test/`next build`/`pnpm build`/`lint`/`test` da raiz passam — ver P-075. Próxima rodada: CRUD de conteúdo (notícias/biblioteca/indicadores/custos médios) |
+| 2026-08-04 | Merge de `feat/admin-disputes` em `main` (fast-forward) — fila de disputas com mediação no admin (E10-01, 4ª rodada do épico E10). Revalidado em `main`: `prisma generate`, `pnpm build`/`lint`/`test` da raiz — todos verdes. Próxima rodada: CRUD de conteúdo (notícias/biblioteca/indicadores/custos médios) no admin |
 
 ---
 
