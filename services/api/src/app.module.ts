@@ -28,6 +28,7 @@ import { PromotionsModule } from "./modules/promotions/promotions.module";
 import { AdsModule } from "./modules/ads/ads.module";
 import { ContentModule } from "./modules/content/content.module";
 import { ProjectsCatalogModule } from "./modules/projects-catalog/projects-catalog.module";
+import { AdminModule } from "./modules/admin/admin.module";
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { ProjectsCatalogModule } from "./modules/projects-catalog/projects-catal
     AdsModule,
     ContentModule,
     ProjectsCatalogModule,
+    AdminModule,
   ],
   controllers: [HealthController],
   providers: [

@@ -8,6 +8,11 @@
       "require": "./dist/index.js",
       "import": "./dist/index.mjs"
     },
+    "./admin": {
+      "types": "./dist/admin.d.ts",
+      "require": "./dist/admin.js",
+      "import": "./dist/admin.mjs"
+    },
     "./ai-budget": {
       "types": "./dist/ai-budget.d.ts",
       "require": "./dist/ai-budget.js",

@@ -1,4 +1,9 @@
-import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from "@nestjs/common";
 import type {
   AuthTokens,
   LoginInput,
@@ -97,6 +102,17 @@ export class AuthService {
       throw new UnauthorizedException("E-mail ou senha inválidos");
     }
 
+    if (user.suspenso) {
+      await this.auditLog.record({
+        userId: user.id,
+        acao: "auth.login_suspended",
+        entidade: "user",
+        payload: {},
+        ip: meta.ip,
+      });
+      throw new ForbiddenException("Conta suspensa — entre em contato com o suporte");
+    }
+
     if (user.mfaEnabled) {
       const mfaToken = await this.tokens.issueMfaChallengeToken(user);
       await this.auditLog.record({
@@ -145,6 +161,12 @@ export class AuthService {
       meta,
     );
     const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
+
+    if (user.suspenso) {
+      await this.tokens.revoke(refreshToken);
+      throw new ForbiddenException("Conta suspensa — entre em contato com o suporte");
+    }
+
     const accessToken = await this.tokens.issueAccessToken(user);
 
     return { accessToken, refreshToken, expiresIn: env.JWT_ACCESS_TTL_SECONDS };
