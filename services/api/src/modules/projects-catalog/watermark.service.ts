@@ -4,6 +4,7 @@ import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import sharp from "sharp";
 import { PDFDocument, StandardFonts, degrees, rgb } from "pdf-lib";
 import { env } from "../../config/env";
+import { assertSafeExternalUrl } from "../../common/security/url-safety";
 
 export interface WatermarkResult {
   url: string;
@@ -46,6 +47,12 @@ export class WatermarkService {
     }
 
     try {
+      // Mitigação de SSRF (E10-05): `fileUrl` vem de `ProjectCatalog.arquivos`,
+      // preenchido pelo PRESTADOR/TECNICO dono do projeto — sem essa checagem,
+      // um valor malicioso (ex.: endpoint de metadata de nuvem, serviço
+      // interno) faria o servidor buscar por ele.
+      await assertSafeExternalUrl(fileUrl);
+
       const res = await fetch(fileUrl);
       if (!res.ok) {
         throw new Error(`download falhou com status ${res.status}`);
