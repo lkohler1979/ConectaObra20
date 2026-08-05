@@ -21,9 +21,9 @@ export function AcceptProposalButton({ proposalId }: { proposalId: string }) {
     setLoading(true);
     setErro(null);
     const res = await fetch(`/api/proposals/${proposalId}/accept`, { method: "POST" });
+    const data = await res.json().catch(() => null);
 
     if (!res.ok) {
-      const data = await res.json().catch(() => null);
       setErro(
         typeof data?.message === "string" ? data.message : "Não foi possível aceitar a proposta.",
       );
@@ -31,6 +31,11 @@ export function AcceptProposalButton({ proposalId }: { proposalId: string }) {
       return;
     }
 
+    // Aceitar cria o contrato — a única forma de chegar nele depois é por
+    // aqui (ver /contratos, sem isso não haveria como navegar até ele).
+    if (typeof data?.id === "string") {
+      router.push(`/contratos/${data.id}`);
+    }
     router.refresh();
   }
 

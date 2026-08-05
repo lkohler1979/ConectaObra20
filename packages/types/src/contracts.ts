@@ -21,3 +21,15 @@ export const contractPublicSchema = z.object({
   createdAt: z.string(),
 });
 export type ContractPublic = z.infer<typeof contractPublicSchema>;
+
+/**
+ * Listagem "meus contratos" (E4/E6, frontend) — enriquece `ContractPublic`
+ * com o mínimo pra navegação/exibição sem precisar de uma segunda chamada:
+ * de qual obra é e qual o meu papel nele (decide o que a tela mostra —
+ * cliente define/aprova etapas, contratado inicia/entrega).
+ */
+export const contractListItemSchema = contractPublicSchema.extend({
+  obraTitulo: z.string(),
+  meuPapel: contractPartyRoleSchema,
+});
+export type ContractListItem = z.infer<typeof contractListItemSchema>;

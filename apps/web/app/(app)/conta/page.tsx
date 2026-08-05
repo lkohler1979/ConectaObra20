@@ -77,6 +77,10 @@ export default async function ContaPage() {
         </CardContent>
       </Card>
 
+      <Link href="/contratos" className="text-sm font-semibold text-azul-planta">
+        Meus contratos →
+      </Link>
+
       {me.tipo === "FORNECEDOR" && (
         <Link href="/conta/fornecedor" className="text-sm font-semibold text-azul-planta">
           Ir pro painel do fornecedor →

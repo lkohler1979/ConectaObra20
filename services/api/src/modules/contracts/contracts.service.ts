@@ -1,9 +1,9 @@
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
-import type { ContractPublic } from "@conectaobra/types/contracts";
+import type { ContractListItem, ContractPublic } from "@conectaobra/types/contracts";
 import { PrismaService } from "../../common/prisma/prisma.service";
 import { AuditLogService } from "../../common/audit/audit-log.service";
 import { AnalyticsService } from "../../common/analytics/analytics.service";
-import { toPublicContract } from "./contract-public.mapper";
+import { toContractListItem, toPublicContract } from "./contract-public.mapper";
 
 /** Estado inicial livre — nenhum workflow de contrato foi definido ainda (doc 02 §3 não enumera). */
 const STATUS_RASCUNHO = "rascunho";
@@ -101,5 +101,21 @@ export class ContractsService {
     });
 
     return toPublicContract(contract);
+  }
+
+  /**
+   * "Meus contratos" — não existia nenhuma forma de listar/navegar até um
+   * contrato antes disso (só o retorno direto de `acceptProposal`, nunca
+   * persistido em tela nenhuma). Cliente e prestador/fornecedor usam o
+   * mesmo endpoint; `meuPapel` decide o que a tela mostra.
+   */
+  async listMine(userId: string): Promise<ContractListItem[]> {
+    const parties = await this.prisma.contractParty.findMany({
+      where: { userId },
+      include: { contract: { include: { obra: true } } },
+      orderBy: { contract: { createdAt: "desc" } },
+    });
+
+    return parties.map((party) => toContractListItem(party.contract, party.papel));
   }
 }

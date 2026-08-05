@@ -5,6 +5,7 @@ import { AnalyticsModule } from "../../common/analytics/analytics.module";
 import { SearchModule } from "../search/search.module";
 import { EscrowModule } from "../escrow/escrow.module";
 import { ContractsController } from "./contracts.controller";
+import { MyContractsController } from "./my-contracts.controller";
 import { ContractsService } from "./contracts.service";
 import { ContractReviewsController } from "./contract-reviews.controller";
 import { MyReviewsController } from "./my-reviews.controller";
@@ -24,6 +25,7 @@ import { MilestoneTimeoutProcessor } from "./milestone-timeout.processor";
   ],
   controllers: [
     ContractsController,
+    MyContractsController,
     ContractReviewsController,
     MyReviewsController,
     MilestonesController,

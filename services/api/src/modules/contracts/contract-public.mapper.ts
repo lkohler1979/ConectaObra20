@@ -1,5 +1,5 @@
-import type { Contract } from "@prisma/client";
-import type { ContractPublic } from "@conectaobra/types/contracts";
+import type { Contract, ContractPartyRole, Work } from "@prisma/client";
+import type { ContractListItem, ContractPublic } from "@conectaobra/types/contracts";
 
 export function toPublicContract(contract: Contract): ContractPublic {
   return {
@@ -10,5 +10,16 @@ export function toPublicContract(contract: Contract): ContractPublic {
     status: contract.status,
     pdfUrl: contract.pdfUrl,
     createdAt: contract.createdAt.toISOString(),
+  };
+}
+
+export function toContractListItem(
+  contract: Contract & { obra: Work },
+  meuPapel: ContractPartyRole,
+): ContractListItem {
+  return {
+    ...toPublicContract(contract),
+    obraTitulo: contract.obra.titulo,
+    meuPapel,
   };
 }
