@@ -9,6 +9,7 @@ import { loginInputSchema, type LoginInput } from "@conectaobra/types/auth";
 import { Alert, AlertDescription, Button, Input } from "@conectaobra/ui";
 import { FormField } from "@/components/form-field";
 import { safeRedirect } from "@/lib/safe-redirect";
+import { getPostHog } from "@/lib/posthog";
 
 function EntrarForm() {
   const router = useRouter();
@@ -40,6 +41,7 @@ function EntrarForm() {
       return;
     }
 
+    getPostHog()?.capture("login_concluido");
     router.push(safeRedirect(searchParams.get("redirect")));
     router.refresh();
   }

@@ -32,6 +32,11 @@ const SECOES = [
     descricao: "Onboarding em campo dos 200 prestadores-piloto.",
     href: "/prestadores-piloto",
   },
+  {
+    titulo: "KPIs",
+    descricao: "Liquidez, confiança, receita, adoção de IA, churn e ativação.",
+    href: "/kpis",
+  },
 ];
 
 export default async function AdminHomePage() {

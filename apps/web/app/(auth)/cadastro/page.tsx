@@ -12,6 +12,7 @@ import {
 } from "@conectaobra/types/auth";
 import { Alert, AlertDescription, Button, Input } from "@conectaobra/ui";
 import { FormField } from "@/components/form-field";
+import { getPostHog } from "@/lib/posthog";
 
 const TIPO_OPTIONS: { value: PublicUserType; label: string }[] = [
   { value: "CLIENTE_PF", label: "Cliente (pessoa física)" },
@@ -50,6 +51,7 @@ export default function CadastroPage() {
       return;
     }
 
+    getPostHog()?.capture("cadastro_concluido", { tipo: values.tipo });
     router.push("/conta");
     router.refresh();
   }

@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import "@conectaobra/ui/styles.css";
+import { PostHogPageview } from "@/components/posthog-pageview";
 
 export const metadata: Metadata = {
   title: "ConectaObra",
@@ -17,7 +19,12 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body>
+        <Suspense fallback={null}>
+          <PostHogPageview />
+        </Suspense>
+        {children}
+      </body>
     </html>
   );
 }
