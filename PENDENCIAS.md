@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-08-04 · Branch: `feat/analytics-kpis-backend`
+> Última atualização: 2026-08-04 · Branch: `main`
 
 ---
 
@@ -246,6 +246,7 @@
 | 2026-08-04 | Cadastro assistido de prestadores no `apps/admin` (E10-02) — `/prestadores-piloto`, formulário único combinando conta+perfil numa chamada orquestrada (`POST /api/prestadores-piloto`: register + profile, usando o token do prestador recém-criado só server-side). Contador "X/200" reaproveita endpoint já existente de moderação. Sem backend novo em `services/api`. Card linkado no dashboard. Validado no browser: redireciona pro login sem sessão, sem erro de console. `tsc`/`next build`/`pnpm build`/`lint`/`test` da raiz passam — ver P-078 |
 | 2026-08-04 | Merge de `feat/admin-cadastro-assistido` em `main` (fast-forward) — cadastro assistido de prestadores-piloto (E10-02). Revalidado em `main`: `pnpm build`/`lint`/`test` da raiz — todos verdes |
 | 2026-08-04 | Analytics de funil + KPIs — backend (E10-03, 1ª rodada). `AnalyticsService` (PostHog, opcional/no-op sem API key) instrumentado nos pontos reais do funil (cadastro, RFQ criado, proposta enviada/aceita, depósito em escrow, pagamento liberado). `GET /admin/kpis` calcula os 6 KPIs do PRD direto do Postgres, sem depender do PostHog — determinístico. MRR/churn sempre 0/null hoje (sem billing real, E8). Lógica de contagem validada isolada (`node -e`). Sem UI ainda. `tsc`/`nest build`/boot-test/`pnpm build`/`lint`/`test` da raiz passam — ver P-079. Próxima rodada: dashboard `/kpis` no admin + inicialização do PostHog client-side em `apps/web` |
+| 2026-08-04 | Merge de `feat/analytics-kpis-backend` em `main` (fast-forward) — analytics de funil + dashboard de KPIs, backend (E10-03, 1ª rodada). Revalidado em `main`: `prisma generate`, `pnpm build`/`lint`/`test` da raiz — todos verdes. Próxima rodada: dashboard `/kpis` no admin + PostHog client-side em `apps/web` |
 
 ---
 
