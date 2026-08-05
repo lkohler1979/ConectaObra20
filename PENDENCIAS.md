@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-08-04 · Branch: `feat/e2e-critical-flow`
+> Última atualização: 2026-08-04 · Branch: `main`
 
 ---
 
@@ -238,6 +238,7 @@
 | 2026-08-04 | CRUD de conteúdo no `apps/admin` (E10-01, 5ª e última rodada do épico E10 — **completa o painel admin**). `/conteudo` (landing) + `/conteudo/artigos` (CRUD completo) + `/conteudo/indicadores` e `/conteudo/custos-medios` (lista + upsert, sem exclusão — backend nunca teve DELETE pra nenhum dos dois). Sem backend novo — tudo já existia desde E9-01/02/03. Card "Conteúdo" linkado no dashboard. Validado no browser: 4 páginas redirecionam pro login sem sessão, sem erro de console. `tsc`/`next build`/`pnpm build`/`lint`/`test` da raiz passam — ver P-076 |
 | 2026-08-04 | Merge de `feat/admin-content` em `main` (fast-forward) — CRUD de conteúdo no admin (E10-01, 5ª e última rodada do épico E10). Revalidado em `main`: `pnpm build`/`lint`/`test` da raiz — todos verdes. **Épico E10-01 completo**: moderação de perfis, fila de disputas e CRUD de conteúdo no `apps/admin` |
 | 2026-08-04 | Testes E2E do fluxo crítico + carga do matching (E10-04) — primeira suíte de testes real do monorepo. `apps/web/e2e/critical-flow.spec.ts` (Playwright, híbrido browser+API confirmado com o usuário): cadastro via navegador (única parte com UI real) + resto do fluxo (obra→RFQ→matching→proposta→aceite→milestone→escrow→liberação→extrato) via chamada direta a `services/api`, já que essas telas não existem em `apps/web`. `services/api/test/load/matching-k6.js` mede carga do matching. Gerador de CPF válido testado isoladamente (10k amostras, 0 falhas). **Nenhum dos dois nunca rodou contra a stack real** (sem Docker/k6 neste ambiente) — validado até onde dá: `tsc`, `next build`, `playwright test --list`. `pnpm build`/`lint`/`test` da raiz passam — ver P-077 |
+| 2026-08-04 | Merge de `feat/e2e-critical-flow` em `main` (fast-forward) — testes E2E do fluxo crítico + carga do matching (E10-04). Revalidado em `main`: `pnpm build`/`lint`/`test` da raiz — todos verdes |
 
 ---
 
