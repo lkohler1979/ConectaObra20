@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-08-04 · Branch: `feat/web-contratos-etapas`
+> Última atualização: 2026-08-04 · Branch: `main`
 
 ---
 
@@ -258,6 +258,7 @@
 | 2026-08-04 | Revisão de segurança + LGPD pré-go-live (E10-05) — auditoria de código (equivalente ao que um pentest encontraria estaticamente) + revisão técnica LGPD. 3 achados reais corrigidos: SSRF em `WatermarkService` (novo `assertSafeExternalUrl`, testado contra 9 vetores clássicos), `xlsx@0.18.5` com 2 CVEs HIGH sem patch no npm (upgrade pro CDN oficial do SheetJS, `xlsx@0.20.3`), `helmet()`/`trust proxy` ausentes no bootstrap. `pnpm audit --prod`: 18→11 vulnerabilidades (`sharp`/`postcss` bundled do Next.js corrigidos via `pnpm.overrides`; restam 4 high em `multer`, pin interno do NestJS, não forçado sem ambiente real pra testar). LGPD: consentimento/exclusão de conta já sólidos; gaps confirmados fora do alcance de código (Termos/Política reais, portabilidade de dados Art. 18, DPO, jurídico). `tsc`/`nest build`/boot-test/`pnpm build`/`lint`/`test` da raiz passam nos 3 apps — ver P-081 |
 | 2026-08-04 | Merge de `security/pentest-lgpd-review` em `main` (fast-forward) — revisão de segurança + LGPD pré-go-live (E10-05). Revalidado em `main`: `prisma generate`, `pnpm build`/`lint`/`test` da raiz — todos verdes; `pnpm audit --prod` confirma 11 vulnerabilidades (1 low/6 moderate/4 high), abaixo das 18 originais. **Épico E10 completo** (E10-01 a E10-05) — pentest de verdade contra ambiente real e aprovação jurídica/DPO continuam pendentes, fora do alcance de código |
 | 2026-08-04 | Tela de contratos/etapas no `apps/web` (E4/E6, frontend) — cliente analisa e aprova etapas, **sem depósito em escrow** (decisão explícita do usuário: fica pra próxima versão). Novo `GET /contracts` (backend — antes não existia NENHUMA forma de listar/navegar até um contrato) + `/contratos` (lista) + `/contratos/[id]` (etapas: cliente cria/aprova, executor inicia/entrega). `AcceptProposalButton` agora redireciona pro contrato criado, fechando a navegação. Depósito em custódia e disputa (lado cliente/prestador) registrados no roadmap (P-082) pra próxima rodada. `tsc`/`nest build`/`next build`/`pnpm build`/`lint`/`test` da raiz passam (3 apps) — ver P-082 |
+| 2026-08-04 | Merge de `feat/web-contratos-etapas` em `main` (fast-forward) — cliente analisa e aprova etapas do contrato, sem escrow (E4/E6, frontend). Revalidado em `main`: `prisma generate`, `pnpm build`/`lint`/`test` da raiz — todos verdes. Depósito em escrow + disputa (cliente/prestador) ficam no roadmap (P-082) pra próxima versão |
 
 ---
 
