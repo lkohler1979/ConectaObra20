@@ -27,6 +27,11 @@ const SECOES = [
     descricao: "Notícias, biblioteca, indicadores e custos médios.",
     href: "/conteudo",
   },
+  {
+    titulo: "Cadastro assistido",
+    descricao: "Onboarding em campo dos 200 prestadores-piloto.",
+    href: "/prestadores-piloto",
+  },
 ];
 
 export default async function AdminHomePage() {
