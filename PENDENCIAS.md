@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-08-04 · Branch: `security/pentest-lgpd-review`
+> Última atualização: 2026-08-04 · Branch: `main`
 
 ---
 
@@ -254,6 +254,7 @@
 | 2026-08-04 | Analytics de funil + dashboard de KPIs — frontend (E10-03, 2ª e última rodada, **completa o épico**). `/kpis` no admin (6 cards com valor/meta/badge). PostHog client-side em `apps/web` (`lib/posthog.ts`, `<PostHogPageview>` no layout, eventos `cadastro_concluido`/`login_concluido`) — tudo no-op sem `NEXT_PUBLIC_POSTHOG_KEY`. Achado de build: `posthog-js` duplicado no chunk de `/cadastro`/`/entrar` em vez de deduplicado com o layout — funciona, não é ideal, revisitar se incomodar. Validado no browser: sem erro de console, `/kpis` redireciona sem sessão. `tsc`/`next build`/`pnpm build`/`lint`/`test` da raiz passam — ver P-080 |
 | 2026-08-04 | Merge de `feat/analytics-kpis-frontend` em `main` (fast-forward) — dashboard de KPIs + PostHog client-side (E10-03, 2ª e última rodada). Revalidado em `main`: `pnpm build`/`lint`/`test` da raiz — todos verdes. **Épico E10-03 completo** |
 | 2026-08-04 | Revisão de segurança + LGPD pré-go-live (E10-05) — auditoria de código (equivalente ao que um pentest encontraria estaticamente) + revisão técnica LGPD. 3 achados reais corrigidos: SSRF em `WatermarkService` (novo `assertSafeExternalUrl`, testado contra 9 vetores clássicos), `xlsx@0.18.5` com 2 CVEs HIGH sem patch no npm (upgrade pro CDN oficial do SheetJS, `xlsx@0.20.3`), `helmet()`/`trust proxy` ausentes no bootstrap. `pnpm audit --prod`: 18→11 vulnerabilidades (`sharp`/`postcss` bundled do Next.js corrigidos via `pnpm.overrides`; restam 4 high em `multer`, pin interno do NestJS, não forçado sem ambiente real pra testar). LGPD: consentimento/exclusão de conta já sólidos; gaps confirmados fora do alcance de código (Termos/Política reais, portabilidade de dados Art. 18, DPO, jurídico). `tsc`/`nest build`/boot-test/`pnpm build`/`lint`/`test` da raiz passam nos 3 apps — ver P-081 |
+| 2026-08-04 | Merge de `security/pentest-lgpd-review` em `main` (fast-forward) — revisão de segurança + LGPD pré-go-live (E10-05). Revalidado em `main`: `prisma generate`, `pnpm build`/`lint`/`test` da raiz — todos verdes; `pnpm audit --prod` confirma 11 vulnerabilidades (1 low/6 moderate/4 high), abaixo das 18 originais. **Épico E10 completo** (E10-01 a E10-05) — pentest de verdade contra ambiente real e aprovação jurídica/DPO continuam pendentes, fora do alcance de código |
 
 ---
 
