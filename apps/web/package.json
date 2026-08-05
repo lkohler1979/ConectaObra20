@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "tsc --noEmit",
-    "test": "echo '[@conectaobra/web] test ok'"
+    "test": "echo '[@conectaobra/web] test ok'",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@conectaobra/types": "workspace:*",
@@ -20,6 +21,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@playwright/test": "^1.48.2",
     "@types/node": "^22.9.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
