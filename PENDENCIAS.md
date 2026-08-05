@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-08-04 · Branch: `feat/admin-cadastro-assistido`
+> Última atualização: 2026-08-04 · Branch: `main`
 
 ---
 
@@ -242,6 +242,7 @@
 | 2026-08-04 | Testes E2E do fluxo crítico + carga do matching (E10-04) — primeira suíte de testes real do monorepo. `apps/web/e2e/critical-flow.spec.ts` (Playwright, híbrido browser+API confirmado com o usuário): cadastro via navegador (única parte com UI real) + resto do fluxo (obra→RFQ→matching→proposta→aceite→milestone→escrow→liberação→extrato) via chamada direta a `services/api`, já que essas telas não existem em `apps/web`. `services/api/test/load/matching-k6.js` mede carga do matching. Gerador de CPF válido testado isoladamente (10k amostras, 0 falhas). **Nenhum dos dois nunca rodou contra a stack real** (sem Docker/k6 neste ambiente) — validado até onde dá: `tsc`, `next build`, `playwright test --list`. `pnpm build`/`lint`/`test` da raiz passam — ver P-077 |
 | 2026-08-04 | Merge de `feat/e2e-critical-flow` em `main` (fast-forward) — testes E2E do fluxo crítico + carga do matching (E10-04). Revalidado em `main`: `pnpm build`/`lint`/`test` da raiz — todos verdes |
 | 2026-08-04 | Cadastro assistido de prestadores no `apps/admin` (E10-02) — `/prestadores-piloto`, formulário único combinando conta+perfil numa chamada orquestrada (`POST /api/prestadores-piloto`: register + profile, usando o token do prestador recém-criado só server-side). Contador "X/200" reaproveita endpoint já existente de moderação. Sem backend novo em `services/api`. Card linkado no dashboard. Validado no browser: redireciona pro login sem sessão, sem erro de console. `tsc`/`next build`/`pnpm build`/`lint`/`test` da raiz passam — ver P-078 |
+| 2026-08-04 | Merge de `feat/admin-cadastro-assistido` em `main` (fast-forward) — cadastro assistido de prestadores-piloto (E10-02). Revalidado em `main`: `pnpm build`/`lint`/`test` da raiz — todos verdes |
 
 ---
 
