@@ -8,6 +8,7 @@ import type {
 } from "@conectaobra/types/escrow";
 import { PrismaService } from "../../common/prisma/prisma.service";
 import { AuditLogService } from "../../common/audit/audit-log.service";
+import { AnalyticsService } from "../../common/analytics/analytics.service";
 import { env } from "../../config/env";
 import { toPublicEscrowTransaction } from "./escrow-transaction-public.mapper";
 
@@ -36,6 +37,7 @@ export class EscrowService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
+    private readonly analytics: AnalyticsService,
   ) {}
 
   /** Depósito em custódia (E4-04) — exclusivo do CONTRATANTE, só enquanto a etapa está `PENDENTE`. */
@@ -81,6 +83,11 @@ export class EscrowService {
         valorCentavos: milestone.valorCentavos,
         simulado: true,
       },
+    });
+    this.analytics.capture(clienteId, "escrow_deposited", {
+      contractId,
+      milestoneId,
+      valorCentavos: milestone.valorCentavos,
     });
 
     return toPublicEscrowTransaction(transacao);

@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { JwtModule } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
 import { AuditLogModule } from "../../../common/audit/audit-log.module";
+import { AnalyticsModule } from "../../../common/analytics/analytics.module";
 import { env } from "../../../config/env";
 import { LegalModule } from "../legal/legal.module";
 import { AuthController } from "./auth.controller";
@@ -21,6 +22,7 @@ import { JwtStrategy } from "./strategies/jwt.strategy";
       signOptions: { expiresIn: env.JWT_ACCESS_TTL_SECONDS },
     }),
     AuditLogModule,
+    AnalyticsModule,
     LegalModule,
   ],
   controllers: [AuthController],

@@ -11,6 +11,7 @@ import type {
 } from "@conectaobra/types/rfq-proposals";
 import { PrismaService } from "../../common/prisma/prisma.service";
 import { AuditLogService } from "../../common/audit/audit-log.service";
+import { AnalyticsService } from "../../common/analytics/analytics.service";
 import { env } from "../../config/env";
 import { toPublicRfqProposal } from "./rfq-proposal-public.mapper";
 
@@ -19,6 +20,7 @@ export class RfqProposalService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
+    private readonly analytics: AnalyticsService,
   ) {}
 
   async submit(
@@ -80,6 +82,10 @@ export class RfqProposalService {
       acao: "rfq_proposal.created",
       entidade: "rfq_proposal",
       payload: { rfqId, proposalId: proposal.id },
+    });
+    this.analytics.capture(proponenteId, "rfq_proposal_submitted", {
+      rfqId,
+      proposalId: proposal.id,
     });
 
     return toPublicRfqProposal(proposal);

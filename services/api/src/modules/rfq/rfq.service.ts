@@ -3,6 +3,7 @@ import type { Rfq } from "@prisma/client";
 import type { CreateRfqInput, RfqPublic, UpdateRfqInput } from "@conectaobra/types/rfq";
 import { PrismaService } from "../../common/prisma/prisma.service";
 import { AuditLogService } from "../../common/audit/audit-log.service";
+import { AnalyticsService } from "../../common/analytics/analytics.service";
 import { MatchingService } from "../matching/matching.service";
 import { toPublicRfq } from "./rfq-public.mapper";
 
@@ -13,6 +14,7 @@ export class RfqService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
+    private readonly analytics: AnalyticsService,
     private readonly matching: MatchingService,
   ) {}
 
@@ -40,6 +42,10 @@ export class RfqService {
       acao: "rfq.created",
       entidade: "rfq",
       payload: { rfqId: rfq.id, obraId: rfq.obraId, categoria: rfq.categoria },
+    });
+    this.analytics.capture(clienteId, "rfq_created", {
+      rfqId: rfq.id,
+      categoria: rfq.categoria,
     });
 
     // Best-effort: falha no matching não pode impedir a publicação do RFQ —

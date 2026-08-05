@@ -15,6 +15,7 @@ import type {
 } from "@conectaobra/types/auth";
 import { PrismaService } from "../../../common/prisma/prisma.service";
 import { AuditLogService } from "../../../common/audit/audit-log.service";
+import { AnalyticsService } from "../../../common/analytics/analytics.service";
 import { env } from "../../../config/env";
 import { ConsentService } from "../legal/consent.service";
 import { MfaService } from "./mfa.service";
@@ -36,6 +37,7 @@ export class AuthService {
     private readonly mfa: MfaService,
     private readonly consent: ConsentService,
     private readonly auditLog: AuditLogService,
+    private readonly analytics: AnalyticsService,
   ) {}
 
   async register(input: RegisterInput, meta: RequestMeta): Promise<AuthResult> {
@@ -81,6 +83,7 @@ export class AuthService {
       payload: { tipo: user.tipo, email: user.email },
       ip: meta.ip,
     });
+    this.analytics.capture(user.id, "user_registered", { tipo: user.tipo });
 
     const tokens = await this.issueTokens(user, meta);
     return { user: toPublicUser(user), tokens: { mfaRequired: false, ...tokens } };

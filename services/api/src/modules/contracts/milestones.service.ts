@@ -7,6 +7,7 @@ import type {
 } from "@conectaobra/types/milestones";
 import { PrismaService } from "../../common/prisma/prisma.service";
 import { AuditLogService } from "../../common/audit/audit-log.service";
+import { AnalyticsService } from "../../common/analytics/analytics.service";
 import { EscrowService } from "../escrow/escrow.service";
 import { MilestoneTimeoutService } from "./milestone-timeout.service";
 import { toPublicMilestone } from "./milestone-public.mapper";
@@ -25,6 +26,7 @@ export class MilestonesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
+    private readonly analytics: AnalyticsService,
     private readonly escrowService: EscrowService,
     private readonly milestoneTimeoutService: MilestoneTimeoutService,
   ) {}
@@ -212,6 +214,13 @@ export class MilestonesService {
     );
     if (liberado) {
       updated = liberado;
+      // North Star do produto (GMV transacionado via escrow, 01_PRD §3) —
+      // o único evento que representa dinheiro de fato liberado (simulado).
+      this.analytics.capture(aprovadoPorId, "milestone_paid", {
+        contractId,
+        milestoneId,
+        valorCentavos: liberado.valorCentavos,
+      });
     }
 
     return updated;

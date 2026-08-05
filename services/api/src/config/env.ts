@@ -53,6 +53,12 @@ export const envSchema = baseEnvSchema.extend({
   /// de forma best-effort (E2-01).
   MEILI_HOST: z.string().url(),
   MEILI_API_KEY: z.string().min(1),
+  /// Analytics de funil (E10-03) — PostHog, fornecedor em aberto (mesma
+  /// categoria de S3/SMS: nenhuma conta real existe ainda). Opcional: sem
+  /// POSTHOG_API_KEY, AnalyticsService só descarta os eventos (no-op), sem
+  /// derrubar o boot nem bloquear nenhum fluxo.
+  POSTHOG_API_KEY: z.string().optional(),
+  POSTHOG_HOST: z.string().url().default("https://us.i.posthog.com"),
 });
 
 export const env = parseEnv(envSchema);

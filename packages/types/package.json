@@ -43,6 +43,11 @@
       "require": "./dist/indicators.js",
       "import": "./dist/indicators.mjs"
     },
+    "./kpis": {
+      "types": "./dist/kpis.d.ts",
+      "require": "./dist/kpis.js",
+      "import": "./dist/kpis.mjs"
+    },
     "./auth": {
       "types": "./dist/auth.d.ts",
       "require": "./dist/auth.js",

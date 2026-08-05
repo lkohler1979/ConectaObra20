@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { BullModule } from "@nestjs/bullmq";
 import { AuditLogModule } from "../../common/audit/audit-log.module";
+import { AnalyticsModule } from "../../common/analytics/analytics.module";
 import { SearchModule } from "../search/search.module";
 import { EscrowModule } from "../escrow/escrow.module";
 import { ContractsController } from "./contracts.controller";
@@ -16,6 +17,7 @@ import { MilestoneTimeoutProcessor } from "./milestone-timeout.processor";
 @Module({
   imports: [
     AuditLogModule,
+    AnalyticsModule,
     SearchModule,
     EscrowModule,
     BullModule.registerQueue({ name: MILESTONE_TIMEOUT_QUEUE }),

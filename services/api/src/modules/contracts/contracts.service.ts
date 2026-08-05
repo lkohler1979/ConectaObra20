@@ -2,6 +2,7 @@ import { ConflictException, Injectable, NotFoundException } from "@nestjs/common
 import type { ContractPublic } from "@conectaobra/types/contracts";
 import { PrismaService } from "../../common/prisma/prisma.service";
 import { AuditLogService } from "../../common/audit/audit-log.service";
+import { AnalyticsService } from "../../common/analytics/analytics.service";
 import { toPublicContract } from "./contract-public.mapper";
 
 /** Estado inicial livre — nenhum workflow de contrato foi definido ainda (doc 02 §3 não enumera). */
@@ -12,6 +13,7 @@ export class ContractsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
+    private readonly analytics: AnalyticsService,
   ) {}
 
   /**
@@ -91,6 +93,11 @@ export class ContractsService {
       acao: "rfq_proposal.accepted",
       entidade: "contract",
       payload: { proposalId, rfqId: proposal.rfqId, contractId: contract.id },
+    });
+    this.analytics.capture(clienteId, "rfq_proposal_accepted", {
+      rfqId: proposal.rfqId,
+      contractId: contract.id,
+      valorTotalCentavos: contract.valorTotalCentavos,
     });
 
     return toPublicContract(contract);

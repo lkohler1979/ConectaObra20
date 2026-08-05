@@ -10,6 +10,7 @@ export default defineConfig({
     "src/ai-knowledge.ts",
     "src/articles.ts",
     "src/indicators.ts",
+    "src/kpis.ts",
     "src/auth.ts",
     "src/catalog.ts",
     "src/contracts.ts",
