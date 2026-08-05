@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-08-04 · Branch: `feat/analytics-kpis-frontend`
+> Última atualização: 2026-08-04 · Branch: `main`
 
 ---
 
@@ -250,6 +250,7 @@
 | 2026-08-04 | Analytics de funil + KPIs — backend (E10-03, 1ª rodada). `AnalyticsService` (PostHog, opcional/no-op sem API key) instrumentado nos pontos reais do funil (cadastro, RFQ criado, proposta enviada/aceita, depósito em escrow, pagamento liberado). `GET /admin/kpis` calcula os 6 KPIs do PRD direto do Postgres, sem depender do PostHog — determinístico. MRR/churn sempre 0/null hoje (sem billing real, E8). Lógica de contagem validada isolada (`node -e`). Sem UI ainda. `tsc`/`nest build`/boot-test/`pnpm build`/`lint`/`test` da raiz passam — ver P-079. Próxima rodada: dashboard `/kpis` no admin + inicialização do PostHog client-side em `apps/web` |
 | 2026-08-04 | Merge de `feat/analytics-kpis-backend` em `main` (fast-forward) — analytics de funil + dashboard de KPIs, backend (E10-03, 1ª rodada). Revalidado em `main`: `prisma generate`, `pnpm build`/`lint`/`test` da raiz — todos verdes. Próxima rodada: dashboard `/kpis` no admin + PostHog client-side em `apps/web` |
 | 2026-08-04 | Analytics de funil + dashboard de KPIs — frontend (E10-03, 2ª e última rodada, **completa o épico**). `/kpis` no admin (6 cards com valor/meta/badge). PostHog client-side em `apps/web` (`lib/posthog.ts`, `<PostHogPageview>` no layout, eventos `cadastro_concluido`/`login_concluido`) — tudo no-op sem `NEXT_PUBLIC_POSTHOG_KEY`. Achado de build: `posthog-js` duplicado no chunk de `/cadastro`/`/entrar` em vez de deduplicado com o layout — funciona, não é ideal, revisitar se incomodar. Validado no browser: sem erro de console, `/kpis` redireciona sem sessão. `tsc`/`next build`/`pnpm build`/`lint`/`test` da raiz passam — ver P-080 |
+| 2026-08-04 | Merge de `feat/analytics-kpis-frontend` em `main` (fast-forward) — dashboard de KPIs + PostHog client-side (E10-03, 2ª e última rodada). Revalidado em `main`: `pnpm build`/`lint`/`test` da raiz — todos verdes. **Épico E10-03 completo** |
 
 ---
 
