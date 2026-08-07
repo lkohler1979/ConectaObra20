@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-08-04 · Branch: `feat/web-obra-hub`
+> Última atualização: 2026-08-04 · Branch: `main`
 
 ---
 
@@ -275,6 +275,7 @@
 | 2026-08-04 | Criar obra + publicar RFQ ganham tela (E3-01/E3-02, frontend) — sem backend novo, `POST/GET/PATCH /works` e `POST /rfq` já existiam. `/obras` (lista + criar/editar) + formulário "+ Nova RFQ" em `/rfq` (seleciona obra existente, avisa se não houver nenhuma). Novos Route Handlers `/api/works`, `/api/works/:id`, `/api/rfq`. Links em `/conta` e `/obras/:path*` no middleware. **Fecha o loop crítico completo pela UI** (obra → RFQ → proposta → aceite → contrato → etapas → aprovação), só falta o depósito em escrow (P-082). Validado no browser: redirects de sessão corretos, sem erro de console. `tsc`/`next build`/`pnpm build`/`lint`/`test` da raiz passam — ver P-083 |
 | 2026-08-04 | Merge de `feat/web-obras-rfq` em `main` (fast-forward) — criar obra + publicar RFQ pela UI (E3-01/E3-02, frontend). Revalidado em `main`: `pnpm build`/`lint`/`test` da raiz — todos verdes. **O loop crítico completo do produto (obra → RFQ → proposta → aceite → contrato → etapas → aprovação) agora é navegável do início ao fim pela UI** — só falta o depósito em escrow, deliberadamente adiado (P-082) |
 | 2026-08-04 | Hub da obra — cronograma/financeiro/diário/equipe (E6, frontend, 1ª de 4 rodadas das lacunas de frontend restantes). `/obras/[id]` com 4 abas, sem backend novo — tudo já existia. Cronograma contornou a ausência de endpoint de agregação filtrando `GET /contracts` (já tem `obraId`) e linkando pras etapas já existentes em `/contratos/[id]`. Equipe só o dono adiciona/remove. Novos Route Handlers de equipe. Validado no browser: redireciona sem sessão, sem erro de console. `tsc`/`next build`/`pnpm build`/`lint`/`test` da raiz passam — ver P-084. Próxima rodada: comparador de cotações + histórico de compras (E7) |
+| 2026-08-04 | Merge de `feat/web-obra-hub` em `main` (fast-forward) — hub da obra: cronograma, financeiro, diário, equipe (E6, frontend). Revalidado em `main`: `pnpm build`/`lint`/`test` da raiz — todos verdes. Próxima rodada: comparador de cotações + histórico de compras (E7) |
 
 ---
 
