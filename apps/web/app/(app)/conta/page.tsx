@@ -81,6 +81,17 @@ export default async function ContaPage() {
         Meus contratos →
       </Link>
 
+      {(me.tipo === "CLIENTE_PF" || me.tipo === "CLIENTE_PJ") && (
+        <>
+          <Link href="/obras" className="text-sm font-semibold text-azul-planta">
+            Minhas obras →
+          </Link>
+          <Link href="/rfq" className="text-sm font-semibold text-azul-planta">
+            Minhas RFQs →
+          </Link>
+        </>
+      )}
+
       {me.tipo === "FORNECEDOR" && (
         <Link href="/conta/fornecedor" className="text-sm font-semibold text-azul-planta">
           Ir pro painel do fornecedor →

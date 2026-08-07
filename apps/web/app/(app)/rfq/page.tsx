@@ -1,8 +1,10 @@
 import Link from "next/link";
 import type { RfqPublic } from "@conectaobra/types/rfq";
+import type { WorkPublic } from "@conectaobra/types/works";
 import { Alert, AlertDescription, Badge, Card, CardContent, CardTitle } from "@conectaobra/ui";
 import { ApiUnavailableError, apiFetchOrThrow } from "@/lib/api-client";
 import { requireAccessToken } from "@/lib/auth-session";
+import { NovaRfqForm } from "./nova-rfq-form";
 
 const STATUS_LABEL: Record<string, string> = {
   ABERTO: "Aberto",
@@ -21,12 +23,19 @@ const STATUS_BADGE: Record<string, "default" | "warning" | "verified" | "danger"
 export default async function MinhasRfqsPage() {
   const accessToken = await requireAccessToken("/rfq");
 
-  let res: Response;
+  let rfqRes: Response;
+  let obrasRes: Response;
   try {
-    res = await apiFetchOrThrow("/rfq", {
-      headers: { authorization: `Bearer ${accessToken}` },
-      cache: "no-store",
-    });
+    [rfqRes, obrasRes] = await Promise.all([
+      apiFetchOrThrow("/rfq", {
+        headers: { authorization: `Bearer ${accessToken}` },
+        cache: "no-store",
+      }),
+      apiFetchOrThrow("/works", {
+        headers: { authorization: `Bearer ${accessToken}` },
+        cache: "no-store",
+      }),
+    ]);
   } catch (err) {
     if (err instanceof ApiUnavailableError) {
       return (
@@ -43,7 +52,8 @@ export default async function MinhasRfqsPage() {
     throw err;
   }
 
-  const rfqs: RfqPublic[] = res.ok ? await res.json() : [];
+  const rfqs: RfqPublic[] = rfqRes.ok ? await rfqRes.json() : [];
+  const obras: WorkPublic[] = obrasRes.ok ? await obrasRes.json() : [];
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 bg-areia px-5 py-10">
@@ -54,12 +64,11 @@ export default async function MinhasRfqsPage() {
         </Link>
       </div>
 
-      {rfqs.length === 0 ? (
-        <p className="text-sm text-[#5B6875]">
-          Nenhuma RFQ publicada ainda. A publicação de RFQ (E3-02) ainda não tem tela nesta
-          interface — por enquanto, use <code className="text-xs">POST /rfq</code> direto na API.
-        </p>
-      ) : (
+      {rfqs.length === 0 && (
+        <p className="text-sm text-[#5B6875]">Nenhuma RFQ publicada ainda.</p>
+      )}
+
+      {rfqs.length > 0 && (
         <div className="flex flex-col gap-3">
           {rfqs.map((rfq) => (
             <Link key={rfq.id} href={`/rfq/${rfq.id}`}>
@@ -80,6 +89,8 @@ export default async function MinhasRfqsPage() {
           ))}
         </div>
       )}
+
+      <NovaRfqForm obras={obras} />
     </main>
   );
 }
