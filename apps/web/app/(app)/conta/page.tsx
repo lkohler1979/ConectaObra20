@@ -89,6 +89,9 @@ export default async function ContaPage() {
           <Link href="/rfq" className="text-sm font-semibold text-azul-planta">
             Minhas RFQs →
           </Link>
+          <Link href="/materiais" className="text-sm font-semibold text-azul-planta">
+            Listas de materiais →
+          </Link>
         </>
       )}
 

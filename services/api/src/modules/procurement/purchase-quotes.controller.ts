@@ -51,6 +51,14 @@ export class PurchaseQuotesController {
     return this.purchaseQuotesService.listMine(user.sub);
   }
 
+  /** Histórico de compras do cliente (E7-04) — antes só existia o retorno direto do checkout. */
+  @Get("purchase-orders")
+  @UseGuards(UserTypeGuard)
+  @AllowedUserTypes("CLIENTE_PF", "CLIENTE_PJ")
+  listMyOrders(@CurrentUser() user: JwtPayload) {
+    return this.purchaseQuotesService.listMinePurchaseOrders(user.sub);
+  }
+
   @Patch("purchase-quotes/:id")
   @UseGuards(UserTypeGuard)
   @AllowedUserTypes("FORNECEDOR")

@@ -77,9 +77,14 @@ export default async function ObraDetailPage({
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 bg-areia px-5 py-10">
-      <Link href="/obras" className="text-sm font-semibold text-grafite hover:text-laranja">
-        ← Minhas obras
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link href="/obras" className="text-sm font-semibold text-grafite hover:text-laranja">
+          ← Minhas obras
+        </Link>
+        <Link href="/materiais" className="text-sm font-semibold text-azul-planta">
+          Listas de materiais →
+        </Link>
+      </div>
 
       <div>
         <div className="flex items-center gap-2">

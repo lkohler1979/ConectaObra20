@@ -106,6 +106,26 @@ export class PurchaseQuotesService {
     return quotes.map(toPublicPurchaseQuote);
   }
 
+  /**
+   * Histórico de compras do cliente (E7-04) — não existia nenhuma forma de
+   * listar `PurchaseOrder` depois da criação (mesmo gap que `Contract` tinha
+   * antes de P-082): o checkout só devolvia o pedido na própria resposta.
+   * `PurchaseOrder` não tem `clienteId` direto — junta via
+   * purchaseQuote → materialList → obra.clienteId.
+   */
+  async listMinePurchaseOrders(clienteId: string): Promise<PurchaseOrderPublic[]> {
+    const orders = await this.prisma.purchaseOrder.findMany({
+      where: { purchaseQuote: { materialList: { obra: { clienteId } } } },
+      orderBy: { createdAt: "desc" },
+      include: {
+        purchaseQuote: {
+          include: { fornecedor: { include: { user: { select: { nome: true } } } } },
+        },
+      },
+    });
+    return orders.map((order) => toPublicPurchaseOrder(order, order.purchaseQuote));
+  }
+
   async respond(
     fornecedorId: string,
     quoteId: string,
