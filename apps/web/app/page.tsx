@@ -73,6 +73,12 @@ export default async function LandingPage() {
         </span>
         <nav className="flex items-center gap-3">
           <Link
+            href="/busca"
+            className="text-sm font-semibold text-grafite hover:text-laranja"
+          >
+            Buscar
+          </Link>
+          <Link
             href="/entrar"
             className="text-sm font-semibold text-grafite hover:text-laranja"
           >
