@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-08-07 · Branch: `feat/web-materiais-comparador`
+> Última atualização: 2026-08-07 · Branch: `main`
 
 ---
 
@@ -279,6 +279,7 @@
 | 2026-08-04 | Hub da obra — cronograma/financeiro/diário/equipe (E6, frontend, 1ª de 4 rodadas das lacunas de frontend restantes). `/obras/[id]` com 4 abas, sem backend novo — tudo já existia. Cronograma contornou a ausência de endpoint de agregação filtrando `GET /contracts` (já tem `obraId`) e linkando pras etapas já existentes em `/contratos/[id]`. Equipe só o dono adiciona/remove. Novos Route Handlers de equipe. Validado no browser: redireciona sem sessão, sem erro de console. `tsc`/`next build`/`pnpm build`/`lint`/`test` da raiz passam — ver P-084. Próxima rodada: comparador de cotações + histórico de compras (E7) |
 | 2026-08-04 | Merge de `feat/web-obra-hub` em `main` (fast-forward) — hub da obra: cronograma, financeiro, diário, equipe (E6, frontend). Revalidado em `main`: `pnpm build`/`lint`/`test` da raiz — todos verdes. Próxima rodada: comparador de cotações + histórico de compras (E7) |
 | 2026-08-07 | Comparador de cotações + histórico de compras + gerador de lista por IA (E7/E5-07, frontend, 2ª de 4 rodadas). Novo `GET /purchase-orders` (backend, gap-filling). `/materiais` (lista + criar manual/IA), `/materiais/[id]` (itens + cotações + comparador + checkout), `/compras-materiais` (histórico) — checkout continua PSP simulado (P-046), gerador de lista reaproveita as regras por palavra-chave já existentes (P-053). Links em `/conta` e `/obras/[id]`, matcher do middleware atualizado. Validado no browser: sem erro de console, redireciona sem sessão. `tsc`/`next build`/`pnpm build`/`lint`/`test` da raiz passam — ver P-085. Próxima rodada: analisador de orçamento (E5-05) |
+| 2026-08-07 | Merge de `feat/web-materiais-comparador` em `main` (fast-forward) — comparador de cotações, histórico de compras e gerador de lista por IA (E7/E5-07, frontend). Revalidado em `main`: `pnpm build`/`lint`/`test` da raiz — todos verdes. Próxima rodada: analisador de orçamento (E5-05) |
 
 ---
 
