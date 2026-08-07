@@ -21,5 +21,6 @@ export const config = {
     "/obras/:path*",
     "/materiais/:path*",
     "/compras-materiais/:path*",
+    "/analisar-orcamento/:path*",
   ],
 };

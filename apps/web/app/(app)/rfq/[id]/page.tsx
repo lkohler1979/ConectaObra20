@@ -147,6 +147,7 @@ export default async function RfqComparadorPage({
                   <th className="px-4 py-3">Prazo</th>
                   <th className="px-4 py-3">Observações</th>
                   <th className="px-4 py-3">Status</th>
+                  {souDono && <th className="px-4 py-3" />}
                   {podeAceitar && <th className="px-4 py-3" />}
                 </tr>
               </thead>
@@ -176,6 +177,16 @@ export default async function RfqComparadorPage({
                         {PROPOSAL_STATUS_LABEL[p.status] ?? p.status}
                       </Badge>
                     </td>
+                    {souDono && (
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <Link
+                          href={`/analisar-orcamento?servico=${encodeURIComponent(rfq.categoria)}&cidade=${encodeURIComponent(rfq.regiao ?? "")}&valor=${p.precoCentavos / 100}`}
+                          className="text-xs font-semibold text-azul-planta hover:underline"
+                        >
+                          Analisar orçamento →
+                        </Link>
+                      </td>
+                    )}
                     {podeAceitar && (
                       <td className="px-4 py-3">
                         {p.status === "ENVIADA" && <AcceptProposalButton proposalId={p.id} />}

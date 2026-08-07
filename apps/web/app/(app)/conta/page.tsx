@@ -80,6 +80,9 @@ export default async function ContaPage() {
       <Link href="/contratos" className="text-sm font-semibold text-azul-planta">
         Meus contratos →
       </Link>
+      <Link href="/analisar-orcamento" className="text-sm font-semibold text-azul-planta">
+        Analisar orçamento →
+      </Link>
 
       {(me.tipo === "CLIENTE_PF" || me.tipo === "CLIENTE_PJ") && (
         <>
