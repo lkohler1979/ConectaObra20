@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-08-04 · Branch: `feat/web-obras-rfq`
+> Última atualização: 2026-08-04 · Branch: `main`
 
 ---
 
@@ -262,6 +262,7 @@
 | 2026-08-04 | Tela de contratos/etapas no `apps/web` (E4/E6, frontend) — cliente analisa e aprova etapas, **sem depósito em escrow** (decisão explícita do usuário: fica pra próxima versão). Novo `GET /contracts` (backend — antes não existia NENHUMA forma de listar/navegar até um contrato) + `/contratos` (lista) + `/contratos/[id]` (etapas: cliente cria/aprova, executor inicia/entrega). `AcceptProposalButton` agora redireciona pro contrato criado, fechando a navegação. Depósito em custódia e disputa (lado cliente/prestador) registrados no roadmap (P-082) pra próxima rodada. `tsc`/`nest build`/`next build`/`pnpm build`/`lint`/`test` da raiz passam (3 apps) — ver P-082 |
 | 2026-08-04 | Merge de `feat/web-contratos-etapas` em `main` (fast-forward) — cliente analisa e aprova etapas do contrato, sem escrow (E4/E6, frontend). Revalidado em `main`: `prisma generate`, `pnpm build`/`lint`/`test` da raiz — todos verdes. Depósito em escrow + disputa (cliente/prestador) ficam no roadmap (P-082) pra próxima versão |
 | 2026-08-04 | Criar obra + publicar RFQ ganham tela (E3-01/E3-02, frontend) — sem backend novo, `POST/GET/PATCH /works` e `POST /rfq` já existiam. `/obras` (lista + criar/editar) + formulário "+ Nova RFQ" em `/rfq` (seleciona obra existente, avisa se não houver nenhuma). Novos Route Handlers `/api/works`, `/api/works/:id`, `/api/rfq`. Links em `/conta` e `/obras/:path*` no middleware. **Fecha o loop crítico completo pela UI** (obra → RFQ → proposta → aceite → contrato → etapas → aprovação), só falta o depósito em escrow (P-082). Validado no browser: redirects de sessão corretos, sem erro de console. `tsc`/`next build`/`pnpm build`/`lint`/`test` da raiz passam — ver P-083 |
+| 2026-08-04 | Merge de `feat/web-obras-rfq` em `main` (fast-forward) — criar obra + publicar RFQ pela UI (E3-01/E3-02, frontend). Revalidado em `main`: `pnpm build`/`lint`/`test` da raiz — todos verdes. **O loop crítico completo do produto (obra → RFQ → proposta → aceite → contrato → etapas → aprovação) agora é navegável do início ao fim pela UI** — só falta o depósito em escrow, deliberadamente adiado (P-082) |
 
 ---
 
