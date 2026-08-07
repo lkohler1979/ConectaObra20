@@ -116,6 +116,15 @@
 | D-002 | ~~Estratégia de testes de carga do matching (k6)~~ | Script escrito (`services/api/test/load/matching-k6.js`) — nunca executado neste ambiente (sem k6/Docker). Ver P-077 |
 | D-003 | Wireframes → protótipo navegável de alta fidelidade no Figma | Após validação dos fluxos com 5 usuários |
 
+## 🗺️ ROADMAP (adiado deliberadamente — próxima versão)
+
+> Itens que já têm backend pronto, mas cuja tela foi **conscientemente deixada de fora** desta versão a pedido do usuário — não são bugs nem esquecimento, são corte de escopo decidido.
+
+| ID | Item | Backend já existe? | Contexto |
+|---|---|---|---|
+| R-001 | Depósito em custódia (escrow) pelo lado do cliente — botão "Depositar" em cada etapa `PENDENTE` de `/contratos/[id]` | Sim — `POST /contracts/:contractId/milestones/:id/deposito` (E4) | Decisão explícita do usuário (2026-08-04): a tela de contratos/etapas (P-082) ficou só com criar/aprovar etapa, **sem** depósito em escrow. A página já tem a estrutura pronta pra receber o botão quando essa rodada for priorizada |
+| R-002 | Disputa pelo lado do cliente/prestador — abrir disputa numa etapa entregue não aprovada, acompanhar status | Sim — `POST .../disputas` (E4-09), hoje só o admin tem UI de mediação (`/disputas` em `apps/admin`) | Mesma decisão de corte de escopo de R-001 — fica pra quando o depósito em escrow (R-001) também entrar, já que abrir disputa sem ter depositado nada não faz muito sentido de produto |
+
 ## ✅ CONCLUÍDAS
 
 | Data | Item |
