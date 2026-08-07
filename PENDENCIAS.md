@@ -1,7 +1,7 @@
 # PENDENCIAS.md — ConectaObra 2.0
 > Quadro vivo de pendências. **Atualizar a cada sessão de trabalho** (humano ou Claude).
 > Formato: mover itens entre seções; nunca apagar histórico — usar ~~riscado~~ + data.
-> Última atualização: 2026-08-07 · Branch: `feat/web-analisar-orcamento`
+> Última atualização: 2026-08-07 · Branch: `main`
 
 ---
 
@@ -283,6 +283,7 @@
 | 2026-08-07 | Comparador de cotações + histórico de compras + gerador de lista por IA (E7/E5-07, frontend, 2ª de 4 rodadas). Novo `GET /purchase-orders` (backend, gap-filling). `/materiais` (lista + criar manual/IA), `/materiais/[id]` (itens + cotações + comparador + checkout), `/compras-materiais` (histórico) — checkout continua PSP simulado (P-046), gerador de lista reaproveita as regras por palavra-chave já existentes (P-053). Links em `/conta` e `/obras/[id]`, matcher do middleware atualizado. Validado no browser: sem erro de console, redireciona sem sessão. `tsc`/`next build`/`pnpm build`/`lint`/`test` da raiz passam — ver P-085. Próxima rodada: analisador de orçamento (E5-05) |
 | 2026-08-07 | Merge de `feat/web-materiais-comparador` em `main` (fast-forward) — comparador de cotações, histórico de compras e gerador de lista por IA (E7/E5-07, frontend). Revalidado em `main`: `pnpm build`/`lint`/`test` da raiz — todos verdes. Próxima rodada: analisador de orçamento (E5-05) |
 | 2026-08-07 | Analisador de orçamento (E5-05, frontend, 3ª de 4 rodadas). Sem backend novo — `POST /ai/analisar-orcamento` já existia. Nova `/analisar-orcamento` (form serviço/cidade/valor + resultado com classificação/faixa/desvio), link genérico em `/conta` e link contextual por proposta em `/rfq/[id]` (prefill via query string). Novo Route Handler `/api/ai/analisar-orcamento`. Validado no browser: sem erro de console, redireciona sem sessão. `tsc`/`next build`/`pnpm build`/`lint`/`test` da raiz passam — ver P-086. Última rodada: resultado de busca (E2-02/03) |
+| 2026-08-07 | Merge de `feat/web-analisar-orcamento` em `main` (fast-forward) — analisador de orçamento (E5-05, frontend). Revalidado em `main`: `pnpm build`/`lint`/`test` da raiz — todos verdes. Última rodada das lacunas de frontend restantes: resultado de busca linkando pra perfis públicos (E2-02/03) |
 
 ---
 
