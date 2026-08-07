@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -234,9 +235,14 @@ export function ObrasPanel({ obrasIniciais }: { obrasIniciais: WorkPublic[] }) {
                       ` · ${formatMoney(obra.orcamentoPrevistoCentavos)}`}
                   </p>
                 </div>
-                <Button size="sm" variant="secondary" onClick={() => setEditandoId(obra.id)}>
-                  Editar
-                </Button>
+                <div className="flex shrink-0 gap-2">
+                  <Link href={`/obras/${obra.id}`}>
+                    <Button size="sm">Ver obra</Button>
+                  </Link>
+                  <Button size="sm" variant="secondary" onClick={() => setEditandoId(obra.id)}>
+                    Editar
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ),
