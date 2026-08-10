@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { materialListItemSchema } from "./material-lists";
 
 export const rfqStatusSchema = z.enum([
   "ABERTO",
@@ -10,7 +11,13 @@ export type RfqStatus = z.infer<typeof rfqStatusSchema>;
 
 export const rfqIdSchema = z.string().uuid();
 
-/** `fotos` são URLs já enviadas via POST /media/presigned-upload (E1-07). */
+/**
+ * `fotos` são URLs já enviadas via POST /media/presigned-upload (E1-07).
+ * `itensMateriais` é opcional — se informado, a publicação da RFQ também
+ * cria uma lista de materiais e dispara cotação automática pra
+ * fornecedores casados por categoria (mesmo critério de E7-02), best-effort
+ * (nunca bloqueia a publicação da RFQ em si).
+ */
 export const createRfqInputSchema = z.object({
   obraId: z.string().uuid(),
   categoria: z.string().trim().min(2).max(100),
@@ -18,10 +25,13 @@ export const createRfqInputSchema = z.object({
   fotos: z.array(z.string().url()).max(20).default([]),
   prazoResposta: z.string().datetime().optional(),
   regiao: z.string().trim().min(2).max(160).optional(),
+  itensMateriais: z.array(materialListItemSchema).optional(),
 });
 export type CreateRfqInput = z.infer<typeof createRfqInputSchema>;
 
-export const updateRfqInputSchema = createRfqInputSchema.omit({ obraId: true }).partial();
+export const updateRfqInputSchema = createRfqInputSchema
+  .omit({ obraId: true, itensMateriais: true })
+  .partial();
 export type UpdateRfqInput = z.infer<typeof updateRfqInputSchema>;
 
 export const rfqPublicSchema = z.object({
@@ -34,6 +44,7 @@ export const rfqPublicSchema = z.object({
   prazoResposta: z.string().nullable(),
   regiao: z.string().nullable(),
   status: rfqStatusSchema,
+  materialListId: z.string().uuid().nullable(),
   createdAt: z.string(),
 });
 export type RfqPublic = z.infer<typeof rfqPublicSchema>;

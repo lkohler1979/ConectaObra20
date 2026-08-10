@@ -123,6 +123,14 @@ export default async function RfqComparadorPage({
           </Badge>
         </div>
         <p className="mt-2 text-sm text-grafite/80">{rfq.descricao}</p>
+        {rfq.materialListId && (
+          <Link
+            href={`/materiais/${rfq.materialListId}`}
+            className="mt-2 inline-block text-sm font-semibold text-azul-planta hover:underline"
+          >
+            Ver cotações de material →
+          </Link>
+        )}
       </div>
 
       {!souDono && (

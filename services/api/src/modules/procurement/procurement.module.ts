@@ -11,5 +11,8 @@ import { PurchaseQuotesService } from "./purchase-quotes.service";
   imports: [AuditLogModule, WorksModule, AiModule],
   controllers: [MaterialListsController, PurchaseQuotesController],
   providers: [MaterialListsService, PurchaseQuotesService],
+  // RfqModule usa os dois pra criar a lista de materiais + disparar cotação
+  // automática ao publicar uma RFQ com itensMateriais.
+  exports: [MaterialListsService, PurchaseQuotesService],
 })
 export class ProcurementModule {}

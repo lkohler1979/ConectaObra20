@@ -413,12 +413,17 @@ model Rfq {
   prazoResposta DateTime? @map("prazo_resposta")
   regiao        String?
   status        RfqStatus @default(ABERTO)
-  createdAt     DateTime  @default(now()) @map("created_at")
+  /// Preenchido só quando o cliente indica materiais junto da RFQ — dispara
+  /// cotação automática pra fornecedores (mesmo critério de categoria do
+  /// fluxo manual de compras, E7-02), best-effort, sem bloquear a RFQ.
+  materialListId String?  @unique @map("material_list_id") @db.Uuid
+  createdAt      DateTime @default(now()) @map("created_at")
 
-  obra      Work          @relation(fields: [obraId], references: [id], onDelete: Cascade)
-  cliente   User          @relation(fields: [clienteId], references: [id])
-  proposals RfqProposal[]
-  matches   RfqMatch[]
+  obra         Work          @relation(fields: [obraId], references: [id], onDelete: Cascade)
+  cliente      User          @relation(fields: [clienteId], references: [id])
+  proposals    RfqProposal[]
+  matches      RfqMatch[]
+  materialList MaterialList? @relation(fields: [materialListId], references: [id])
 
   @@map("rfq")
 }
@@ -635,6 +640,7 @@ model MaterialList {
 
   obra   Work            @relation(fields: [obraId], references: [id], onDelete: Cascade)
   quotes PurchaseQuote[]
+  rfq    Rfq?
 
   @@map("material_lists")
 }

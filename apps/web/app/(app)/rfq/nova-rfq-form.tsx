@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createRfqInputSchema, type CreateRfqInput } from "@conectaobra/types/rfq";
 import type { WorkPublic } from "@conectaobra/types/works";
@@ -13,15 +13,30 @@ import { FormField } from "@/components/form-field";
 export function NovaRfqForm({ obras }: { obras: WorkPublic[] }) {
   const router = useRouter();
   const [aberto, setAberto] = useState(false);
+  const [comMateriais, setComMateriais] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<CreateRfqInput>({
     resolver: zodResolver(createRfqInputSchema),
     defaultValues: { obraId: obras[0]?.id, fotos: [] },
   });
+  const { fields, append, remove } = useFieldArray({ control, name: "itensMateriais" });
+
+  function toggleMateriais() {
+    if (comMateriais) {
+      for (let i = fields.length - 1; i >= 0; i -= 1) remove(i);
+      setComMateriais(false);
+    } else {
+      setComMateriais(true);
+      if (fields.length === 0) {
+        append({ descricao: "", quantidade: 1, unidade: "" });
+      }
+    }
+  }
 
   async function onSubmit(values: CreateRfqInput) {
     setErro(null);
@@ -99,7 +114,13 @@ export function NovaRfqForm({ obras }: { obras: WorkPublic[] }) {
             htmlFor="regiao"
             error={errors.regiao?.message}
           >
-            <Input id="regiao" placeholder="Vitória/ES" {...register("regiao")} />
+            <Input
+              id="regiao"
+              placeholder="Vitória/ES"
+              {...register("regiao", {
+                setValueAs: (v: string) => (v === "" ? undefined : v),
+              })}
+            />
           </FormField>
 
           <FormField
@@ -115,6 +136,89 @@ export function NovaRfqForm({ obras }: { obras: WorkPublic[] }) {
               })}
             />
           </FormField>
+
+          <div>
+            <button
+              type="button"
+              onClick={toggleMateriais}
+              className="text-sm font-semibold text-azul-planta underline"
+            >
+              {comMateriais ? "− Não pedir cotação de materiais" : "+ Também pedir cotação de materiais"}
+            </button>
+          </div>
+
+          {comMateriais && (
+            <div className="flex flex-col gap-3">
+              <p className="text-xs text-[#7A828C]">
+                Preencha a categoria de cada item pra casar automaticamente com fornecedores da
+                região (mesmo critério usado nas listas de materiais manuais).
+              </p>
+              {fields.map((field, index) => (
+                <div key={field.id} className="rounded-md border-[1.5px] border-concreto p-3">
+                  <div className="grid grid-cols-2 gap-2">
+                    <FormField
+                      label="Descrição"
+                      htmlFor={`itensMateriais.${index}.descricao`}
+                      error={errors.itensMateriais?.[index]?.descricao?.message}
+                    >
+                      <Input {...register(`itensMateriais.${index}.descricao`)} />
+                    </FormField>
+                    <FormField
+                      label="Categoria (opcional)"
+                      htmlFor={`itensMateriais.${index}.categoria`}
+                      error={errors.itensMateriais?.[index]?.categoria?.message}
+                    >
+                      <Input
+                        placeholder="cimento, tinta…"
+                        {...register(`itensMateriais.${index}.categoria`, {
+                          setValueAs: (v: string) => (v === "" ? undefined : v),
+                        })}
+                      />
+                    </FormField>
+                    <FormField
+                      label="Quantidade"
+                      htmlFor={`itensMateriais.${index}.quantidade`}
+                      error={errors.itensMateriais?.[index]?.quantidade?.message}
+                    >
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min={0}
+                        {...register(`itensMateriais.${index}.quantidade`, { valueAsNumber: true })}
+                      />
+                    </FormField>
+                    <FormField
+                      label="Unidade"
+                      htmlFor={`itensMateriais.${index}.unidade`}
+                      error={errors.itensMateriais?.[index]?.unidade?.message}
+                    >
+                      <Input placeholder="saco, m², un…" {...register(`itensMateriais.${index}.unidade`)} />
+                    </FormField>
+                  </div>
+                  {fields.length > 1 && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="mt-2"
+                      onClick={() => remove(index)}
+                    >
+                      Remover item
+                    </Button>
+                  )}
+                </div>
+              ))}
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                className="self-start"
+                onClick={() => append({ descricao: "", quantidade: 1, unidade: "" })}
+              >
+                + Item
+              </Button>
+            </div>
+          )}
 
           <div className="flex gap-2">
             <Button type="submit" size="sm" disabled={isSubmitting}>

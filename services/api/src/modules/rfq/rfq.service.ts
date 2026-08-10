@@ -5,6 +5,8 @@ import { PrismaService } from "../../common/prisma/prisma.service";
 import { AuditLogService } from "../../common/audit/audit-log.service";
 import { AnalyticsService } from "../../common/analytics/analytics.service";
 import { MatchingService } from "../matching/matching.service";
+import { MaterialListsService } from "../procurement/material-lists.service";
+import { PurchaseQuotesService } from "../procurement/purchase-quotes.service";
 import { toPublicRfq } from "./rfq-public.mapper";
 
 @Injectable()
@@ -16,12 +18,33 @@ export class RfqService {
     private readonly auditLog: AuditLogService,
     private readonly analytics: AnalyticsService,
     private readonly matching: MatchingService,
+    private readonly materialLists: MaterialListsService,
+    private readonly purchaseQuotes: PurchaseQuotesService,
   ) {}
 
   async create(clienteId: string, input: CreateRfqInput): Promise<RfqPublic> {
     const obra = await this.prisma.work.findUnique({ where: { id: input.obraId } });
     if (!obra || obra.clienteId !== clienteId) {
       throw new NotFoundException("Obra não encontrada");
+    }
+
+    // Best-effort: falha ao criar a lista de materiais não pode impedir a
+    // publicação da RFQ em si — o cliente sempre pode criar a lista depois,
+    // à parte, pelo fluxo manual que já existe.
+    let materialListId: string | undefined;
+    if (input.itensMateriais && input.itensMateriais.length > 0) {
+      try {
+        const lista = await this.materialLists.create(clienteId, {
+          obraId: input.obraId,
+          itens: input.itensMateriais,
+        });
+        materialListId = lista.id;
+      } catch (err) {
+        this.logger.error(
+          `Falha ao criar lista de materiais da RFQ (obra ${input.obraId})`,
+          err as Error,
+        );
+      }
     }
 
     const rfq = await this.prisma.rfq.create({
@@ -33,6 +56,7 @@ export class RfqService {
         fotos: input.fotos,
         prazoResposta: input.prazoResposta ? new Date(input.prazoResposta) : undefined,
         regiao: input.regiao,
+        materialListId,
       },
     });
 
@@ -54,6 +78,17 @@ export class RfqService {
       await this.matching.matchRfq(rfq.id);
     } catch (err) {
       this.logger.error(`Falha ao casar RFQ ${rfq.id} com prestadores`, err as Error);
+    }
+
+    // Best-effort: mesmo espírito do matching acima — RFQ e lista de
+    // materiais já foram criadas, só não acha fornecedor se der erro aqui
+    // (ex: nenhum item com categoria preenchida).
+    if (materialListId) {
+      try {
+        await this.purchaseQuotes.requestQuotes(clienteId, materialListId);
+      } catch (err) {
+        this.logger.error(`Falha ao cotar materiais da RFQ ${rfq.id}`, err as Error);
+      }
     }
 
     return toPublicRfq(rfq);

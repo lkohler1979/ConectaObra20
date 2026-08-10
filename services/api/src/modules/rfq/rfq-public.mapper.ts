@@ -12,6 +12,7 @@ export function toPublicRfq(rfq: Rfq): RfqPublic {
     prazoResposta: rfq.prazoResposta ? rfq.prazoResposta.toISOString() : null,
     regiao: rfq.regiao,
     status: rfq.status,
+    materialListId: rfq.materialListId,
     createdAt: rfq.createdAt.toISOString(),
   };
 }
