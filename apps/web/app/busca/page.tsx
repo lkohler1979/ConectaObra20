@@ -133,7 +133,7 @@ export default async function BuscaPage({
                   <div>
                     <CardTitle>{hit.nome}</CardTitle>
                     <p className="mt-1 text-xs text-[#7A828C]">
-                      {hit.categorias.join(", ") || "Sem categoria cadastrada"}
+                      {hit.categorias?.join(", ") || "Sem categoria cadastrada"}
                       {hit.experienciaAnos !== null && ` · ${hit.experienciaAnos} anos de experiência`}
                     </p>
                   </div>
@@ -152,8 +152,8 @@ export default async function BuscaPage({
                   <div>
                     <CardTitle>{hit.razaoSocial}</CardTitle>
                     <p className="mt-1 text-xs text-[#7A828C]">
-                      {hit.categorias.join(", ") || "Sem categoria cadastrada"}
-                      {hit.regioes.length > 0 && ` · Atende: ${hit.regioes.join(", ")}`}
+                      {hit.categorias?.join(", ") || "Sem categoria cadastrada"}
+                      {hit.regioes?.length > 0 && ` · Atende: ${hit.regioes.join(", ")}`}
                     </p>
                   </div>
                   {hit.notaMedia !== null && <Badge variant="verified">★ {hit.notaMedia.toFixed(1)}</Badge>}

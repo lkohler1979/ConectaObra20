@@ -147,16 +147,25 @@ export class ReviewsService {
 
     const notaMedia = medias.reduce((a, b) => a + b, 0) / medias.length;
 
-    await this.prisma.profilePrestador.updateMany({
+    const prestadorAtualizado = await this.prisma.profilePrestador.updateMany({
       where: { userId: avaliadoId },
       data: { notaMedia },
     });
-    await this.prisma.profileFornecedor.updateMany({
+    const fornecedorAtualizado = await this.prisma.profileFornecedor.updateMany({
       where: { userId: avaliadoId },
       data: { notaMedia },
     });
 
-    await this.meilisearch.updatePrestadorNota(avaliadoId, notaMedia);
-    await this.meilisearch.updateFornecedorNota(avaliadoId, notaMedia);
+    // Só atualiza o índice do Meilisearch que corresponde a um profile que
+    // de fato existe — `updateDocuments` faz upsert, então chamar os dois
+    // incondicionalmente (bug encontrado em produção) cria um documento
+    // fantasma (só {userId, notaMedia}) no índice errado pra avaliados
+    // CLIENTE (sem nenhum profile) ou só PRESTADOR/só FORNECEDOR.
+    if (prestadorAtualizado.count > 0) {
+      await this.meilisearch.updatePrestadorNota(avaliadoId, notaMedia);
+    }
+    if (fornecedorAtualizado.count > 0) {
+      await this.meilisearch.updateFornecedorNota(avaliadoId, notaMedia);
+    }
   }
 }
