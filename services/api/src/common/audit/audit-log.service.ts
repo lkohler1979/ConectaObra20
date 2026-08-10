@@ -13,6 +13,8 @@ export interface AuditLogEntry {
   ip?: string;
 }
 
+type PrismaClientOrTx = PrismaService | Prisma.TransactionClient;
+
 /**
  * audit_log é imutável (CLAUDE.md §5 regra 4, trigger em
  * prisma/migrations/*_init/migration.sql) — este service só expõe `record`,
@@ -22,8 +24,15 @@ export interface AuditLogEntry {
 export class AuditLogService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async record(entry: AuditLogEntry): Promise<void> {
-    await this.prisma.auditLog.create({
+  /**
+   * `client` opcional permite chamar isto dentro de um `$transaction` (ex:
+   * ConsentService.record, chamado de dentro da transação de
+   * AuthService.register) — sem isso, o insert usa a conexão fora da
+   * transação e não vê a linha (ex: o User) criada mas ainda não commitada,
+   * violando a FK (visto em produção: `audit_log_user_id_fkey`).
+   */
+  async record(entry: AuditLogEntry, client: PrismaClientOrTx = this.prisma): Promise<void> {
+    await client.auditLog.create({
       data: {
         userId: entry.userId,
         obraId: entry.obraId,

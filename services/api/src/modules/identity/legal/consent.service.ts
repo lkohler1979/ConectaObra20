@@ -36,12 +36,15 @@ export class ConsentService {
     await client.consent.create({
       data: { userId, tipo, aceito, versao: CURRENT_LEGAL_VERSION },
     });
-    await this.auditLog.record({
-      userId,
-      acao: "consent.recorded",
-      entidade: "consent",
-      payload: { tipo, aceito, versao: CURRENT_LEGAL_VERSION },
-    });
+    await this.auditLog.record(
+      {
+        userId,
+        acao: "consent.recorded",
+        entidade: "consent",
+        payload: { tipo, aceito, versao: CURRENT_LEGAL_VERSION },
+      },
+      client,
+    );
   }
 
   /** Chamado por AuthService.register() — sem os dois, não há cadastro. */
