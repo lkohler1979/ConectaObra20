@@ -137,7 +137,7 @@ services:
       # ver comentário sobre polling no serviço `packages` acima — aqui é o
       # equivalente pro webpack dev server do `next dev`.
       WATCHPACK_POLLING: "true"
-    ports: ["${WEB_PORT:-3399}:3000"]
+    ports: ["${WEB_PORT:-3399}:3399"]
     depends_on:
       packages:
         condition: service_healthy

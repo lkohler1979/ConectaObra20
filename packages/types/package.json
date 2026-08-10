@@ -118,6 +118,11 @@
       "require": "./dist/material-lists.js",
       "import": "./dist/material-lists.mjs"
     },
+    "./material-surplus": {
+      "types": "./dist/material-surplus.d.ts",
+      "require": "./dist/material-surplus.js",
+      "import": "./dist/material-surplus.mjs"
+    },
     "./media": {
       "types": "./dist/media.d.ts",
       "require": "./dist/media.js",

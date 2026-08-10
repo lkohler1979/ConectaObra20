@@ -79,6 +79,12 @@ export default async function LandingPage() {
             Buscar
           </Link>
           <Link
+            href="/sobras"
+            className="text-sm font-semibold text-grafite hover:text-laranja"
+          >
+            Sobra de material
+          </Link>
+          <Link
             href="/entrar"
             className="text-sm font-semibold text-grafite hover:text-laranja"
           >

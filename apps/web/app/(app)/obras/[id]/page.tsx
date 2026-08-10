@@ -92,6 +92,14 @@ export default async function ObraDetailPage({
           <Badge>{TIPO_LABEL[obra.tipo] ?? obra.tipo}</Badge>
         </div>
         <p className="mt-1 text-sm text-[#7A828C]">{obra.endereco}</p>
+        {souDono && (
+          <Link
+            href={`/obras/${obra.id}/sobras/nova`}
+            className="mt-2 inline-block text-sm font-semibold text-azul-planta hover:underline"
+          >
+            + Anunciar sobra de material →
+          </Link>
+        )}
       </div>
 
       {financeiro ? (

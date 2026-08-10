@@ -29,6 +29,7 @@ import { AdsModule } from "./modules/ads/ads.module";
 import { ContentModule } from "./modules/content/content.module";
 import { ProjectsCatalogModule } from "./modules/projects-catalog/projects-catalog.module";
 import { AdminModule } from "./modules/admin/admin.module";
+import { MaterialSurplusModule } from "./modules/material-surplus/material-surplus.module";
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { AdminModule } from "./modules/admin/admin.module";
     ContentModule,
     ProjectsCatalogModule,
     AdminModule,
+    MaterialSurplusModule,
   ],
   controllers: [HealthController],
   providers: [

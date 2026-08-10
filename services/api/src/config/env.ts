@@ -43,6 +43,10 @@ export const envSchema = baseEnvSchema.extend({
   /// SIMULADO (mesmo padrão de E4/E7-04) até o real existir (P-002). Em
   /// basis points (2000 = 20%).
   CATALOG_COMMISSION_BPS: z.coerce.number().int().min(0).max(10_000).default(2000),
+  /// Marketplace de sobra de material (novo, sem épico no doc 02) — mesmo
+  /// padrão de placeholder das outras comissões acima: PSP SIMULADO até o
+  /// real existir (P-002). Em basis points (500 = 5%).
+  SURPLUS_COMMISSION_BPS: z.coerce.number().int().min(0).max(10_000).default(500),
   /// Redis já é infra decidida (docker-compose.local.yml, CLAUDE.md §3) —
   /// diferente de S3/SMS (fornecedor em aberto), por isso é obrigatório
   /// como DATABASE_URL, não opcional (E3-04).

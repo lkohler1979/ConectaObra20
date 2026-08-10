@@ -41,6 +41,8 @@ const ACAO_LABEL: Record<string, string> = {
   "dispute.aberta": "Disputa aberta",
   "dispute.resolvida": "Disputa resolvida",
   "review.created": "Avaliação registrada",
+  "surplus_listing.created": "Sobra de material anunciada",
+  "surplus_order.created": "Sobra de material vendida",
 };
 
 export function ObraDetailTabs({

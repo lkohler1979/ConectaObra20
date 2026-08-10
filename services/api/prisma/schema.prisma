@@ -93,6 +93,7 @@ model User {
   workTeamInvitesFeitos WorkTeamMember[]  @relation("work_team_added_by")
   ads                   Ad[]
   auditLogs             AuditLog[]
+  surplusListings       SurplusListing[]
 
   @@map("users")
 }
@@ -310,6 +311,7 @@ model Work {
   aiConversations AiConversation[]
   auditLogEntries AuditLog[]
   teamMembers     WorkTeamMember[]
+  surplusListings SurplusListing[]
 
   @@map("works")
 }
@@ -331,6 +333,64 @@ model WorkTeamMember {
 
   @@unique([obraId, userId])
   @@map("work_team_members")
+}
+
+// ─── Marketplace de sobra de material (novo — sem épico no doc 02) ────────
+// Cliente dono de uma obra anuncia material excedente pro público comprar.
+// Checkout segue o mesmo padrão do PurchaseOrder (E7-04): PSP SIMULADO,
+// sempre sucesso, comissão em basis points, idempotente via @unique em
+// surplusListingId. Comprador é sempre "convidado" — não exige conta.
+enum SurplusListingStatus {
+  DISPONIVEL
+  RESERVADO
+  VENDIDO
+  REMOVIDO
+
+  @@map("surplus_listing_status")
+}
+
+model SurplusListing {
+  id            String               @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  workId        String               @map("work_id") @db.Uuid
+  clienteId     String               @map("cliente_id") @db.Uuid
+  nome          String
+  descricao     String
+  categoria     String
+  quantidade    Decimal              @db.Decimal(10, 2)
+  unidade       String
+  precoCentavos Int                  @map("preco_centavos")
+  fotos         String[]             @default([])
+  status        SurplusListingStatus @default(DISPONIVEL)
+  createdAt     DateTime             @default(now()) @map("created_at")
+  updatedAt     DateTime             @updatedAt @map("updated_at")
+
+  work    Work          @relation(fields: [workId], references: [id])
+  cliente User          @relation(fields: [clienteId], references: [id])
+  order   SurplusOrder?
+
+  @@map("surplus_listings")
+}
+
+/// Checkout de sobra de material — PSP simulado, sempre sucesso (P-002 em
+/// aberto). `@unique` em surplusListingId garante idempotência: um anúncio
+/// só fecha uma venda.
+model SurplusOrder {
+  id                String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  surplusListingId  String   @unique @map("surplus_listing_id") @db.Uuid
+  compradorNome     String   @map("comprador_nome")
+  compradorEmail    String   @map("comprador_email")
+  compradorTelefone String?  @map("comprador_telefone")
+  itemPrecoCentavos Int      @map("item_preco_centavos")
+  comissaoCentavos  Int      @map("comissao_centavos")
+  totalPagoCentavos Int      @map("total_pago_centavos")
+  /// Sempre "SIMULADO-<uuid>" até o PSP real existir.
+  pspRef            String   @map("psp_ref")
+  status            String   @default("PAGO")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  surplusListing SurplusListing @relation(fields: [surplusListingId], references: [id], onDelete: Cascade)
+
+  @@map("surplus_orders")
 }
 
 enum RfqStatus {

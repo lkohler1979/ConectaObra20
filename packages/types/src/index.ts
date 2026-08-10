@@ -18,6 +18,7 @@ export * from "./ads";
 export * from "./geo";
 export * from "./legal";
 export * from "./material-lists";
+export * from "./material-surplus";
 export * from "./media";
 export * from "./milestones";
 export * from "./painel-financeiro";
