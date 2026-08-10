@@ -227,6 +227,23 @@ export default async function LandingPage() {
           </Card>
         ))}
       </section>
+
+      <footer className="flex flex-col items-center gap-2 border-t border-concreto px-5 py-6 text-xs text-[#7A828C]">
+        <nav className="flex flex-wrap items-center justify-center gap-4">
+          <Link href="/sobre" className="hover:text-laranja">
+            Sobre
+          </Link>
+          <Link href="/contato" className="hover:text-laranja">
+            Contato
+          </Link>
+        </nav>
+        <a
+          href={process.env.ADMIN_URL ?? "http://localhost:3096"}
+          className="text-[10px] text-[#B0B6BC] hover:text-[#7A828C]"
+        >
+          Admin
+        </a>
+      </footer>
     </main>
   );
 }
