@@ -9,8 +9,10 @@
 #
 # Portas do host são sobrescrevíveis via env var (útil em máquina com outros
 # projetos já usando 5432/6379): POSTGRES_PORT, REDIS_PORT, MEILI_PORT,
-# API_PORT, WEB_PORT. Defaults API_PORT=3355/WEB_PORT=3399 (3333/3000/3099
-# já estavam em uso por outros projetos, tanto aqui quanto na VPS).
+# API_PORT, WEB_PORT, ADMIN_PORT. Defaults API_PORT=3355/WEB_PORT=3399
+# (3333/3000/3099 já estavam em uso por outros projetos, tanto aqui quanto
+# na VPS). ADMIN_PORT=3096 segue o mesmo valor documentado em
+# apps/admin/README.md/docs/03_Estrutura_Projeto.md.
 services:
   postgres:
     healthcheck:
@@ -151,6 +153,30 @@ services:
       - dev_node_modules_types:/app/packages/types/node_modules
       - dev_node_modules_ui:/app/packages/ui/node_modules
 
+  admin:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.dev
+    working_dir: /app
+    # --filter=@conectaobra/admin (sem "...") pelo mesmo motivo do web acima.
+    command: sh -c "pnpm exec turbo run dev --filter=@conectaobra/admin --env-mode=loose"
+    environment:
+      API_URL: http://api:3355
+      NODE_ENV: development
+      WATCHPACK_POLLING: "true"
+    ports: ["${ADMIN_PORT:-3096}:3096"]
+    depends_on:
+      packages:
+        condition: service_healthy
+      api:
+        condition: service_started
+    volumes:
+      - ../..:/app
+      - dev_node_modules_root:/app/node_modules
+      - dev_node_modules_admin:/app/apps/admin/node_modules
+      - dev_node_modules_types:/app/packages/types/node_modules
+      - dev_node_modules_ui:/app/packages/ui/node_modules
+
 volumes:
   dev_node_modules_root:
   dev_node_modules_ui:
@@ -158,3 +184,4 @@ volumes:
   dev_node_modules_config:
   dev_node_modules_api:
   dev_node_modules_web:
+  dev_node_modules_admin:
