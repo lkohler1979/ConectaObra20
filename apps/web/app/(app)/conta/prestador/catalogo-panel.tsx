@@ -85,7 +85,9 @@ function ProjectForm({
       descricao: initial?.descricao ?? undefined,
       imagemCapaUrl: initial?.imagemCapaUrl ?? undefined,
       licenca: initial?.licenca ?? undefined,
-      arquivos: initial?.arquivos ?? [],
+      // string já juntada (toLines), nunca o array puro — mesmo motivo do
+      // bug em conta/*/perfil-form.tsx (setValueAs: fromLines espera string).
+      arquivos: toLines(initial?.arquivos ?? []) as unknown as string[],
     },
   });
 

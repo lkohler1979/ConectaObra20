@@ -44,7 +44,6 @@ export function PilotoForm({ contagemInicial }: { contagemInicial: number }) {
     formState: { errors, isSubmitting },
   } = useForm<CadastroAssistidoInput>({
     resolver: zodResolver(cadastroAssistidoInputSchema),
-    defaultValues: { certificados: [] },
   });
 
   async function onSubmit(values: CadastroAssistidoInput) {
@@ -59,7 +58,7 @@ export function PilotoForm({ contagemInicial }: { contagemInicial: number }) {
 
     if (res.status === 201) {
       setCadastrados((prev) => [{ user: data.user, perfilCompleto: true }, ...prev]);
-      reset({ certificados: [] });
+      reset();
       return;
     }
     if (res.status === 207) {
@@ -69,7 +68,7 @@ export function PilotoForm({ contagemInicial }: { contagemInicial: number }) {
           ? data.message
           : "Conta criada, mas o perfil não foi salvo.",
       );
-      reset({ certificados: [] });
+      reset();
       return;
     }
     setErro(

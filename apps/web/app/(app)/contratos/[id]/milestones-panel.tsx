@@ -69,7 +69,7 @@ function NovaEtapaForm({
     formState: { errors, isSubmitting },
   } = useForm<CreateMilestoneInput>({
     resolver: zodResolver(createMilestoneInputSchema),
-    defaultValues: { ordem: proximaOrdem, checklist: [] },
+    defaultValues: { ordem: proximaOrdem },
   });
 
   async function onSubmit(values: CreateMilestoneInput) {
@@ -87,7 +87,7 @@ function NovaEtapaForm({
       return;
     }
     onCriada(data as MilestonePublic);
-    reset({ ordem: proximaOrdem + 1, checklist: [] });
+    reset({ ordem: proximaOrdem + 1 });
   }
 
   return (

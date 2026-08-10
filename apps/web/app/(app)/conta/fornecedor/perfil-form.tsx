@@ -43,10 +43,14 @@ export function PerfilForm({ perfilAtual }: { perfilAtual: PerfilFornecedorAtual
     resolver: zodResolver(fornecedorProfileInputSchema),
     defaultValues: {
       razaoSocial: perfilAtual?.razaoSocial ?? "",
-      categorias: perfilAtual?.categorias ?? [],
-      regioes: perfilAtual?.regioes ?? [],
+      // Campo é um texto "a, b, c" (register com setValueAs: fromCsv) — o
+      // default pro <input> precisa ser a string já juntada (toCsv), nunca
+      // o array puro (quebrava com "value.split is not a function" no
+      // mount: setValueAs esperava receber string, não array).
+      categorias: toCsv(perfilAtual?.categorias ?? []) as unknown as string[],
+      regioes: toCsv(perfilAtual?.regioes ?? []) as unknown as string[],
       tempoMercadoAnos: perfilAtual?.tempoMercadoAnos ?? undefined,
-      certificacoes: perfilAtual?.certificacoes ?? [],
+      certificacoes: toCsv(perfilAtual?.certificacoes ?? []) as unknown as string[],
     },
   });
 

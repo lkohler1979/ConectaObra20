@@ -41,9 +41,11 @@ export function PerfilForm({ perfilAtual }: { perfilAtual: PerfilPrestadorAtual 
   } = useForm<PrestadorProfileInput>({
     resolver: zodResolver(prestadorProfileInputSchema),
     defaultValues: {
-      categorias: perfilAtual?.categorias ?? [],
+      // string já juntada (toCsv), nunca o array puro — ver comentário
+      // equivalente em conta/fornecedor/perfil-form.tsx.
+      categorias: toCsv(perfilAtual?.categorias ?? []) as unknown as string[],
       experienciaAnos: perfilAtual?.experienciaAnos ?? undefined,
-      certificados: perfilAtual?.certificados ?? [],
+      certificados: toCsv(perfilAtual?.certificados ?? []) as unknown as string[],
       raioAtendimentoKm: perfilAtual?.raioAtendimentoKm ?? undefined,
     },
   });
