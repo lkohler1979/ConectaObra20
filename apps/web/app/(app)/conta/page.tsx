@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { Alert, AlertDescription, Badge, Card, CardContent, CardTitle } from "@conectaobra/ui";
 import { ApiUnavailableError, apiFetchOrThrow } from "@/lib/api-client";
 import { requireAccessToken } from "@/lib/auth-session";
-import { LogoutButton } from "./logout-button";
 
 const TIPO_LABEL: Record<string, string> = {
   CLIENTE_PF: "Cliente (pessoa física)",
@@ -41,7 +40,6 @@ export default async function ContaPage() {
               novamente em instantes.
             </AlertDescription>
           </Alert>
-          <LogoutButton />
         </main>
       );
     }
@@ -56,10 +54,7 @@ export default async function ContaPage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col gap-6 bg-areia px-5 py-10">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-black text-grafite">Minha conta</h1>
-        <LogoutButton />
-      </div>
+      <h1 className="text-2xl font-black text-grafite">Minha conta</h1>
 
       <Card>
         <CardContent className="flex flex-col gap-3 pt-4">
@@ -97,6 +92,9 @@ export default async function ContaPage() {
           </Link>
           <Link href="/materiais" className="text-sm font-semibold text-azul-planta">
             Listas de materiais →
+          </Link>
+          <Link href="/compras" className="text-sm font-semibold text-azul-planta">
+            Minhas compras de plantas →
           </Link>
         </>
       )}

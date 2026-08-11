@@ -85,6 +85,12 @@ export default async function LandingPage() {
             Sobra de material
           </Link>
           <Link
+            href="/conta"
+            className="text-sm font-semibold text-grafite hover:text-laranja"
+          >
+            Minha conta
+          </Link>
+          <Link
             href="/entrar"
             className="text-sm font-semibold text-grafite hover:text-laranja"
           >
