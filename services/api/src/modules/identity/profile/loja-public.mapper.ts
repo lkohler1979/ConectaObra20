@@ -9,6 +9,7 @@ export function toPublicLoja(loja: FornecedorLoja): FornecedorLojaPublic {
     endereco: loja.endereco,
     regiao: loja.regiao,
     telefone: loja.telefone,
+    imagemUrl: loja.imagemUrl,
     createdAt: loja.createdAt.toISOString(),
   };
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -34,6 +35,7 @@ function LojaForm({
       endereco: initial?.endereco ?? "",
       regiao: initial?.regiao ?? "",
       telefone: initial?.telefone ?? "",
+      imagemUrl: initial?.imagemUrl ?? undefined,
     },
   });
 
@@ -57,10 +59,23 @@ function LojaForm({
         <Input id="endereco" {...register("endereco")} />
       </FormField>
       <FormField label="Região (opcional)" htmlFor="regiao" error={errors.regiao?.message}>
-        <Input id="regiao" {...register("regiao")} />
+        <Input
+          id="regiao"
+          {...register("regiao", { setValueAs: (v: string) => (v === "" ? undefined : v) })}
+        />
       </FormField>
       <FormField label="Telefone (opcional)" htmlFor="telefone" error={errors.telefone?.message}>
-        <Input id="telefone" {...register("telefone")} />
+        <Input
+          id="telefone"
+          {...register("telefone", { setValueAs: (v: string) => (v === "" ? undefined : v) })}
+        />
+      </FormField>
+      <FormField label="Imagem da loja (URL, opcional)" htmlFor="imagemUrl" error={errors.imagemUrl?.message}>
+        <Input
+          id="imagemUrl"
+          placeholder="https://…"
+          {...register("imagemUrl", { setValueAs: (v: string) => (v === "" ? undefined : v) })}
+        />
       </FormField>
       <div className="flex gap-2">
         <Button type="submit" size="sm" disabled={isSubmitting}>
@@ -147,6 +162,7 @@ export function LojasPanel({ lojasIniciais }: { lojasIniciais: FornecedorLojaPub
                     endereco: loja.endereco,
                     regiao: loja.regiao ?? undefined,
                     telefone: loja.telefone ?? undefined,
+                    imagemUrl: loja.imagemUrl ?? undefined,
                   }}
                   submitLabel="Salvar"
                   onCancel={() => setEditandoId(null)}
@@ -157,14 +173,21 @@ export function LojasPanel({ lojasIniciais }: { lojasIniciais: FornecedorLojaPub
           ) : (
             <Card key={loja.id}>
               <CardContent className="flex items-center justify-between gap-3 pt-4">
-                <div>
-                  <CardTitle>{loja.nome}</CardTitle>
-                  <p className="mt-1 text-sm text-[#5B6875]">{loja.endereco}</p>
-                  {(loja.regiao || loja.telefone) && (
-                    <p className="mt-1 text-xs text-[#7A828C]">
-                      {[loja.regiao, loja.telefone].filter(Boolean).join(" · ")}
-                    </p>
+                <div className="flex items-center gap-3">
+                  {loja.imagemUrl && (
+                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md">
+                      <Image src={loja.imagemUrl} alt={loja.nome} fill className="object-cover" unoptimized />
+                    </div>
                   )}
+                  <div>
+                    <CardTitle>{loja.nome}</CardTitle>
+                    <p className="mt-1 text-sm text-[#5B6875]">{loja.endereco}</p>
+                    {(loja.regiao || loja.telefone) && (
+                      <p className="mt-1 text-xs text-[#7A828C]">
+                        {[loja.regiao, loja.telefone].filter(Boolean).join(" · ")}
+                      </p>
+                    )}
+                  </div>
                 </div>
                 <div className="flex shrink-0 gap-2">
                   <Button size="sm" variant="secondary" onClick={() => setEditandoId(loja.id)}>

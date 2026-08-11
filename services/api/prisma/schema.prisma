@@ -148,8 +148,9 @@ model ProfileFornecedor {
   user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   products       Product[]
   purchaseQuotes PurchaseQuote[]
-  lojas          FornecedorLoja[]
-  promocoes      Promocao[]
+  lojas              FornecedorLoja[]
+  promocoes          Promocao[]
+  promocaoValidacoes PromocaoValidacao[]
 
   @@map("profiles_fornecedor")
 }
@@ -164,6 +165,7 @@ model FornecedorLoja {
   endereco     String
   regiao       String?
   telefone     String?
+  imagemUrl    String?                                @map("imagem_url")
   geo          Unsupported("geography(Point, 4326)")?
   createdAt    DateTime                               @default(now()) @map("created_at")
 
@@ -190,10 +192,30 @@ model Promocao {
   createdAt                DateTime  @default(now()) @map("created_at")
   updatedAt                DateTime  @updatedAt @map("updated_at")
 
-  fornecedor ProfileFornecedor @relation(fields: [fornecedorId], references: [userId], onDelete: Cascade)
+  fornecedor ProfileFornecedor   @relation(fields: [fornecedorId], references: [userId], onDelete: Cascade)
+  validacoes PromocaoValidacao[]
 
   @@unique([fornecedorId, codigo])
   @@map("promocoes")
+}
+
+/// Registro de cada tentativa de validação de cupom pelo fornecedor (ponto
+/// de venda físico — não há checkout online ligado a cupom hoje, ver
+/// PENDENCIAS.md P-056). Base de estatística de uso (válidas vs. inválidas)
+/// — insert-only, nunca editado/removido.
+model PromocaoValidacao {
+  id           String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  fornecedorId String   @map("fornecedor_id") @db.Uuid
+  promocaoId   String?  @map("promocao_id") @db.Uuid
+  codigo       String
+  valido       Boolean
+  motivo       String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  fornecedor ProfileFornecedor @relation(fields: [fornecedorId], references: [userId], onDelete: Cascade)
+  promocao   Promocao?         @relation(fields: [promocaoId], references: [id], onDelete: SetNull)
+
+  @@map("promocao_validacoes")
 }
 
 model Product {

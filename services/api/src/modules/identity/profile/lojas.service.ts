@@ -41,6 +41,7 @@ export class LojasService {
           endereco: input.endereco,
           regiao: input.regiao,
           telefone: input.telefone,
+          imagemUrl: input.imagemUrl,
         },
       });
 
@@ -84,6 +85,7 @@ export class LojasService {
           endereco: input.endereco,
           regiao: input.regiao,
           telefone: input.telefone,
+          imagemUrl: input.imagemUrl,
         },
       });
 

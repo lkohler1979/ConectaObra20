@@ -14,8 +14,10 @@ import {
   createPromocaoInputSchema,
   promocaoIdSchema,
   updatePromocaoInputSchema,
+  validarCupomInputSchema,
   type CreatePromocaoInput,
   type UpdatePromocaoInput,
+  type ValidarCupomInput,
 } from "@conectaobra/types/promocoes";
 import { ZodValidationPipe } from "../../../common/pipes/zod-validation.pipe";
 import { AllowedUserTypes } from "../../../common/decorators/allowed-user-types.decorator";
@@ -42,6 +44,14 @@ export class PromocoesController {
   @Get()
   list(@CurrentUser() user: JwtPayload) {
     return this.promocoesService.listMine(user.sub);
+  }
+
+  @Post("validar")
+  validar(
+    @Body(new ZodValidationPipe(validarCupomInputSchema)) body: ValidarCupomInput,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.promocoesService.validar(user.sub, body);
   }
 
   @Patch(":id")

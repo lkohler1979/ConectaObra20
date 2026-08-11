@@ -1,12 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   createPromocaoInputSchema,
+  validarCupomInputSchema,
   type CreatePromocaoInput,
   type PromocaoPrivate,
+  type ValidarCupomInput,
+  type ValidarCupomResult,
 } from "@conectaobra/types/promocoes";
 import {
   Alert,
@@ -139,7 +143,11 @@ function PromoForm({
       </div>
 
       <FormField label="Imagem promocional (URL, opcional)" htmlFor="imagemUrl" error={errors.imagemUrl?.message}>
-        <Input id="imagemUrl" placeholder="https://…" {...register("imagemUrl")} />
+        <Input
+          id="imagemUrl"
+          placeholder="https://…"
+          {...register("imagemUrl", { setValueAs: (v: string) => (v === "" ? undefined : v) })}
+        />
       </FormField>
 
       <div className="grid grid-cols-2 gap-3">
@@ -205,6 +213,85 @@ function PromoForm({
   );
 }
 
+function ValidarCupomForm() {
+  const [resultado, setResultado] = useState<ValidarCupomResult | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
+  const {
+    register,
+    handleSubmit,
+    formState: { isSubmitting },
+  } = useForm<ValidarCupomInput>({
+    resolver: zodResolver(validarCupomInputSchema),
+  });
+
+  async function onSubmit(values: ValidarCupomInput) {
+    setErro(null);
+    setResultado(null);
+    const res = await fetch("/api/fornecedor/promocoes/validar", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(values),
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      setErro(typeof data?.message === "string" ? data.message : "Não foi possível validar o cupom.");
+      return;
+    }
+    setResultado(data as ValidarCupomResult);
+  }
+
+  return (
+    <Card>
+      <CardContent className="flex flex-col gap-3 pt-4">
+        <CardTitle>Validar cupom</CardTitle>
+        <p className="text-xs text-[#7A828C]">
+          Digite o código que o cliente apresentou no balcão pra confirmar se ainda é válido.
+        </p>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex gap-2">
+          <Input placeholder="PROMO10" className="max-w-[200px]" {...register("codigo")} />
+          <Button type="submit" size="sm" disabled={isSubmitting}>
+            {isSubmitting ? "Validando…" : "Validar"}
+          </Button>
+        </form>
+
+        {erro && (
+          <Alert variant="danger">
+            <AlertDescription>{erro}</AlertDescription>
+          </Alert>
+        )}
+
+        {resultado && resultado.valido && resultado.promocao && (
+          <Alert variant="disclaimer">
+            <AlertDescription>
+              <Badge variant="verified" className="mr-2">
+                Válido
+              </Badge>
+              {resultado.promocao.nome} — {formatMoney(resultado.promocao.valorPromocionalCentavos)}
+              {resultado.promocao.valorOriginalCentavos != null && (
+                <>
+                  {" "}
+                  (era {formatMoney(resultado.promocao.valorOriginalCentavos)})
+                </>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {resultado && !resultado.valido && (
+          <Alert variant="danger">
+            <AlertDescription>
+              <Badge variant="warning" className="mr-2">
+                Inválido
+              </Badge>
+              {resultado.motivo}
+            </AlertDescription>
+          </Alert>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export function PromocoesPanel({ promocoesIniciais }: { promocoesIniciais: PromocaoPrivate[] }) {
   const [promocoes, setPromocoes] = useState(promocoesIniciais);
   const [criando, setCriando] = useState(false);
@@ -261,6 +348,8 @@ export function PromocoesPanel({ promocoesIniciais }: { promocoesIniciais: Promo
 
   return (
     <div className="flex flex-col gap-4">
+      <ValidarCupomForm />
+
       {erroGeral && (
         <Alert variant="danger">
           <AlertDescription>{erroGeral}</AlertDescription>
@@ -287,7 +376,19 @@ export function PromocoesPanel({ promocoesIniciais }: { promocoesIniciais: Promo
           ) : (
             <Card key={promo.id}>
               <CardContent className="flex items-center justify-between gap-3 pt-4">
-                <div>
+                <div className="flex items-center gap-3">
+                  {promo.imagemUrl && (
+                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md">
+                      <Image
+                        src={promo.imagemUrl}
+                        alt={promo.nome}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                    </div>
+                  )}
+                  <div>
                   <div className="flex items-center gap-2">
                     <CardTitle>{promo.nome}</CardTitle>
                     <Badge>{promo.codigo}</Badge>
@@ -304,6 +405,7 @@ export function PromocoesPanel({ promocoesIniciais }: { promocoesIniciais: Promo
                     {formatMoney(promo.valorPromocionalCentavos)} · válida até{" "}
                     {new Date(promo.validadeFim).toLocaleDateString("pt-BR")}
                   </p>
+                  </div>
                 </div>
                 <div className="flex shrink-0 gap-2">
                   <Button size="sm" variant="secondary" onClick={() => setEditandoId(promo.id)}>

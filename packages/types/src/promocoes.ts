@@ -83,6 +83,19 @@ export const promocaoPublicSchema = z.object({
 });
 export type PromocaoPublic = z.infer<typeof promocaoPublicSchema>;
 
+/** Cupom de desconto — validação feita pelo fornecedor no ponto de venda. */
+export const validarCupomInputSchema = z.object({
+  codigo: z.string().trim().min(1, "Código obrigatório").max(40),
+});
+export type ValidarCupomInput = z.infer<typeof validarCupomInputSchema>;
+
+export const validarCupomResultSchema = z.object({
+  valido: z.boolean(),
+  motivo: z.string().nullable(),
+  promocao: promocaoPrivateSchema.nullable(),
+});
+export type ValidarCupomResult = z.infer<typeof validarCupomResultSchema>;
+
 /** Query da listagem pública — `destaque=true` filtra só as promoções em destaque na home. */
 export const listPublicPromocoesQuerySchema = z.object({
   destaque: z

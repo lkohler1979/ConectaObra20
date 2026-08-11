@@ -7,6 +7,7 @@ export const createFornecedorLojaInputSchema = z.object({
   endereco: z.string().trim().min(1, "Endereço obrigatório").max(300),
   regiao: z.string().trim().min(1).max(150).optional(),
   telefone: z.string().trim().min(1).max(30).optional(),
+  imagemUrl: z.string().url().optional(),
   geo: geoPointSchema.optional(),
 });
 export type CreateFornecedorLojaInput = z.infer<typeof createFornecedorLojaInputSchema>;
@@ -23,6 +24,7 @@ export const fornecedorLojaPublicSchema = z.object({
   endereco: z.string(),
   regiao: z.string().nullable(),
   telefone: z.string().nullable(),
+  imagemUrl: z.string().nullable(),
   createdAt: z.string(),
 });
 export type FornecedorLojaPublic = z.infer<typeof fornecedorLojaPublicSchema>;

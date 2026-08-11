@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { AuditLogModule } from "../../../common/audit/audit-log.module";
+import { AnalyticsModule } from "../../../common/analytics/analytics.module";
 import { SearchModule } from "../../search/search.module";
 import { ProfileController } from "./profile.controller";
 import { ProfileService } from "./profile.service";
@@ -11,7 +12,7 @@ import { PromocoesController } from "./promocoes.controller";
 import { PromocoesService } from "./promocoes.service";
 
 @Module({
-  imports: [AuditLogModule, SearchModule],
+  imports: [AuditLogModule, AnalyticsModule, SearchModule],
   controllers: [ProfileController, PortfolioController, LojasController, PromocoesController],
   providers: [ProfileService, PortfolioService, LojasService, PromocoesService],
 })
