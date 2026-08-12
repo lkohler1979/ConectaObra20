@@ -48,7 +48,7 @@ import type { IngestKnowledgeInput, KnowledgeChunkPublic } from "@conectaobra/ty
 import type { ChatResponse } from "@conectaobra/types/ai-chat";
 import type { CreatePortfolioItemInput, PortfolioItemPublic } from "@conectaobra/types/portfolio";
 import type { CreateFornecedorLojaInput, FornecedorLojaPublic } from "@conectaobra/types/fornecedor-lojas";
-import type { CreatePromocaoInput, PromocaoPublic } from "@conectaobra/types/promocoes";
+import type { CreatePromocaoInput, PromocaoPublic, ValidarCupomResult } from "@conectaobra/types/promocoes";
 import type { CreateProductInput, ProductPublic } from "@conectaobra/types/catalog";
 import type { PrestadorProfileInput, FornecedorProfileInput } from "@conectaobra/types/profile";
 
@@ -258,11 +258,16 @@ async function faseProfiles(t: Tokens): Promise<void> {
   );
 }
 
+/** URL real (funciona no browser) — mesmo serviço usado pra validar a feature de imagem nesta sessão. */
+function imgSeed(seed: string, w = 480, h = 360): string {
+  return `https://picsum.photos/seed/${seed}/${w}/${h}`;
+}
+
 async function faseVitrines(t: Tokens): Promise<void> {
   const itens: CreatePortfolioItemInput[] = [
-    { titulo: "Reforma elétrica completa — apto 80m²", fotos: [] },
-    { titulo: "Instalação hidráulica — casa térrea", fotos: [] },
-    { titulo: "Padronização de quadro elétrico — condomínio", fotos: [] },
+    { titulo: "Reforma elétrica completa — apto 80m²", fotos: [imgSeed("portfolio-eletrica-1"), imgSeed("portfolio-eletrica-2")] },
+    { titulo: "Instalação hidráulica — casa térrea", fotos: [imgSeed("portfolio-hidraulica-1")] },
+    { titulo: "Padronização de quadro elétrico — condomínio", fotos: [imgSeed("portfolio-quadro-1"), imgSeed("portfolio-quadro-2")] },
   ];
   for (const item of itens) {
     await apiCall<PortfolioItemPublic>("POST", "/profile/prestador/portfolio", t.carlos, item).catch(
@@ -271,9 +276,9 @@ async function faseVitrines(t: Tokens): Promise<void> {
   }
 
   const lojas: CreateFornecedorLojaInput[] = [
-    { nome: "Loja Centro", endereco: "Av. Central, 100 — Vitória/ES", regiao: "Vitória/ES" },
-    { nome: "Loja Praia", endereco: "Av. Beira Mar, 500 — Vila Velha/ES", regiao: "Vila Velha/ES" },
-    { nome: "Loja Serra", endereco: "Rod. Serrana, km 12 — Serra/ES", regiao: "Serra/ES" },
+    { nome: "Loja Centro", endereco: "Av. Central, 100 — Vitória/ES", regiao: "Vitória/ES", imagemUrl: imgSeed("loja-centro") },
+    { nome: "Loja Praia", endereco: "Av. Beira Mar, 500 — Vila Velha/ES", regiao: "Vila Velha/ES", imagemUrl: imgSeed("loja-praia") },
+    { nome: "Loja Serra", endereco: "Rod. Serrana, km 12 — Serra/ES", regiao: "Serra/ES", imagemUrl: imgSeed("loja-serra") },
   ];
   for (const loja of lojas) {
     await apiCall<FornecedorLojaPublic>("POST", "/profile/fornecedor/lojas", t.materiaisVitoria, loja).catch(
@@ -290,6 +295,7 @@ async function faseVitrines(t: Tokens): Promise<void> {
       descricao: "Válido para compras acima de 10 sacos.",
       valorOriginalCentavos: 3490,
       valorPromocionalCentavos: 3140,
+      imagemUrl: imgSeed("promo-cimento"),
       validadeFim,
       destaque: true,
     },
@@ -300,6 +306,7 @@ async function faseVitrines(t: Tokens): Promise<void> {
       nome: "Frete grátis na primeira compra",
       descricao: "Válido pra novos clientes cadastrados.",
       valorPromocionalCentavos: 1,
+      imagemUrl: imgSeed("promo-frete"),
       validadeFim,
       destaque: true,
     },
@@ -309,6 +316,7 @@ async function faseVitrines(t: Tokens): Promise<void> {
       descricao: "Rejunte, argamassa e afins.",
       valorOriginalCentavos: 5000,
       valorPromocionalCentavos: 4250,
+      imagemUrl: imgSeed("promo-acabamento"),
       validadeFim,
       destaque: false,
     },
@@ -319,9 +327,25 @@ async function faseVitrines(t: Tokens): Promise<void> {
     );
   }
 
+  // Validador de cupom (fluxo implementado nesta sessão) — gera exemplos de
+  // estatística em `promocao_validacoes`: 1 tentativa válida, 1 inválida.
+  await apiCall<ValidarCupomResult>(
+    "POST",
+    "/profile/fornecedor/promocoes/validar",
+    t.materiaisVitoria,
+    { codigo: "CIMENTO10" },
+  ).catch((e) => console.log(`  (validação de cupom falhou: ${(e as Error).message})`));
+  await apiCall<ValidarCupomResult>(
+    "POST",
+    "/profile/fornecedor/promocoes/validar",
+    t.materiaisVitoria,
+    { codigo: "CODIGOINEXISTENTE" },
+  ).catch((e) => console.log(`  (validação de cupom falhou: ${(e as Error).message})`));
+
   const produtos: CreateProductInput[] = [
-    { nome: "Areia média m³", categoria: "cimento", precoCentavos: 12000, unidade: "m³", estoque: 50, fotos: [] },
-    { nome: "Argamassa AC-II 20kg", categoria: "acabamento", precoCentavos: 2890, unidade: "saco", estoque: 200, fotos: [] },
+    { nome: "Areia média m³", categoria: "cimento", precoCentavos: 12000, unidade: "m³", estoque: 50, fotos: [imgSeed("produto-areia")] },
+    { nome: "Argamassa AC-II 20kg", categoria: "acabamento", precoCentavos: 2890, unidade: "saco", estoque: 200, fotos: [imgSeed("produto-argamassa")] },
+    { nome: "Cimento CP-II 50kg", categoria: "cimento", precoCentavos: 3490, unidade: "saco", estoque: 300, fotos: [imgSeed("produto-cimento")] },
   ];
   for (const produto of produtos) {
     await apiCall<ProductPublic>("POST", "/products", t.materiaisVitoria, produto).catch(
@@ -365,14 +389,14 @@ async function faseObrasRfqContratos(t: Tokens): Promise<RfqFlowResult> {
     orcamentoPrevistoCentavos: 600_000,
   } satisfies CreateWorkInput);
 
-  // Ao menos 1 obra pra bruno/carla também — só pra não deixarem "GET /works"
-  // vazio quando logados, sem levar o fluxo completo até contrato.
-  await apiCall<WorkPublic>("POST", "/works", t.bruno, {
+  // Obra + orçamento (RFQ) também pra bruno/carla — antes ficavam com a obra
+  // e nenhum orçamento publicado (GET /rfq vazio pra eles).
+  const obraBruno = await apiCall<WorkPublic>("POST", "/works", t.bruno, {
     titulo: "Construção de garagem",
     tipo: "CONSTRUCAO",
     endereco: "Av. Norte, 200 — Serra/ES",
   } satisfies CreateWorkInput);
-  await apiCall<WorkPublic>("POST", "/works", t.carla, {
+  const obraCarla = await apiCall<WorkPublic>("POST", "/works", t.carla, {
     titulo: "Ampliação de quarto",
     tipo: "AMPLIACAO",
     endereco: "Rua Sul, 88 — Cariacica/ES",
@@ -386,7 +410,7 @@ async function faseObrasRfqContratos(t: Tokens): Promise<RfqFlowResult> {
       categoria: "eletrica",
       descricao: "Troca completa do quadro elétrico e pontos de luz do banheiro.",
       regiao: "Vitória/ES",
-      fotos: [],
+      fotos: [imgSeed("rfq-eletrica-1"), imgSeed("rfq-eletrica-2")],
     } satisfies CreateRfqInput);
   }
 
@@ -395,7 +419,7 @@ async function faseObrasRfqContratos(t: Tokens): Promise<RfqFlowResult> {
     categoria: "hidraulica",
     descricao: "Troca de encanamento e instalação de pia + torneira na cozinha.",
     regiao: "Vila Velha/ES",
-    fotos: [],
+    fotos: [imgSeed("rfq-hidraulica-1")],
   } satisfies CreateRfqInput);
 
   const rfq3 = await apiCall<RfqPublic>("POST", "/rfq", t.ana, {
@@ -403,7 +427,31 @@ async function faseObrasRfqContratos(t: Tokens): Promise<RfqFlowResult> {
     categoria: "pintura",
     descricao: "Pintura completa da fachada, incluindo preparo e selador.",
     regiao: "Vitória/ES",
-    fotos: [],
+    fotos: [imgSeed("rfq-pintura-1"), imgSeed("rfq-pintura-2")],
+  } satisfies CreateRfqInput);
+
+  // Orçamentos de bruno/carla — rfq4 também pede materiais (feature desta
+  // sessão: cria MaterialList + cotação automática pros fornecedores
+  // casados por categoria, sem precisar de uma tela separada).
+  const rfq4 = await apiCall<RfqPublic>("POST", "/rfq", t.bruno, {
+    obraId: obraBruno.id,
+    categoria: "alvenaria",
+    descricao: "Levantamento de alvenaria da garagem — 2 vagas, paredes de bloco cerâmico.",
+    regiao: "Serra/ES",
+    fotos: [imgSeed("rfq-alvenaria-1"), imgSeed("rfq-alvenaria-2")],
+    itensMateriais: [
+      { descricao: "Cimento CP-II 50kg", quantidade: 40, unidade: "saco", categoria: "cimento" },
+      { descricao: "Bloco cerâmico 9x19x39", quantidade: 800, unidade: "unidade", categoria: "ferro" },
+      { descricao: "Areia média", quantidade: 6, unidade: "m³", categoria: "cimento" },
+    ],
+  } satisfies CreateRfqInput);
+
+  const rfq5 = await apiCall<RfqPublic>("POST", "/rfq", t.carla, {
+    obraId: obraCarla.id,
+    categoria: "hidraulica",
+    descricao: "Ampliação de quarto com banheiro — ponto de água e esgoto novos.",
+    regiao: "Cariacica/ES",
+    fotos: [imgSeed("rfq-ampliacao-1")],
   } satisfies CreateRfqInput);
 
   const proponentes = [
@@ -439,7 +487,7 @@ async function faseObrasRfqContratos(t: Tokens): Promise<RfqFlowResult> {
     }
   }
 
-  for (const rfq of [rfq2, rfq3]) {
+  for (const rfq of [rfq2, rfq3, rfq4, rfq5]) {
     for (const prop of proponentes) {
       try {
         await apiCall<RfqProposalPublic>("POST", `/rfq/${rfq.id}/proposals`, prop.token, {
@@ -511,7 +559,7 @@ async function faseMilestonesEscrowDisputas(t: Tokens, flow: RfqFlowResult): Pro
   async function pagarNormal(contractId: string, milestoneId: string, prestadorToken: string): Promise<void> {
     await apiCall("POST", `/contracts/${contractId}/milestones/${milestoneId}/deposito`, t.ana).catch(() => {});
     await apiCall("PATCH", `/contracts/${contractId}/milestones/${milestoneId}/entregar`, prestadorToken, {
-      fotos: ["https://example.com/seed/etapa-entregue.jpg"],
+      fotos: [imgSeed("etapa-entregue")],
     }).catch(() => {});
     await apiCall("PATCH", `/contracts/${contractId}/milestones/${milestoneId}/aprovar`, t.ana).catch(() => {});
   }
@@ -530,7 +578,7 @@ async function faseMilestonesEscrowDisputas(t: Tokens, flow: RfqFlowResult): Pro
     if (m2[1]) {
       await apiCall("POST", `/contracts/${contract2}/milestones/${m2[1]}/deposito`, t.ana).catch(() => {});
       await apiCall("PATCH", `/contracts/${contract2}/milestones/${m2[1]}/entregar`, t.daniel, {
-        fotos: ["https://example.com/seed/etapa-entregue.jpg"],
+        fotos: [imgSeed("etapa-entregue")],
       }).catch(() => {});
       const disputa1 = await apiCall<DisputePublic>(
         "POST",
@@ -538,7 +586,7 @@ async function faseMilestonesEscrowDisputas(t: Tokens, flow: RfqFlowResult): Pro
         t.ana,
         {
           motivo: "Acabamento não ficou como o combinado, precisa de retoque.",
-          evidencias: ["https://example.com/seed/evidencia-1.jpg"],
+          evidencias: [imgSeed("evidencia-1")],
         } satisfies AbrirDisputeInput,
       ).catch(() => null);
       if (disputa1) {
@@ -554,7 +602,7 @@ async function faseMilestonesEscrowDisputas(t: Tokens, flow: RfqFlowResult): Pro
     if (m2[2]) {
       await apiCall("POST", `/contracts/${contract2}/milestones/${m2[2]}/deposito`, t.ana).catch(() => {});
       await apiCall("PATCH", `/contracts/${contract2}/milestones/${m2[2]}/entregar`, t.daniel, {
-        fotos: ["https://example.com/seed/etapa-entregue.jpg"],
+        fotos: [imgSeed("etapa-entregue")],
       }).catch(() => {});
       const disputa2 = await apiCall<DisputePublic>(
         "POST",
@@ -562,7 +610,7 @@ async function faseMilestonesEscrowDisputas(t: Tokens, flow: RfqFlowResult): Pro
         t.ana,
         {
           motivo: "Serviço entregue parcialmente, faltou concluir um trecho.",
-          evidencias: ["https://example.com/seed/evidencia-2.jpg"],
+          evidencias: [imgSeed("evidencia-2")],
         } satisfies AbrirDisputeInput,
       ).catch(() => null);
       if (disputa2) {
@@ -583,7 +631,7 @@ async function faseMilestonesEscrowDisputas(t: Tokens, flow: RfqFlowResult): Pro
     if (m3[1]) {
       await apiCall("POST", `/contracts/${contract3}/milestones/${m3[1]}/deposito`, t.ana).catch(() => {});
       await apiCall("PATCH", `/contracts/${contract3}/milestones/${m3[1]}/entregar`, t.elisa, {
-        fotos: ["https://example.com/seed/etapa-entregue.jpg"],
+        fotos: [imgSeed("etapa-entregue")],
       }).catch(() => {});
       const disputa3 = await apiCall<DisputePublic>(
         "POST",
@@ -591,7 +639,7 @@ async function faseMilestonesEscrowDisputas(t: Tokens, flow: RfqFlowResult): Pro
         t.ana,
         {
           motivo: "Cor da tinta usada não é a que foi combinada no orçamento.",
-          evidencias: ["https://example.com/seed/evidencia-3.jpg"],
+          evidencias: [imgSeed("evidencia-3")],
         } satisfies AbrirDisputeInput,
       ).catch(() => null);
       if (disputa3) {
@@ -606,11 +654,11 @@ async function faseMilestonesEscrowDisputas(t: Tokens, flow: RfqFlowResult): Pro
     if (m3[2]) {
       await apiCall("POST", `/contracts/${contract3}/milestones/${m3[2]}/deposito`, t.ana).catch(() => {});
       await apiCall("PATCH", `/contracts/${contract3}/milestones/${m3[2]}/entregar`, t.elisa, {
-        fotos: ["https://example.com/seed/etapa-entregue.jpg"],
+        fotos: [imgSeed("etapa-entregue")],
       }).catch(() => {});
       await apiCall("POST", `/contracts/${contract3}/milestones/${m3[2]}/disputas`, t.ana, {
         motivo: "Etapa entregue com atraso significativo em relação ao prazo combinado.",
-        evidencias: ["https://example.com/seed/evidencia-4.jpg"],
+        evidencias: [imgSeed("evidencia-4")],
       } satisfies AbrirDisputeInput).catch(() => {});
     }
   }
@@ -704,6 +752,7 @@ async function faseCatalogoDePlantas(t: Tokens): Promise<void> {
       categoria: "CASA",
       precoCentavos: 89_000,
       descricao: "Projeto completo com planta baixa, elétrica e hidráulica.",
+      imagemCapaUrl: imgSeed("planta-casa-65", 600, 400),
       arquivos: ["https://example.com/seed/planta-casa-65.pdf"],
     },
     {
@@ -711,6 +760,7 @@ async function faseCatalogoDePlantas(t: Tokens): Promise<void> {
       categoria: "SOBRADO",
       precoCentavos: 149_000,
       descricao: "Sobrado com suíte, varanda gourmet e garagem para 2 carros.",
+      imagemCapaUrl: imgSeed("planta-sobrado-140", 600, 400),
       arquivos: ["https://example.com/seed/planta-sobrado-140.pdf"],
     },
     {
@@ -718,6 +768,7 @@ async function faseCatalogoDePlantas(t: Tokens): Promise<void> {
       categoria: "GALPAO",
       precoCentavos: 129_000,
       descricao: "Estrutura metálica, pé-direito duplo, mezanino administrativo.",
+      imagemCapaUrl: imgSeed("planta-galpao-300", 600, 400),
       arquivos: ["https://example.com/seed/planta-galpao-300.pdf"],
     },
   ];
@@ -748,7 +799,7 @@ async function faseSobraDeMaterial(t: Tokens, flow: RfqFlowResult): Promise<void
       quantidade: 12,
       unidade: "caixa",
       precoCentavos: 8000,
-      fotos: [],
+      fotos: [imgSeed("sobra-porcelanato")],
     },
     {
       workId: obraId,
@@ -758,7 +809,7 @@ async function faseSobraDeMaterial(t: Tokens, flow: RfqFlowResult): Promise<void
       quantidade: 2,
       unidade: "lata",
       precoCentavos: 15000,
-      fotos: [],
+      fotos: [imgSeed("sobra-tinta")],
     },
     {
       workId: obraId,
@@ -768,7 +819,7 @@ async function faseSobraDeMaterial(t: Tokens, flow: RfqFlowResult): Promise<void
       quantidade: 1,
       unidade: "rolo",
       precoCentavos: 12000,
-      fotos: [],
+      fotos: [imgSeed("sobra-fio")],
     },
     {
       workId: obraId,
@@ -778,7 +829,7 @@ async function faseSobraDeMaterial(t: Tokens, flow: RfqFlowResult): Promise<void
       quantidade: 3,
       unidade: "unidade",
       precoCentavos: 4500,
-      fotos: [],
+      fotos: [imgSeed("sobra-tubo")],
     },
   ];
 
@@ -807,7 +858,11 @@ async function faseAnuncios(t: Tokens): Promise<void> {
       token: t.materiaisVitoria,
       input: {
         tipo: "DESTAQUE",
-        criativo: { titulo: "Materiais Vitória — entrega em 24h", descricao: "Cimento, areia e acabamento com frete rápido." },
+        criativo: {
+          titulo: "Materiais Vitória — entrega em 24h",
+          descricao: "Cimento, areia e acabamento com frete rápido.",
+          imagemUrl: imgSeed("ad-materiais-vitoria", 600, 300),
+        },
         budgetCentavos: 50_000,
       },
     },
@@ -815,7 +870,11 @@ async function faseAnuncios(t: Tokens): Promise<void> {
       token: t.carlos,
       input: {
         tipo: "CPC",
-        criativo: { titulo: "Carlos Prestador — elétrica e hidráulica", descricao: "8 anos de experiência, orçamento sem compromisso." },
+        criativo: {
+          titulo: "Carlos Prestador — elétrica e hidráulica",
+          descricao: "8 anos de experiência, orçamento sem compromisso.",
+          imagemUrl: imgSeed("ad-carlos", 600, 300),
+        },
         budgetCentavos: 20_000,
       },
     },
@@ -823,7 +882,11 @@ async function faseAnuncios(t: Tokens): Promise<void> {
       token: t.julia,
       input: {
         tipo: "CPM",
-        criativo: { titulo: "Júlia Engenheira — projetos estruturais", descricao: "CREA-ES 123456, atendimento em toda a Grande Vitória." },
+        criativo: {
+          titulo: "Júlia Engenheira — projetos estruturais",
+          descricao: "CREA-ES 123456, atendimento em toda a Grande Vitória.",
+          imagemUrl: imgSeed("ad-julia", 600, 300),
+        },
         budgetCentavos: 30_000,
       },
     },
