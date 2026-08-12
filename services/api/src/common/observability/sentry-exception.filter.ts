@@ -30,13 +30,18 @@ export class SentryExceptionFilter implements ExceptionFilter {
       this.logger.error({ err: exception }, "unhandled_exception");
     }
 
-    const message = isHttpException
+    // `exception.getResponse()` de um HttpException padrão do Nest já é o
+    // corpo completo (`{statusCode, message, error}`) — embrulhar isso de
+    // novo dentro de outro `message` (bug encontrado nesta sessão) fazia
+    // `data.message` virar um objeto em vez de string em TODO formulário do
+    // app, caindo sempre no texto genérico de fallback em vez da mensagem
+    // real do backend.
+    const body = isHttpException
       ? exception.getResponse()
-      : "Erro interno inesperado";
+      : { statusCode: status, message: "Erro interno inesperado" };
 
-    response.status(status).json({
-      statusCode: status,
-      message,
-    });
+    response
+      .status(status)
+      .json(typeof body === "string" ? { statusCode: status, message: body } : body);
   }
 }

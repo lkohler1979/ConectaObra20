@@ -7,6 +7,7 @@ export const createRfqProposalInputSchema = z.object({
   precoCentavos: z.number().int().positive(),
   prazoDias: z.number().int().positive().max(3650),
   observacoes: z.string().trim().max(2000).optional(),
+  anexos: z.array(z.string().url()).max(10).default([]),
 });
 export type CreateRfqProposalInput = z.infer<typeof createRfqProposalInputSchema>;
 
@@ -18,6 +19,7 @@ export const rfqProposalPublicSchema = z.object({
   precoCentavos: z.number().int(),
   prazoDias: z.number().int(),
   observacoes: z.string().nullable(),
+  anexos: z.array(z.string()),
   status: rfqProposalStatusSchema,
   createdAt: z.string(),
 });

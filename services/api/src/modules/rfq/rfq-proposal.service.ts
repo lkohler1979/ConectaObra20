@@ -65,6 +65,7 @@ export class RfqProposalService {
             precoCentavos: input.precoCentavos,
             prazoDias: input.prazoDias,
             observacoes: input.observacoes,
+            anexos: input.anexos,
           },
           include: { proponente: { select: { nome: true } } },
         });

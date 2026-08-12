@@ -105,9 +105,14 @@ export default async function ContaPage() {
         </Link>
       )}
       {(me.tipo === "PRESTADOR" || me.tipo === "TECNICO") && (
-        <Link href="/conta/prestador" className="text-sm font-semibold text-azul-planta">
-          Ir pro painel do prestador →
-        </Link>
+        <>
+          <Link href="/conta/prestador" className="text-sm font-semibold text-azul-planta">
+            Ir pro painel do prestador →
+          </Link>
+          <Link href="/rfq/disponiveis" className="text-sm font-semibold text-azul-planta">
+            Orçamentos disponíveis →
+          </Link>
+        </>
       )}
     </main>
   );

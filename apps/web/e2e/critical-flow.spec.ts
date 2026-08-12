@@ -134,6 +134,7 @@ test("fluxo crítico: cadastro → RFQ → proposta → contrato → escrow → 
       precoCentavos: 500_000,
       prazoDias: 10,
       observacoes: "Proposta de teste E2E",
+      anexos: [],
     });
     expect(proposta.status).toBe("ENVIADA");
 

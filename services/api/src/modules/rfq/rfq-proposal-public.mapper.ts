@@ -12,6 +12,7 @@ export function toPublicRfqProposal(proposal: RfqProposalWithProponente): RfqPro
     precoCentavos: proposal.precoCentavos,
     prazoDias: proposal.prazoDias,
     observacoes: proposal.observacoes,
+    anexos: proposal.anexos,
     status: proposal.status,
     createdAt: proposal.createdAt.toISOString(),
   };

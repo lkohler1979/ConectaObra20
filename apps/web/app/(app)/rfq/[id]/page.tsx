@@ -154,6 +154,7 @@ export default async function RfqComparadorPage({
                   <th className="px-4 py-3">Preço</th>
                   <th className="px-4 py-3">Prazo</th>
                   <th className="px-4 py-3">Observações</th>
+                  <th className="px-4 py-3">Anexos</th>
                   <th className="px-4 py-3">Status</th>
                   {souDono && <th className="px-4 py-3" />}
                   {podeAceitar && <th className="px-4 py-3" />}
@@ -180,6 +181,25 @@ export default async function RfqComparadorPage({
                       )}
                     </td>
                     <td className="px-4 py-3 text-grafite/80">{p.observacoes ?? "—"}</td>
+                    <td className="px-4 py-3">
+                      {p.anexos.length === 0 ? (
+                        "—"
+                      ) : (
+                        <div className="flex flex-col gap-1">
+                          {p.anexos.map((anexo, i) => (
+                            <a
+                              key={anexo}
+                              href={anexo}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-xs font-semibold text-azul-planta hover:underline"
+                            >
+                              Anexo {i + 1} →
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </td>
                     <td className="px-4 py-3">
                       <Badge variant={PROPOSAL_STATUS_BADGE[p.status] ?? "default"}>
                         {PROPOSAL_STATUS_LABEL[p.status] ?? p.status}

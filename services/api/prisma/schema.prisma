@@ -521,6 +521,7 @@ model RfqProposal {
   precoCentavos Int               @map("preco_centavos")
   prazoDias     Int               @map("prazo_dias")
   observacoes   String?           @db.Text
+  anexos        String[]          @default([])
   status        RfqProposalStatus @default(ENVIADA)
   createdAt     DateTime          @default(now()) @map("created_at")
 
