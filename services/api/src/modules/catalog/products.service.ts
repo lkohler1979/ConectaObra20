@@ -67,10 +67,12 @@ export class ProductsService {
     await this.meilisearch.indexProduto({
       id: product.id,
       fornecedorId: product.fornecedorId,
+      fornecedorNome: perfil.razaoSocial,
       nome: product.nome,
       categoria: product.categoria,
       precoCentavos: product.precoCentavos,
       unidade: product.unidade,
+      fotoUrl: product.fotos[0] ?? null,
     });
 
     return toPublicProduct(product);
@@ -125,13 +127,19 @@ export class ProductsService {
       payload: { productId },
     });
 
+    const perfil = await this.prisma.profileFornecedor.findUnique({
+      where: { userId: fornecedorId },
+      select: { razaoSocial: true },
+    });
     await this.meilisearch.indexProduto({
       id: product.id,
       fornecedorId: product.fornecedorId,
+      fornecedorNome: perfil?.razaoSocial ?? "",
       nome: product.nome,
       categoria: product.categoria,
       precoCentavos: product.precoCentavos,
       unidade: product.unidade,
+      fotoUrl: product.fotos[0] ?? null,
     });
 
     return toPublicProduct(product);
@@ -214,10 +222,12 @@ export class ProductsService {
         await this.meilisearch.indexProduto({
           id: product.id,
           fornecedorId: product.fornecedorId,
+          fornecedorNome: perfil.razaoSocial,
           nome: product.nome,
           categoria: product.categoria,
           precoCentavos: product.precoCentavos,
           unidade: product.unidade,
+          fotoUrl: product.fotos[0] ?? null,
         });
       } catch (error) {
         erros.push({

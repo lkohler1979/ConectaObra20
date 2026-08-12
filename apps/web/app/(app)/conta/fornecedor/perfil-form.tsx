@@ -17,6 +17,7 @@ interface PerfilFornecedorAtual {
   regioes: string[];
   tempoMercadoAnos: number | null;
   certificacoes: string[];
+  logoUrl: string | null;
 }
 
 /** Campos de lista (categorias/regiões/certificações) usam texto separado por vírgula — sem tag-input dedicado, mesmo espírito minimalista do resto do app. */
@@ -51,6 +52,7 @@ export function PerfilForm({ perfilAtual }: { perfilAtual: PerfilFornecedorAtual
       regioes: toCsv(perfilAtual?.regioes ?? []) as unknown as string[],
       tempoMercadoAnos: perfilAtual?.tempoMercadoAnos ?? undefined,
       certificacoes: toCsv(perfilAtual?.certificacoes ?? []) as unknown as string[],
+      logoUrl: perfilAtual?.logoUrl ?? undefined,
     },
   });
 
@@ -147,6 +149,14 @@ export function PerfilForm({ perfilAtual }: { perfilAtual: PerfilFornecedorAtual
           {...register("certificacoes", {
             setValueAs: (v: string) => fromCsv(v),
           })}
+        />
+      </FormField>
+
+      <FormField label="Logo da empresa (URL, opcional)" htmlFor="logoUrl" error={errors.logoUrl?.message}>
+        <Input
+          id="logoUrl"
+          placeholder="https://…"
+          {...register("logoUrl", { setValueAs: (v: string) => (v === "" ? undefined : v) })}
         />
       </FormField>
 

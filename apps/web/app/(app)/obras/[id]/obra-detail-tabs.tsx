@@ -5,6 +5,7 @@ import type { DiarioEvento } from "@conectaobra/types/diario";
 import type { PainelFinanceiroObra } from "@conectaobra/types/painel-financeiro";
 import type { TeamMemberPublic } from "@conectaobra/types/equipe";
 import type { ContractListItem } from "@conectaobra/types/contracts";
+import type { AvaliacaoPublic } from "@conectaobra/types/avaliacoes";
 import {
   Badge,
   Card,
@@ -16,6 +17,7 @@ import {
   TabsTrigger,
 } from "@conectaobra/ui";
 import { EquipePanel } from "./equipe-panel";
+import { PrestadoresObraPanel } from "./prestadores-obra-panel";
 
 const MILESTONE_STATUS_LABEL: Record<string, string> = {
   PENDENTE: "Pendente",
@@ -51,6 +53,7 @@ export function ObraDetailTabs({
   diario,
   financeiro,
   equipe,
+  avaliacoesPrestadores,
   souDono,
 }: {
   obraId: string;
@@ -58,6 +61,7 @@ export function ObraDetailTabs({
   diario: DiarioEvento[];
   financeiro: PainelFinanceiroObra;
   equipe: TeamMemberPublic[];
+  avaliacoesPrestadores: AvaliacaoPublic[];
   souDono: boolean;
 }) {
   return (
@@ -67,6 +71,7 @@ export function ObraDetailTabs({
         <TabsTrigger value="financeiro">Financeiro</TabsTrigger>
         <TabsTrigger value="diario">Diário</TabsTrigger>
         <TabsTrigger value="equipe">Equipe</TabsTrigger>
+        <TabsTrigger value="prestadores">Prestadores</TabsTrigger>
       </TabsList>
 
       <TabsContent value="cronograma">
@@ -165,6 +170,10 @@ export function ObraDetailTabs({
 
       <TabsContent value="equipe">
         <EquipePanel obraId={obraId} membros={equipe} souDono={souDono} />
+      </TabsContent>
+
+      <TabsContent value="prestadores">
+        <PrestadoresObraPanel obraId={obraId} avaliacoes={avaliacoesPrestadores} souDono={souDono} />
       </TabsContent>
     </Tabs>
   );

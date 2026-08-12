@@ -35,6 +35,7 @@ export class ProfileService {
       experienciaAnos: input.experienciaAnos,
       certificados: input.certificados,
       raioAtendimentoKm: input.raioAtendimentoKm,
+      fotoUrl: input.fotoUrl,
     };
 
     // upsert + gravação de geo numa única transação (achado em code review

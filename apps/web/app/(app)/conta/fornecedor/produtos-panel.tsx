@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -30,6 +31,18 @@ function centavosToReaisInput(centavos: number | null | undefined): string {
   return centavos != null ? (centavos / 100).toFixed(2) : "";
 }
 
+/** Sem upload de arquivo wired ainda (P-018) — fotos entram como lista separada por linha, mesmo padrão de catalogo-panel.tsx. */
+function toLines(values: string[]): string {
+  return values.join("\n");
+}
+
+function fromLines(value: string): string[] {
+  return value
+    .split("\n")
+    .map((v) => v.trim())
+    .filter(Boolean);
+}
+
 interface ProdutoFormInitial {
   nome: string;
   categoria: string;
@@ -38,6 +51,7 @@ interface ProdutoFormInitial {
   estoque: number | null;
   codigo: string | null;
   descricao: string | null;
+  fotos: string[];
 }
 
 function ProdutoForm({
@@ -64,7 +78,9 @@ function ProdutoForm({
       unidade: initial?.unidade ?? "",
       codigo: initial?.codigo ?? undefined,
       descricao: initial?.descricao ?? undefined,
-      fotos: [],
+      // string já juntada (toLines), nunca o array puro — mesmo motivo do
+      // bug em conta/*/perfil-form.tsx (setValueAs: fromLines espera string).
+      fotos: toLines(initial?.fotos ?? []) as unknown as string[],
     },
   });
 
@@ -132,6 +148,18 @@ function ProdutoForm({
         error={errors.descricao?.message}
       >
         <Textarea id="descricao" {...register("descricao")} />
+      </FormField>
+
+      <FormField label="Fotos (uma URL por linha, opcional)" htmlFor="fotos" error={errors.fotos?.message}>
+        <Textarea
+          id="fotos"
+          rows={3}
+          placeholder="https://…"
+          defaultValue={toLines(initial?.fotos ?? [])}
+          {...register("fotos", {
+            setValueAs: (v: string) => fromLines(v),
+          })}
+        />
       </FormField>
 
       <div className="flex gap-2">
@@ -318,17 +346,24 @@ export function ProdutosPanel({ produtosIniciais }: { produtosIniciais: ProductP
           ) : (
             <Card key={produto.id}>
               <CardContent className="flex items-center justify-between gap-3 pt-4">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <CardTitle>{produto.nome}</CardTitle>
-                    {produto.codigo && <Badge>{produto.codigo}</Badge>}
-                  </div>
-                  <p className="mt-1 text-sm text-[#5B6875]">
-                    {formatMoney(produto.precoCentavos)} / {produto.unidade} · {produto.categoria}
-                  </p>
-                  {produto.descricao && (
-                    <p className="mt-1 text-xs text-[#7A828C]">{produto.descricao}</p>
+                <div className="flex items-center gap-3">
+                  {produto.fotos[0] && (
+                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md">
+                      <Image src={produto.fotos[0]} alt={produto.nome} fill className="object-cover" unoptimized />
+                    </div>
                   )}
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <CardTitle>{produto.nome}</CardTitle>
+                      {produto.codigo && <Badge>{produto.codigo}</Badge>}
+                    </div>
+                    <p className="mt-1 text-sm text-[#5B6875]">
+                      {formatMoney(produto.precoCentavos)} / {produto.unidade} · {produto.categoria}
+                    </p>
+                    {produto.descricao && (
+                      <p className="mt-1 text-xs text-[#7A828C]">{produto.descricao}</p>
+                    )}
+                  </div>
                 </div>
                 <div className="flex shrink-0 gap-2">
                   <Button size="sm" variant="secondary" onClick={() => setEditandoId(produto.id)}>

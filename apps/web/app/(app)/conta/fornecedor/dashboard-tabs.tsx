@@ -17,6 +17,7 @@ interface PerfilFornecedorAtual {
   regioes: string[];
   tempoMercadoAnos: number | null;
   certificacoes: string[];
+  logoUrl: string | null;
 }
 
 export function FornecedorDashboardTabs({

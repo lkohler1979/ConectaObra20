@@ -30,6 +30,7 @@ import { ContentModule } from "./modules/content/content.module";
 import { ProjectsCatalogModule } from "./modules/projects-catalog/projects-catalog.module";
 import { AdminModule } from "./modules/admin/admin.module";
 import { MaterialSurplusModule } from "./modules/material-surplus/material-surplus.module";
+import { AvaliacoesModule } from "./modules/avaliacoes/avaliacoes.module";
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { MaterialSurplusModule } from "./modules/material-surplus/material-surpl
     ProjectsCatalogModule,
     AdminModule,
     MaterialSurplusModule,
+    AvaliacoesModule,
   ],
   controllers: [HealthController],
   providers: [

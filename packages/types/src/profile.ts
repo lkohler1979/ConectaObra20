@@ -12,6 +12,7 @@ export const prestadorProfileInputSchema = z.object({
   experienciaAnos: z.number().int().min(0).max(80).optional(),
   certificados: z.array(z.string().min(1)).default([]),
   raioAtendimentoKm: z.number().int().positive().max(500).optional(),
+  fotoUrl: z.string().url().optional(),
   geo: geoPointSchema.optional(),
 });
 export type PrestadorProfileInput = z.infer<typeof prestadorProfileInputSchema>;
@@ -22,5 +23,6 @@ export const fornecedorProfileInputSchema = z.object({
   regioes: z.array(z.string().min(1)).min(1),
   tempoMercadoAnos: z.number().int().min(0).max(150).optional(),
   certificacoes: z.array(z.string().min(1)).default([]),
+  logoUrl: z.string().url().optional(),
 });
 export type FornecedorProfileInput = z.infer<typeof fornecedorProfileInputSchema>;

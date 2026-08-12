@@ -16,6 +16,7 @@ interface PerfilPrestadorAtual {
   experienciaAnos: number | null;
   certificados: string[];
   raioAtendimentoKm: number | null;
+  fotoUrl: string | null;
 }
 
 /** Campos de lista (categorias/certificados) usam texto separado por vírgula — mesmo padrão do perfil do fornecedor. */
@@ -47,6 +48,7 @@ export function PerfilForm({ perfilAtual }: { perfilAtual: PerfilPrestadorAtual 
       experienciaAnos: perfilAtual?.experienciaAnos ?? undefined,
       certificados: toCsv(perfilAtual?.certificados ?? []) as unknown as string[],
       raioAtendimentoKm: perfilAtual?.raioAtendimentoKm ?? undefined,
+      fotoUrl: perfilAtual?.fotoUrl ?? undefined,
     },
   });
 
@@ -141,6 +143,14 @@ export function PerfilForm({ perfilAtual }: { perfilAtual: PerfilPrestadorAtual 
           {...register("raioAtendimentoKm", {
             setValueAs: (v) => (v === "" ? undefined : Number(v)),
           })}
+        />
+      </FormField>
+
+      <FormField label="Foto de perfil (URL, opcional)" htmlFor="fotoUrl" error={errors.fotoUrl?.message}>
+        <Input
+          id="fotoUrl"
+          placeholder="https://…"
+          {...register("fotoUrl", { setValueAs: (v: string) => (v === "" ? undefined : v) })}
         />
       </FormField>
 

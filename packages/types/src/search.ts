@@ -49,9 +49,11 @@ export type FornecedorSearchHit = z.infer<typeof fornecedorSearchHitSchema>;
 export const produtoSearchHitSchema = z.object({
   id: z.string().uuid(),
   fornecedorId: z.string().uuid(),
+  fornecedorNome: z.string(),
   nome: z.string(),
   categoria: z.string(),
   precoCentavos: z.number().int(),
   unidade: z.string(),
+  fotoUrl: z.string().nullable(),
 });
 export type ProdutoSearchHit = z.infer<typeof produtoSearchHitSchema>;

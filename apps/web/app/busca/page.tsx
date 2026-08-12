@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import type {
   FornecedorSearchHit,
@@ -165,13 +166,19 @@ export default async function BuscaPage({
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
           {(resultados as ProdutoSearchHit[]).map((hit) => (
-            <Link key={hit.id} href={`/fornecedores/${hit.fornecedorId}`}>
+            <Link key={hit.id} href={`/produtos/${hit.id}`}>
               <Card className="h-full transition-colors hover:border-azul-planta">
+                {hit.fotoUrl && (
+                  <div className="relative h-32 w-full overflow-hidden rounded-t-lg">
+                    <Image src={hit.fotoUrl} alt={hit.nome} fill className="object-cover" unoptimized />
+                  </div>
+                )}
                 <CardContent className="flex flex-col gap-1 pt-4">
                   <div className="flex items-center gap-2">
                     <CardTitle>{hit.nome}</CardTitle>
                     <Badge>{hit.categoria}</Badge>
                   </div>
+                  <p className="text-xs text-[#7A828C]">{hit.fornecedorNome}</p>
                   <p className="text-sm font-bold text-laranja">
                     {formatMoney(hit.precoCentavos)} / {hit.unidade}
                   </p>

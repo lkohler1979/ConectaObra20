@@ -1,13 +1,22 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { PublicPrestadorProfile } from "@conectaobra/types/public-profiles";
+import type { AvaliacaoListResponse } from "@conectaobra/types/avaliacoes";
 import { Alert, AlertDescription, Badge, Card, CardContent, CardTitle } from "@conectaobra/ui";
 import { ApiUnavailableError, apiFetchOrThrow } from "@/lib/api-client";
+import { AvaliacoesLista } from "@/components/avaliacoes-lista";
 
 async function fetchPrestador(id: string): Promise<PublicPrestadorProfile | null> {
   const res = await apiFetchOrThrow(`/public/prestadores/${id}`, { cache: "no-store" });
   if (!res.ok) return null;
+  return res.json();
+}
+
+async function fetchAvaliacoes(id: string): Promise<AvaliacaoListResponse> {
+  const res = await apiFetchOrThrow(`/public/prestadores/${id}/avaliacoes`, { cache: "no-store" });
+  if (!res.ok) return { resumo: { notaMedia: null, total: 0 }, itens: [] };
   return res.json();
 }
 
@@ -42,8 +51,9 @@ export default async function PrestadorPublicPage({
   const { id } = await params;
 
   let prestador: PublicPrestadorProfile | null;
+  let avaliacoes: AvaliacaoListResponse;
   try {
-    prestador = await fetchPrestador(id);
+    [prestador, avaliacoes] = await Promise.all([fetchPrestador(id), fetchAvaliacoes(id)]);
   } catch (err) {
     if (err instanceof ApiUnavailableError) {
       return (
@@ -71,7 +81,14 @@ export default async function PrestadorPublicPage({
       </Link>
 
       <div>
-        <h1 className="text-2xl font-black text-grafite">{prestador.nome}</h1>
+        <div className="flex items-center gap-3">
+          {prestador.fotoUrl && (
+            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full">
+              <Image src={prestador.fotoUrl} alt={prestador.nome} fill className="object-cover" unoptimized />
+            </div>
+          )}
+          <h1 className="text-2xl font-black text-grafite">{prestador.nome}</h1>
+        </div>
         <div className="mt-2 flex flex-wrap gap-2">
           {prestador.categorias.map((categoria) => (
             <Badge key={categoria}>{categoria}</Badge>
@@ -106,6 +123,17 @@ export default async function PrestadorPublicPage({
           </div>
         </div>
       )}
+
+      <div>
+        <h2 className="text-lg font-bold text-grafite">Avaliações</h2>
+        <p className="mt-1 text-xs text-[#7A828C]">
+          Avaliações abertas registradas pelos clientes nas obras em que este prestador trabalhou —
+          diferente da "Nota média" acima (que vem de contratos verificados na plataforma).
+        </p>
+        <div className="mt-3">
+          <AvaliacoesLista data={avaliacoes} agruparPorObra />
+        </div>
+      </div>
     </main>
   );
 }

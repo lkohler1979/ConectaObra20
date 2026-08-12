@@ -5,6 +5,7 @@ import type { DiarioEvento } from "@conectaobra/types/diario";
 import type { PainelFinanceiroObra } from "@conectaobra/types/painel-financeiro";
 import type { TeamMemberPublic } from "@conectaobra/types/equipe";
 import type { ContractListItem } from "@conectaobra/types/contracts";
+import type { AvaliacaoPublic } from "@conectaobra/types/avaliacoes";
 import { Alert, AlertDescription, Badge } from "@conectaobra/ui";
 import { ApiUnavailableError, apiFetchOrThrow } from "@/lib/api-client";
 import { requireAccessToken } from "@/lib/auth-session";
@@ -35,15 +36,21 @@ export default async function ObraDetailPage({
   let financeiroRes: Response;
   let equipeRes: Response;
   let contratosRes: Response;
+  let avaliacoesPrestadoresRes: Response;
   try {
-    [obraRes, meRes, diarioRes, financeiroRes, equipeRes, contratosRes] = await Promise.all([
-      apiFetchOrThrow(`/works/${id}`, { headers: authHeader, cache: "no-store" }),
-      apiFetchOrThrow("/profile/me", { headers: authHeader, cache: "no-store" }),
-      apiFetchOrThrow(`/works/${id}/diario`, { headers: authHeader, cache: "no-store" }),
-      apiFetchOrThrow(`/works/${id}/financeiro`, { headers: authHeader, cache: "no-store" }),
-      apiFetchOrThrow(`/works/${id}/equipe`, { headers: authHeader, cache: "no-store" }),
-      apiFetchOrThrow("/contracts", { headers: authHeader, cache: "no-store" }),
-    ]);
+    [obraRes, meRes, diarioRes, financeiroRes, equipeRes, contratosRes, avaliacoesPrestadoresRes] =
+      await Promise.all([
+        apiFetchOrThrow(`/works/${id}`, { headers: authHeader, cache: "no-store" }),
+        apiFetchOrThrow("/profile/me", { headers: authHeader, cache: "no-store" }),
+        apiFetchOrThrow(`/works/${id}/diario`, { headers: authHeader, cache: "no-store" }),
+        apiFetchOrThrow(`/works/${id}/financeiro`, { headers: authHeader, cache: "no-store" }),
+        apiFetchOrThrow(`/works/${id}/equipe`, { headers: authHeader, cache: "no-store" }),
+        apiFetchOrThrow("/contracts", { headers: authHeader, cache: "no-store" }),
+        apiFetchOrThrow(`/works/${id}/avaliacoes-prestadores`, {
+          headers: authHeader,
+          cache: "no-store",
+        }),
+      ]);
   } catch (err) {
     if (err instanceof ApiUnavailableError) {
       return (
@@ -71,6 +78,9 @@ export default async function ObraDetailPage({
     ? await financeiroRes.json()
     : null;
   const equipe: TeamMemberPublic[] = equipeRes.ok ? await equipeRes.json() : [];
+  const avaliacoesPrestadores: AvaliacaoPublic[] = avaliacoesPrestadoresRes.ok
+    ? await avaliacoesPrestadoresRes.json()
+    : [];
   const todosContratos: ContractListItem[] = contratosRes.ok ? await contratosRes.json() : [];
   const contratos = todosContratos.filter((c) => c.obraId === obra.id);
   const souDono = me?.id === obra.clienteId;
@@ -109,6 +119,7 @@ export default async function ObraDetailPage({
           diario={diario}
           financeiro={financeiro}
           equipe={equipe}
+          avaliacoesPrestadores={avaliacoesPrestadores}
           souDono={souDono}
         />
       ) : (

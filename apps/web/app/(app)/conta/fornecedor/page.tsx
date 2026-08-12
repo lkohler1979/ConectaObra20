@@ -16,6 +16,7 @@ interface MeResponse {
     regioes: string[];
     tempoMercadoAnos: number | null;
     certificacoes: string[];
+    logoUrl: string | null;
   } | null;
 }
 

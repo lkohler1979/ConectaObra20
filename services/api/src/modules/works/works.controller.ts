@@ -12,12 +12,16 @@ import { UserTypeGuard } from "../../common/guards/user-type.guard";
 import { CurrentUser } from "../identity/auth/current-user.decorator";
 import { JwtAuthGuard } from "../identity/auth/guards/jwt-auth.guard";
 import type { JwtPayload } from "../identity/auth/strategies/jwt.strategy";
+import { AvaliacoesService } from "../avaliacoes/avaliacoes.service";
 import { WorksService } from "./works.service";
 
 @Controller("works")
 @UseGuards(JwtAuthGuard)
 export class WorksController {
-  constructor(private readonly worksService: WorksService) {}
+  constructor(
+    private readonly worksService: WorksService,
+    private readonly avaliacoesService: AvaliacoesService,
+  ) {}
 
   @Post()
   @UseGuards(UserTypeGuard)
@@ -56,6 +60,16 @@ export class WorksController {
     @CurrentUser() user: JwtPayload,
   ) {
     return this.worksService.getPainelFinanceiro(user.sub, id);
+  }
+
+  /** Prestadores cadastrados/avaliados nesta obra (dono ou equipe, só leitura). */
+  @Get(":id/avaliacoes-prestadores")
+  async avaliacoesPrestadores(
+    @Param("id", new ZodValidationPipe(workIdSchema)) id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    await this.worksService.assertVisible(user.sub, id);
+    return this.avaliacoesService.listByObra(id);
   }
 
   @Patch(":id")

@@ -1,12 +1,13 @@
 import { Module } from "@nestjs/common";
 import { AuditLogModule } from "../../common/audit/audit-log.module";
+import { AvaliacoesModule } from "../avaliacoes/avaliacoes.module";
 import { WorksController } from "./works.controller";
 import { WorksService } from "./works.service";
 import { WorkTeamController } from "./work-team.controller";
 import { WorkTeamService } from "./work-team.service";
 
 @Module({
-  imports: [AuditLogModule],
+  imports: [AuditLogModule, AvaliacoesModule],
   controllers: [WorksController, WorkTeamController],
   providers: [WorksService, WorkTeamService],
   exports: [WorksService],

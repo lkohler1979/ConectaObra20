@@ -14,6 +14,7 @@ interface MeResponse {
     experienciaAnos: number | null;
     certificados: string[];
     raioAtendimentoKm: number | null;
+    fotoUrl: string | null;
   } | null;
 }
 

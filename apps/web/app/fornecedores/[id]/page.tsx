@@ -1,13 +1,23 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { PublicFornecedorProfile } from "@conectaobra/types/public-profiles";
+import type { AvaliacaoListResponse } from "@conectaobra/types/avaliacoes";
 import { Alert, AlertDescription, Badge, Card, CardContent, CardTitle } from "@conectaobra/ui";
 import { ApiUnavailableError, apiFetchOrThrow } from "@/lib/api-client";
+import { AvaliacoesLista } from "@/components/avaliacoes-lista";
+import { AvaliarForm } from "@/components/avaliar-form";
 
 async function fetchFornecedor(id: string): Promise<PublicFornecedorProfile | null> {
   const res = await apiFetchOrThrow(`/public/fornecedores/${id}`, { cache: "no-store" });
   if (!res.ok) return null;
+  return res.json();
+}
+
+async function fetchAvaliacoes(id: string): Promise<AvaliacaoListResponse> {
+  const res = await apiFetchOrThrow(`/public/fornecedores/${id}/avaliacoes`, { cache: "no-store" });
+  if (!res.ok) return { resumo: { notaMedia: null, total: 0 }, itens: [] };
   return res.json();
 }
 
@@ -46,8 +56,9 @@ export default async function FornecedorPublicPage({
   const { id } = await params;
 
   let fornecedor: PublicFornecedorProfile | null;
+  let avaliacoes: AvaliacaoListResponse;
   try {
-    fornecedor = await fetchFornecedor(id);
+    [fornecedor, avaliacoes] = await Promise.all([fetchFornecedor(id), fetchAvaliacoes(id)]);
   } catch (err) {
     if (err instanceof ApiUnavailableError) {
       return (
@@ -75,7 +86,20 @@ export default async function FornecedorPublicPage({
       </Link>
 
       <div>
-        <h1 className="text-2xl font-black text-grafite">{fornecedor.razaoSocial}</h1>
+        <div className="flex items-center gap-3">
+          {fornecedor.logoUrl && (
+            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md">
+              <Image
+                src={fornecedor.logoUrl}
+                alt={fornecedor.razaoSocial}
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            </div>
+          )}
+          <h1 className="text-2xl font-black text-grafite">{fornecedor.razaoSocial}</h1>
+        </div>
         <div className="mt-2 flex flex-wrap gap-2">
           {fornecedor.categorias.map((categoria) => (
             <Badge key={categoria}>{categoria}</Badge>
@@ -98,18 +122,34 @@ export default async function FornecedorPublicPage({
           <h2 className="text-lg font-bold text-grafite">Produtos</h2>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {fornecedor.produtos.map((produto) => (
-              <Card key={produto.id}>
-                <CardContent className="pt-4">
-                  <CardTitle>{produto.nome}</CardTitle>
-                  <p className="mt-1 text-sm text-grafite/80">
-                    {formatMoney(produto.precoCentavos)} / {produto.unidade}
-                  </p>
-                </CardContent>
-              </Card>
+              <Link key={produto.id} href={`/produtos/${produto.id}`}>
+                <Card className="h-full transition-colors hover:border-azul-planta">
+                  <CardContent className="pt-4">
+                    <CardTitle>{produto.nome}</CardTitle>
+                    <p className="mt-1 text-sm text-grafite/80">
+                      {formatMoney(produto.precoCentavos)} / {produto.unidade}
+                    </p>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
         </div>
       )}
+
+      <div>
+        <h2 className="text-lg font-bold text-grafite">Avaliações</h2>
+        <div className="mt-3">
+          <AvaliacoesLista data={avaliacoes} />
+        </div>
+      </div>
+
+      <div>
+        <h2 className="text-lg font-bold text-grafite">Avaliar este fornecedor</h2>
+        <div className="mt-3">
+          <AvaliarForm tipo="FORNECEDOR" targetId={fornecedor.userId} redirectPath={`/fornecedores/${id}`} />
+        </div>
+      </div>
     </main>
   );
 }

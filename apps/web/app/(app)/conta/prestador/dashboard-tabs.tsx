@@ -14,6 +14,7 @@ interface PerfilPrestadorAtual {
   experienciaAnos: number | null;
   certificados: string[];
   raioAtendimentoKm: number | null;
+  fotoUrl: string | null;
 }
 
 export function PrestadorDashboardTabs({

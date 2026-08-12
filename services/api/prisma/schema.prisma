@@ -85,6 +85,9 @@ model User {
   disputesMediadas      Dispute[]         @relation("dispute_mediador")
   reviewsFeitas         Review[]          @relation("review_avaliador")
   reviewsRecebidas      Review[]          @relation("review_avaliado")
+  avaliacoesFeitas       Avaliacao[]      @relation("avaliacao_autor")
+  avaliacoesRecebidasPrestador Avaliacao[] @relation("avaliacao_prestador")
+  avaliacoesRecebidasFornecedor Avaliacao[] @relation("avaliacao_fornecedor")
   projetosCatalogo      ProjectCatalog[]
   projectPurchases      ProjectPurchase[]
   subscriptions         Subscription[]
@@ -108,6 +111,7 @@ model ProfilePrestador {
   geo               Unsupported("geography(Point, 4326)")?
   selo              String?
   notaMedia         Decimal?                               @map("nota_media") @db.Decimal(3, 2)
+  fotoUrl           String?                                @map("foto_url")
   agendaConfig      Json?                                  @map("agenda_config")
   /// Rodízio do matching (E3-03): quem não é casado há mais tempo tem prioridade.
   ultimoMatchEm     DateTime?                              @map("ultimo_match_em")
@@ -144,6 +148,7 @@ model ProfileFornecedor {
   plano            String?
   selo             String?
   notaMedia        Decimal? @map("nota_media") @db.Decimal(3, 2)
+  logoUrl          String?  @map("logo_url")
 
   user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   products       Product[]
@@ -234,6 +239,7 @@ model Product {
   createdAt     DateTime @default(now()) @map("created_at")
 
   fornecedor ProfileFornecedor @relation(fields: [fornecedorId], references: [userId], onDelete: Cascade)
+  avaliacoes Avaliacao[]
 
   @@unique([fornecedorId, codigo])
   @@map("products")
@@ -334,8 +340,42 @@ model Work {
   auditLogEntries AuditLog[]
   teamMembers     WorkTeamMember[]
   surplusListings SurplusListing[]
+  avaliacoes      Avaliacao[]
 
   @@map("works")
+}
+
+enum AvaliacaoTipo {
+  PRESTADOR
+  FORNECEDOR
+  PRODUTO
+
+  @@map("avaliacao_tipo")
+}
+
+/// Avaliação/comentário aberto — complementa `Review` (que continua exigindo
+/// contrato + etapa aprovada). Prestador sempre ligado a uma obra do próprio
+/// autor (criado a partir de /obras/[id]); fornecedor/produto sem obra.
+model Avaliacao {
+  id           String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  autorId      String        @map("autor_id") @db.Uuid
+  tipo         AvaliacaoTipo
+  prestadorId  String?       @map("prestador_id") @db.Uuid
+  fornecedorId String?       @map("fornecedor_id") @db.Uuid
+  produtoId    String?       @map("produto_id") @db.Uuid
+  obraId       String?       @map("obra_id") @db.Uuid
+  nota         Int           @db.SmallInt
+  comentario   String?       @db.Text
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  autor      User     @relation("avaliacao_autor", fields: [autorId], references: [id], onDelete: Cascade)
+  prestador  User?    @relation("avaliacao_prestador", fields: [prestadorId], references: [id], onDelete: Cascade)
+  fornecedor User?    @relation("avaliacao_fornecedor", fields: [fornecedorId], references: [id], onDelete: Cascade)
+  produto    Product? @relation(fields: [produtoId], references: [id], onDelete: Cascade)
+  obra       Work?    @relation(fields: [obraId], references: [id], onDelete: SetNull)
+
+  @@map("avaliacoes")
 }
 
 /// Equipe da obra (E6-04) — visualização compartilhada, só leitura. Membro

@@ -13,6 +13,16 @@
       "require": "./dist/admin.js",
       "import": "./dist/admin.mjs"
     },
+    "./avaliacoes": {
+      "types": "./dist/avaliacoes.d.ts",
+      "require": "./dist/avaliacoes.js",
+      "import": "./dist/avaliacoes.mjs"
+    },
+    "./produtos-publicos": {
+      "types": "./dist/produtos-publicos.d.ts",
+      "require": "./dist/produtos-publicos.js",
+      "import": "./dist/produtos-publicos.mjs"
+    },
     "./ai-budget": {
       "types": "./dist/ai-budget.d.ts",
       "require": "./dist/ai-budget.js",

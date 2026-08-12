@@ -29,6 +29,7 @@ export class PublicProfilesService {
       notaMedia: user.profilePrestador.notaMedia
         ? user.profilePrestador.notaMedia.toNumber()
         : null,
+      fotoUrl: user.profilePrestador.fotoUrl,
       portfolio: user.profilePrestador.portfolio.map((item) => ({
         id: item.id,
         titulo: item.titulo,
@@ -58,6 +59,7 @@ export class PublicProfilesService {
       notaMedia: user.profileFornecedor.notaMedia
         ? user.profileFornecedor.notaMedia.toNumber()
         : null,
+      logoUrl: user.profileFornecedor.logoUrl,
       produtos: user.profileFornecedor.products.map((product) => ({
         id: product.id,
         nome: product.nome,
