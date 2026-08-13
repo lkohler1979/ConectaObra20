@@ -26,6 +26,7 @@ export function SuspendForm({ userId, suspenso }: { userId: string; suspenso: bo
       setLoading(false);
       return;
     }
+    setLoading(false);
     router.refresh();
   }
 
@@ -42,6 +43,7 @@ export function SuspendForm({ userId, suspenso }: { userId: string; suspenso: bo
       setLoading(false);
       return;
     }
+    setLoading(false);
     router.refresh();
   }
 
