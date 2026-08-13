@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { rfqStatusSchema } from "./rfq";
 
 export const rfqProposalStatusSchema = z.enum(["ENVIADA", "ACEITA", "RECUSADA"]);
 export type RfqProposalStatus = z.infer<typeof rfqProposalStatusSchema>;
@@ -24,3 +25,11 @@ export const rfqProposalPublicSchema = z.object({
   createdAt: z.string(),
 });
 export type RfqProposalPublic = z.infer<typeof rfqProposalPublicSchema>;
+
+/** "Minhas propostas" (Kanban do prestador) — enriquece com o contexto do RFQ/obra, sem precisar de uma segunda chamada por proposta. */
+export const rfqProposalMineSchema = rfqProposalPublicSchema.extend({
+  rfqCategoria: z.string(),
+  rfqStatus: rfqStatusSchema,
+  obraTitulo: z.string(),
+});
+export type RfqProposalMine = z.infer<typeof rfqProposalMineSchema>;

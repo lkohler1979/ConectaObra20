@@ -112,7 +112,9 @@ export class ContractsService {
   async listMine(userId: string): Promise<ContractListItem[]> {
     const parties = await this.prisma.contractParty.findMany({
       where: { userId },
-      include: { contract: { include: { obra: true } } },
+      include: {
+        contract: { include: { obra: true, milestones: { orderBy: { ordem: "asc" } } } },
+      },
       orderBy: { contract: { createdAt: "desc" } },
     });
 

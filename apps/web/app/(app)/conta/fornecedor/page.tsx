@@ -3,6 +3,7 @@ import type { FornecedorLojaPublic } from "@conectaobra/types/fornecedor-lojas";
 import type { PromocaoPrivate } from "@conectaobra/types/promocoes";
 import type { ProductPublic } from "@conectaobra/types/catalog";
 import type { AdPrivate } from "@conectaobra/types/ads";
+import type { PurchaseQuotePublic } from "@conectaobra/types/purchase-quotes";
 import { Alert, AlertDescription } from "@conectaobra/ui";
 import { ApiUnavailableError, apiFetchOrThrow } from "@/lib/api-client";
 import { requireAccessToken } from "@/lib/auth-session";
@@ -25,12 +26,13 @@ export default async function FornecedorDashboardPage() {
   const authHeader = { authorization: `Bearer ${accessToken}` };
 
   try {
-    const [meRes, lojasRes, promocoesRes, produtosRes, adsRes] = await Promise.all([
+    const [meRes, lojasRes, promocoesRes, produtosRes, adsRes, cotacoesRes] = await Promise.all([
       apiFetchOrThrow("/profile/me", { headers: authHeader, cache: "no-store" }),
       apiFetchOrThrow("/profile/fornecedor/lojas", { headers: authHeader, cache: "no-store" }),
       apiFetchOrThrow("/profile/fornecedor/promocoes", { headers: authHeader, cache: "no-store" }),
       apiFetchOrThrow("/products", { headers: authHeader, cache: "no-store" }),
       apiFetchOrThrow("/ads", { headers: authHeader, cache: "no-store" }),
+      apiFetchOrThrow("/purchase-quotes", { headers: authHeader, cache: "no-store" }),
     ]);
 
     if (!meRes.ok) {
@@ -62,6 +64,7 @@ export default async function FornecedorDashboardPage() {
     const promocoes: PromocaoPrivate[] = promocoesRes.ok ? await promocoesRes.json() : [];
     const produtos: ProductPublic[] = produtosRes.ok ? await produtosRes.json() : [];
     const ads: AdPrivate[] = adsRes.ok ? await adsRes.json() : [];
+    const cotacoes: PurchaseQuotePublic[] = cotacoesRes.ok ? await cotacoesRes.json() : [];
 
     return (
       <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 bg-areia px-5 py-10">
@@ -78,6 +81,7 @@ export default async function FornecedorDashboardPage() {
           promocoesIniciais={promocoes}
           produtosIniciais={produtos}
           adsIniciais={ads}
+          cotacoesIniciais={cotacoes}
         />
       </main>
     );

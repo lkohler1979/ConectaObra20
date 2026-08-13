@@ -1,5 +1,6 @@
-import type { Contract, ContractPartyRole, Work } from "@prisma/client";
+import type { Contract, ContractPartyRole, Milestone, Work } from "@prisma/client";
 import type { ContractListItem, ContractPublic } from "@conectaobra/types/contracts";
+import { toPublicMilestone } from "./milestone-public.mapper";
 
 export function toPublicContract(contract: Contract): ContractPublic {
   return {
@@ -14,12 +15,13 @@ export function toPublicContract(contract: Contract): ContractPublic {
 }
 
 export function toContractListItem(
-  contract: Contract & { obra: Work },
+  contract: Contract & { obra: Work; milestones: Milestone[] },
   meuPapel: ContractPartyRole,
 ): ContractListItem {
   return {
     ...toPublicContract(contract),
     obraTitulo: contract.obra.titulo,
     meuPapel,
+    milestones: contract.milestones.map(toPublicMilestone),
   };
 }

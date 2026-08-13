@@ -7,13 +7,14 @@ import {
 import { Prisma } from "@prisma/client";
 import type {
   CreateRfqProposalInput,
+  RfqProposalMine,
   RfqProposalPublic,
 } from "@conectaobra/types/rfq-proposals";
 import { PrismaService } from "../../common/prisma/prisma.service";
 import { AuditLogService } from "../../common/audit/audit-log.service";
 import { AnalyticsService } from "../../common/analytics/analytics.service";
 import { env } from "../../config/env";
-import { toPublicRfqProposal } from "./rfq-proposal-public.mapper";
+import { toMineRfqProposal, toPublicRfqProposal } from "./rfq-proposal-public.mapper";
 
 @Injectable()
 export class RfqProposalService {
@@ -116,6 +117,19 @@ export class RfqProposalService {
       include: { proponente: { select: { nome: true } } },
     });
     return own ? [toPublicRfqProposal(own)] : [];
+  }
+
+  /** Histórico "minhas propostas" (Kanban do prestador) — não existia nenhuma forma de listar as propostas de todos os RFQs de uma vez. */
+  async listMine(proponenteId: string): Promise<RfqProposalMine[]> {
+    const proposals = await this.prisma.rfqProposal.findMany({
+      where: { proponenteId },
+      orderBy: { createdAt: "desc" },
+      include: {
+        proponente: { select: { nome: true } },
+        rfq: { include: { obra: { select: { titulo: true } } } },
+      },
+    });
+    return proposals.map(toMineRfqProposal);
   }
 
   /**

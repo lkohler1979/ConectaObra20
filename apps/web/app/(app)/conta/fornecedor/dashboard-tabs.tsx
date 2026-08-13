@@ -5,11 +5,13 @@ import type { FornecedorLojaPublic } from "@conectaobra/types/fornecedor-lojas";
 import type { PromocaoPrivate } from "@conectaobra/types/promocoes";
 import type { ProductPublic } from "@conectaobra/types/catalog";
 import type { AdPrivate } from "@conectaobra/types/ads";
+import type { PurchaseQuotePublic } from "@conectaobra/types/purchase-quotes";
 import { AdsPanel } from "@/components/ads-panel";
 import { PerfilForm } from "./perfil-form";
 import { LojasPanel } from "./lojas-panel";
 import { PromocoesPanel } from "./promocoes-panel";
 import { ProdutosPanel } from "./produtos-panel";
+import { CotacoesKanban } from "./cotacoes-kanban";
 
 interface PerfilFornecedorAtual {
   razaoSocial: string;
@@ -26,17 +28,20 @@ export function FornecedorDashboardTabs({
   promocoesIniciais,
   produtosIniciais,
   adsIniciais,
+  cotacoesIniciais,
 }: {
   perfilAtual: PerfilFornecedorAtual | null;
   lojasIniciais: FornecedorLojaPublic[];
   promocoesIniciais: PromocaoPrivate[];
   produtosIniciais: ProductPublic[];
   adsIniciais: AdPrivate[];
+  cotacoesIniciais: PurchaseQuotePublic[];
 }) {
   return (
     <Tabs defaultValue="perfil">
       <TabsList>
         <TabsTrigger value="perfil">Perfil</TabsTrigger>
+        <TabsTrigger value="cotacoes">Cotações</TabsTrigger>
         <TabsTrigger value="lojas">Lojas</TabsTrigger>
         <TabsTrigger value="promocoes">Promoções</TabsTrigger>
         <TabsTrigger value="produtos">Produtos</TabsTrigger>
@@ -45,6 +50,10 @@ export function FornecedorDashboardTabs({
 
       <TabsContent value="perfil">
         <PerfilForm perfilAtual={perfilAtual} />
+      </TabsContent>
+
+      <TabsContent value="cotacoes">
+        <CotacoesKanban cotacoesIniciais={cotacoesIniciais} />
       </TabsContent>
 
       <TabsContent value="lojas">

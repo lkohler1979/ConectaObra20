@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { materialListItemSchema } from "./material-lists";
 
 export const purchaseQuoteIdSchema = z.string().uuid();
 
@@ -36,6 +37,15 @@ export const purchaseQuotePublicSchema = z.object({
   prazoDias: z.number().int().nullable(),
   status: purchaseQuoteStatusSchema,
   createdAt: z.string(),
+  /**
+   * Kanban do fornecedor — sem isso, quem responde a cotação não sabe o que
+   * precificar (mesma lacuna de "tela que falta" já encontrada pra propostas
+   * de RFQ). Só vem preenchido quando o service inclui `materialList` na
+   * query (hoje: `listMine`); nos demais métodos sai `[]` por omissão.
+   */
+  materialListItens: z.array(materialListItemSchema).default([]),
+  /** Idem — só `true` quando o service inclui `purchaseOrder` (hoje: `listMine`). */
+  pedidoFechado: z.boolean().default(false),
 });
 export type PurchaseQuotePublic = z.infer<typeof purchaseQuotePublicSchema>;
 

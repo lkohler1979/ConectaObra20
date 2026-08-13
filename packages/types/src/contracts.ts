@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { milestonePublicSchema } from "./milestones";
 
 export const contractPartyRoleSchema = z.enum(["CONTRATANTE", "CONTRATADO"]);
 export type ContractPartyRole = z.infer<typeof contractPartyRoleSchema>;
@@ -31,5 +32,6 @@ export type ContractPublic = z.infer<typeof contractPublicSchema>;
 export const contractListItemSchema = contractPublicSchema.extend({
   obraTitulo: z.string(),
   meuPapel: contractPartyRoleSchema,
+  milestones: z.array(milestonePublicSchema),
 });
 export type ContractListItem = z.infer<typeof contractListItemSchema>;

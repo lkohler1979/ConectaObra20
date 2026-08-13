@@ -50,6 +50,14 @@ export class RfqController {
     return this.rfqService.discoverForPrestador(user.sub);
   }
 
+  /** "Minhas propostas" (Kanban) — mesmo cuidado de ordem que "discover". */
+  @Get("proposals/mine")
+  @UseGuards(UserTypeGuard)
+  @AllowedUserTypes("PRESTADOR", "TECNICO")
+  listMyProposals(@CurrentUser() user: JwtPayload) {
+    return this.rfqProposalService.listMine(user.sub);
+  }
+
   @Get(":id")
   getOne(
     @Param("id", new ZodValidationPipe(rfqIdSchema)) id: string,

@@ -1,5 +1,5 @@
-import type { RfqProposal } from "@prisma/client";
-import type { RfqProposalPublic } from "@conectaobra/types/rfq-proposals";
+import type { Rfq, RfqProposal } from "@prisma/client";
+import type { RfqProposalMine, RfqProposalPublic } from "@conectaobra/types/rfq-proposals";
 
 type RfqProposalWithProponente = RfqProposal & { proponente: { nome: string } };
 
@@ -15,5 +15,16 @@ export function toPublicRfqProposal(proposal: RfqProposalWithProponente): RfqPro
     anexos: proposal.anexos,
     status: proposal.status,
     createdAt: proposal.createdAt.toISOString(),
+  };
+}
+
+type RfqProposalMineRow = RfqProposalWithProponente & { rfq: Rfq & { obra: { titulo: string } } };
+
+export function toMineRfqProposal(proposal: RfqProposalMineRow): RfqProposalMine {
+  return {
+    ...toPublicRfqProposal(proposal),
+    rfqCategoria: proposal.rfq.categoria,
+    rfqStatus: proposal.rfq.status,
+    obraTitulo: proposal.rfq.obra.titulo,
   };
 }

@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { PortfolioItemPublic } from "@conectaobra/types/portfolio";
 import type { AdPrivate } from "@conectaobra/types/ads";
 import type { ProjectPrivate } from "@conectaobra/types/projects-catalog";
+import type { ContractListItem } from "@conectaobra/types/contracts";
+import type { RfqProposalMine } from "@conectaobra/types/rfq-proposals";
 import { Alert, AlertDescription } from "@conectaobra/ui";
 import { ApiUnavailableError, apiFetchOrThrow } from "@/lib/api-client";
 import { requireAccessToken } from "@/lib/auth-session";
@@ -23,11 +25,13 @@ export default async function PrestadorDashboardPage() {
   const authHeader = { authorization: `Bearer ${accessToken}` };
 
   try {
-    const [meRes, portfolioRes, adsRes, catalogRes] = await Promise.all([
+    const [meRes, portfolioRes, adsRes, catalogRes, contratosRes, propostasRes] = await Promise.all([
       apiFetchOrThrow("/profile/me", { headers: authHeader, cache: "no-store" }),
       apiFetchOrThrow("/profile/prestador/portfolio", { headers: authHeader, cache: "no-store" }),
       apiFetchOrThrow("/ads", { headers: authHeader, cache: "no-store" }),
       apiFetchOrThrow("/catalog/projects", { headers: authHeader, cache: "no-store" }),
+      apiFetchOrThrow("/contracts", { headers: authHeader, cache: "no-store" }),
+      apiFetchOrThrow("/rfq/proposals/mine", { headers: authHeader, cache: "no-store" }),
     ]);
 
     if (!meRes.ok) {
@@ -60,6 +64,8 @@ export default async function PrestadorDashboardPage() {
     const portfolio: PortfolioItemPublic[] = portfolioRes.ok ? await portfolioRes.json() : [];
     const ads: AdPrivate[] = adsRes.ok ? await adsRes.json() : [];
     const catalogo: ProjectPrivate[] = catalogRes.ok ? await catalogRes.json() : [];
+    const contratos: ContractListItem[] = contratosRes.ok ? await contratosRes.json() : [];
+    const propostas: RfqProposalMine[] = propostasRes.ok ? await propostasRes.json() : [];
 
     return (
       <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 bg-areia px-5 py-10">
@@ -75,6 +81,8 @@ export default async function PrestadorDashboardPage() {
           portfolioIniciais={portfolio}
           adsIniciais={ads}
           projetosIniciais={catalogo}
+          contratosIniciais={contratos}
+          propostasIniciais={propostas}
         />
       </main>
     );

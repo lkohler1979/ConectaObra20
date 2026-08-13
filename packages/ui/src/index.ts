@@ -16,3 +16,4 @@ export * from "./components/avatar";
 export * from "./components/status-pill";
 export * from "./components/chat-bubble";
 export * from "./components/step-indicator";
+export * from "./components/kanban";

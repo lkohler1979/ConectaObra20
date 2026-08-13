@@ -97,11 +97,16 @@ export class PurchaseQuotesService {
     return this.listForMaterialListInternal(materialListId);
   }
 
+  /** Kanban do fornecedor — inclui a lista de materiais (o que precificar) e se já virou pedido. */
   async listMine(fornecedorId: string): Promise<PurchaseQuotePublic[]> {
     const quotes = await this.prisma.purchaseQuote.findMany({
       where: { fornecedorId },
       orderBy: { createdAt: "desc" },
-      include: QUOTE_INCLUDE,
+      include: {
+        ...QUOTE_INCLUDE,
+        purchaseOrder: { select: { id: true } },
+        materialList: { select: { itens: true } },
+      },
     });
     return quotes.map(toPublicPurchaseQuote);
   }
@@ -147,7 +152,7 @@ export class PurchaseQuotesService {
         prazoDias: input.prazoDias,
         status: "RESPONDIDA",
       },
-      include: QUOTE_INCLUDE,
+      include: { ...QUOTE_INCLUDE, materialList: { select: { itens: true } } },
     });
 
     await this.auditLog.record({
