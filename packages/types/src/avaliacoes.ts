@@ -59,3 +59,42 @@ export const avaliacaoListResponseSchema = z.object({
   itens: z.array(avaliacaoPublicSchema),
 });
 export type AvaliacaoListResponse = z.infer<typeof avaliacaoListResponseSchema>;
+
+/**
+ * Moderação de conteúdo (P-091) — ADMIN oculta/reativa uma avaliação depois
+ * de publicada (reativa, não pré-aprovação: sem canal de notificação pra
+ * avisar o autor de uma fila pendente). Mesmo padrão de `User.suspenso`
+ * (E10-01) — flag + motivo + data, sem histórico dedicado (reaproveita
+ * `audit_log`).
+ */
+export const avaliacaoAdminSchema = z.object({
+  id: z.string().uuid(),
+  tipo: avaliacaoTipoSchema,
+  autorNome: z.string(),
+  autorEmail: z.string(),
+  prestadorNome: z.string().nullable(),
+  fornecedorNome: z.string().nullable(),
+  produtoNome: z.string().nullable(),
+  obraTitulo: z.string().nullable(),
+  nota: z.number().int(),
+  comentario: z.string().nullable(),
+  oculta: z.boolean(),
+  ocultaMotivo: z.string().nullable(),
+  ocultaEm: z.string().nullable(),
+  createdAt: z.string(),
+});
+export type AvaliacaoAdmin = z.infer<typeof avaliacaoAdminSchema>;
+
+export const avaliacaoAdminIdSchema = z.string().uuid();
+
+export const listAdminAvaliacoesQuerySchema = z.object({
+  tipo: avaliacaoTipoSchema.optional(),
+  oculta: z.coerce.boolean().optional(),
+  limit: z.coerce.number().int().positive().max(100).default(50),
+});
+export type ListAdminAvaliacoesQuery = z.infer<typeof listAdminAvaliacoesQuerySchema>;
+
+export const ocultarAvaliacaoInputSchema = z.object({
+  motivo: z.string().trim().min(3, "Motivo obrigatório").max(500),
+});
+export type OcultarAvaliacaoInput = z.infer<typeof ocultarAvaliacaoInputSchema>;

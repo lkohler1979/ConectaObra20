@@ -23,6 +23,11 @@ const SECOES = [
     href: "/disputas",
   },
   {
+    titulo: "Avaliações",
+    descricao: "Moderar avaliações abertas de prestador, fornecedor e produto.",
+    href: "/avaliacoes",
+  },
+  {
     titulo: "Conteúdo",
     descricao: "Notícias, biblioteca, indicadores e custos médios.",
     href: "/conteudo",

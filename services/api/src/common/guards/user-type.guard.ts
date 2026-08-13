@@ -10,10 +10,16 @@ export class UserTypeGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
   canActivate(ctx: ExecutionContext): boolean {
-    const allowed = this.reflector.get<string[]>(
-      ALLOWED_USER_TYPES_KEY,
+    // `getAllAndOverride` — sem isso, `@AllowedUserTypes` aplicado na CLASSE
+    // (padrão usado por AdminUsersController/ArticlesController/etc.) nunca
+    // era lido (bug encontrado nesta sessão): `ctx.getHandler()` só devolve
+    // metadata setada diretamente no método, então todo controller com o
+    // decorator só na classe deixava passar qualquer usuário autenticado,
+    // de qualquer tipo, sem nenhuma restrição real.
+    const allowed = this.reflector.getAllAndOverride<string[]>(ALLOWED_USER_TYPES_KEY, [
       ctx.getHandler(),
-    );
+      ctx.getClass(),
+    ]);
     if (!allowed || allowed.length === 0) return true;
 
     const { user } = ctx.switchToHttp().getRequest<Request & { user: JwtPayload }>();

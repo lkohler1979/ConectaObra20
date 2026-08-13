@@ -170,7 +170,7 @@ export class AvaliacoesService {
 
   async listByPrestador(prestadorId: string, obraId?: string): Promise<AvaliacaoPublic[]> {
     const avaliacoes = await this.prisma.avaliacao.findMany({
-      where: { tipo: "PRESTADOR", prestadorId, ...(obraId ? { obraId } : {}) },
+      where: { tipo: "PRESTADOR", prestadorId, oculta: false, ...(obraId ? { obraId } : {}) },
       include: INCLUDE,
       orderBy: { createdAt: "desc" },
     });
@@ -179,7 +179,7 @@ export class AvaliacoesService {
 
   async listByFornecedor(fornecedorId: string): Promise<AvaliacaoPublic[]> {
     const avaliacoes = await this.prisma.avaliacao.findMany({
-      where: { tipo: "FORNECEDOR", fornecedorId },
+      where: { tipo: "FORNECEDOR", fornecedorId, oculta: false },
       include: INCLUDE,
       orderBy: { createdAt: "desc" },
     });
@@ -188,7 +188,7 @@ export class AvaliacoesService {
 
   async listByProduto(produtoId: string): Promise<AvaliacaoPublic[]> {
     const avaliacoes = await this.prisma.avaliacao.findMany({
-      where: { tipo: "PRODUTO", produtoId },
+      where: { tipo: "PRODUTO", produtoId, oculta: false },
       include: INCLUDE,
       orderBy: { createdAt: "desc" },
     });
@@ -198,7 +198,7 @@ export class AvaliacoesService {
   /** Usado por `GET /works/:id/avaliacoes-prestadores` — visibilidade checada no controller. */
   async listByObra(obraId: string): Promise<AvaliacaoPublic[]> {
     const avaliacoes = await this.prisma.avaliacao.findMany({
-      where: { tipo: "PRESTADOR", obraId },
+      where: { tipo: "PRESTADOR", obraId, oculta: false },
       include: INCLUDE,
       orderBy: { createdAt: "desc" },
     });
@@ -219,7 +219,7 @@ export class AvaliacoesService {
 
   private async resumo(where: Prisma.AvaliacaoWhereInput): Promise<AvaliacaoResumo> {
     const agg = await this.prisma.avaliacao.aggregate({
-      where,
+      where: { ...where, oculta: false },
       _avg: { nota: true },
       _count: true,
     });
