@@ -1,4 +1,7 @@
 node_modules/
+# Cache local do pnpm criado dentro dos containers de dev (achado nesta
+# sessão — nunca deve ser commitado, ~1GB).
+.pnpm-store/
 # Projeto usa pnpm exclusivamente (pnpm-lock.yaml é o lockfile de verdade) —
 # um package-lock.json aqui significa que alguém rodou `npm install` por
 # engano; ignorado pra não bloquear o deploy.sh na checagem de git sujo.

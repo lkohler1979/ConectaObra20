@@ -860,6 +860,8 @@ model KnowledgeChunk {
 
 enum IndicatorType {
   CUB
+  /// CUB m² desonerado (Sinduscon-ES) — série separada da CUB normal, sincronizada junto pelo CubSyncService.
+  CUB_DESONERADO
   INCC
   SINAPI
   ACO

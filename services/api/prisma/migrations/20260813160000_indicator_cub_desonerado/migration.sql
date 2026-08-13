@@ -1,0 +1,1 @@
+ALTER TYPE "indicator_type" ADD VALUE 'CUB_DESONERADO';

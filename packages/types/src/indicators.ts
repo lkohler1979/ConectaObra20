@@ -6,7 +6,15 @@ import { z } from "zod";
  * ADMIN (confirmado com o usuário via `AskUserQuestion`) — sem ingestão
  * automática de fonte externa, mesma categoria de decisão do PSP (P-002).
  */
-export const indicatorTipoSchema = z.enum(["CUB", "INCC", "SINAPI", "ACO", "CIMENTO", "MADEIRA"]);
+export const indicatorTipoSchema = z.enum([
+  "CUB",
+  "CUB_DESONERADO",
+  "INCC",
+  "SINAPI",
+  "ACO",
+  "CIMENTO",
+  "MADEIRA",
+]);
 export type IndicatorTipo = z.infer<typeof indicatorTipoSchema>;
 
 export const upsertIndicatorInputSchema = z.object({

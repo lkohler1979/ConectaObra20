@@ -2,8 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 import type { PromocaoPublic } from "@conectaobra/types/promocoes";
 import type { AdPublic } from "@conectaobra/types/ads";
+import type { IndicatorPublic } from "@conectaobra/types/indicators";
 import { Badge, Button, Card, CardContent, CardTitle } from "@conectaobra/ui";
 import { apiFetchOrThrow } from "@/lib/api-client";
+import { CubChart, type CubChartPoint } from "@/components/cub-chart";
 
 function formatMoney(centavos: number): string {
   return (centavos / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -28,6 +30,45 @@ async function fetchAdsDestaque(): Promise<AdPublic[]> {
     const res = await apiFetchOrThrow("/public/ads?limit=3", { cache: "no-store" });
     if (!res.ok) return [];
     return await res.json();
+  } catch {
+    return [];
+  }
+}
+
+function formatMesLabel(referenciaMes: string): string {
+  const label = new Date(referenciaMes).toLocaleDateString("pt-BR", {
+    month: "short",
+    year: "2-digit",
+  });
+  return label.replace(".", "");
+}
+
+/**
+ * CUB-ES sincronizado diariamente (`CubSyncService`, `services/api/src/modules/content/`)
+ * — decorativo, mesmo critério "fail open" das seções acima.
+ */
+async function fetchCubHistorico(): Promise<CubChartPoint[]> {
+  try {
+    const [cubRes, desoneradoRes] = await Promise.all([
+      apiFetchOrThrow("/public/indicators?tipo=CUB&regiao=ES&limit=12", { cache: "no-store" }),
+      apiFetchOrThrow("/public/indicators?tipo=CUB_DESONERADO&regiao=ES&limit=12", {
+        cache: "no-store",
+      }),
+    ]);
+    if (!cubRes.ok || !desoneradoRes.ok) return [];
+
+    const cub: IndicatorPublic[] = await cubRes.json();
+    const desonerado: IndicatorPublic[] = await desoneradoRes.json();
+    const desoneradoPorMes = new Map(desonerado.map((d) => [d.referenciaMes, d.valorCentavos]));
+
+    return cub
+      .slice()
+      .reverse()
+      .map((item) => ({
+        mesLabel: formatMesLabel(item.referenciaMes),
+        cub: item.valorCentavos / 100,
+        desonerado: (desoneradoPorMes.get(item.referenciaMes) ?? 0) / 100,
+      }));
   } catch {
     return [];
   }
@@ -58,9 +99,10 @@ const DIFERENCIAIS = [
 ];
 
 export default async function LandingPage() {
-  const [promocoesDestaque, adsDestaque] = await Promise.all([
+  const [promocoesDestaque, adsDestaque, cubHistorico] = await Promise.all([
     fetchPromocoesDestaque(),
     fetchAdsDestaque(),
+    fetchCubHistorico(),
   ]);
 
   return (
@@ -220,6 +262,27 @@ export default async function LandingPage() {
               </Link>
             ))}
           </div>
+        </section>
+      )}
+
+      {cubHistorico.length > 0 && (
+        <section className="px-5 pb-10">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-grafite">
+              CUB-ES — últimos {cubHistorico.length} meses
+            </h2>
+            <Link href="/indicadores?tipo=CUB" className="text-sm font-semibold text-azul-planta">
+              Ver histórico completo →
+            </Link>
+          </div>
+          <p className="mt-1 text-xs text-[#7A828C]">
+            Custo Unitário Básico da construção civil no ES, por m² — fonte: Sinduscon-ES.
+          </p>
+          <Card className="mt-3">
+            <CardContent className="pt-4">
+              <CubChart data={cubHistorico} />
+            </CardContent>
+          </Card>
         </section>
       )}
 
