@@ -202,6 +202,11 @@
       "types": "./dist/works.d.ts",
       "require": "./dist/works.js",
       "import": "./dist/works.mjs"
+    },
+    "./sinapi": {
+      "types": "./dist/sinapi.d.ts",
+      "require": "./dist/sinapi.js",
+      "import": "./dist/sinapi.mjs"
     }
   },
   "scripts": {

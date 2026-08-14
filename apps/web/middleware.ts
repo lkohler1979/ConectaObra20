@@ -22,5 +22,6 @@ export const config = {
     "/materiais/:path*",
     "/compras-materiais/:path*",
     "/analisar-orcamento/:path*",
+    "/sinapi/:path*",
   ],
 };

@@ -31,6 +31,7 @@ import { ProjectsCatalogModule } from "./modules/projects-catalog/projects-catal
 import { AdminModule } from "./modules/admin/admin.module";
 import { MaterialSurplusModule } from "./modules/material-surplus/material-surplus.module";
 import { AvaliacoesModule } from "./modules/avaliacoes/avaliacoes.module";
+import { SinapiModule } from "./modules/sinapi/sinapi.module";
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { AvaliacoesModule } from "./modules/avaliacoes/avaliacoes.module";
     AdminModule,
     MaterialSurplusModule,
     AvaliacoesModule,
+    SinapiModule,
   ],
   controllers: [HealthController],
   providers: [

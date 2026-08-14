@@ -20,6 +20,7 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "adm-zip": "^0.5.16",
     "@aws-sdk/client-s3": "^3.687.0",
     "@aws-sdk/s3-request-presigner": "^3.687.0",
     "@conectaobra/config": "workspace:*",
@@ -54,6 +55,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/adm-zip": "^0.5.5",
     "@nestjs/cli": "^10.4.9",
     "@types/bcryptjs": "^2.4.6",
     "@types/express": "^5.0.0",

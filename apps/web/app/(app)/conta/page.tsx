@@ -78,6 +78,9 @@ export default async function ContaPage() {
       <Link href="/analisar-orcamento" className="text-sm font-semibold text-azul-planta">
         Analisar orçamento →
       </Link>
+      <Link href="/sinapi" className="text-sm font-semibold text-azul-planta">
+        Consultar SINAPI (ES) →
+      </Link>
       <Link href="/busca" className="text-sm font-semibold text-azul-planta">
         Buscar prestadores e fornecedores →
       </Link>

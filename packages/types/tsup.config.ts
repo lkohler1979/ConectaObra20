@@ -42,6 +42,7 @@ export default defineConfig({
     "src/rfq-proposals.ts",
     "src/search.ts",
     "src/works.ts",
+    "src/sinapi.ts",
   ],
   format: ["cjs", "esm"],
   dts: true,
